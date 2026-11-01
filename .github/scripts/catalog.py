@@ -95,17 +95,15 @@ def lookup(country, **query):
 
 
 def kind_of(record):
-	"""game, audio or video, else None; a game in any genre counts as a game."""
-	genres = {int(g) for g in record.get("genreIds", []) if str(g).isdigit()}
+	"""game, audio or video by the app's primary category, else None. Other
+	categories don't count: Discord lists Games as one, and isn't a game."""
 	primary = int(record.get("primaryGenreId") or 0)
-	genres.add(primary)
-	if genres & GAME_GENRES:
+	if primary in GAME_GENRES:
 		return "game"
-	for kinds in ((primary,), genres):
-		if set(kinds) & AUDIO_GENRES:
-			return "audio"
-		if set(kinds) & VIDEO_GENRES:
-			return "video"
+	if primary in AUDIO_GENRES:
+		return "audio"
+	if primary in VIDEO_GENRES:
+		return "video"
 	return None
 
 
@@ -219,17 +217,19 @@ def run_charts(args):
 	by_country = {}
 	for app_id, country in wanted.items():
 		by_country.setdefault(country, []).append(app_id)
-	staged, seen = {}, set()
+	staged, seen = {}, {}
 	for country, ids in by_country.items():
 		for start in range(0, len(ids), LOOKUP_BATCH):
 			for record in lookup(country, id=",".join(ids[start : start + LOOKUP_BATCH])):
-				seen.add(record["bundleId"])
+				seen[record["bundleId"]] = record
 				entry = entry_for(record, country)
 				if entry and existing.get(record["bundleId"]) != entry:
 					staged[record["bundleId"]] = entry
 
+	# No longer a game, music or video app.
+	remove = [bundle_id for bundle_id in existing if bundle_id in seen and bundle_id not in staged and not kind_of(seen[bundle_id])]
 	# Gone from the App Store (or its country): kept while its icon link works.
-	remove = [bundle_id for bundle_id, app in existing.items() if bundle_id not in seen and not link_works(app["icon"])]
+	remove += [bundle_id for bundle_id, app in existing.items() if bundle_id not in seen and not link_works(app["icon"])]
 	write_stage(args.out, staged, remove)
 	log(f"staged {len(staged)} new or changed apps, {len(remove)} to remove")
 

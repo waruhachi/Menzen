@@ -149,7 +149,9 @@ def load_catalog(folder):
 def write_catalog(folder, apps):
 	for kind, name in CATALOG_FILES.items():
 		entries = {bundle_id: {k: v for k, v in entry.items() if k != "kind"} for bundle_id, entry in apps.items() if entry["kind"] == kind}
-		# One app per line, sorted, so each commit's diff shows just what changed.
+		# One app per line, sorted, so each commit's diff shows just what
+		# changed. The tweak relies on it too: it reads only the lines of the
+		# apps installed (Daemon/MZGameCatalog.m).
 		lines = [f"\t{json.dumps(bundle_id)}: {json.dumps(entries[bundle_id], sort_keys=True, ensure_ascii=False)}" for bundle_id in sorted(entries)]
 		with open(os.path.join(folder, name), "w") as file:
 			file.write('{\n"version": %d,\n"apps": {\n%s\n}\n}\n' % (CATALOG_VERSION, ",\n".join(lines)))

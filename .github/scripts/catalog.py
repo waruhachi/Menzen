@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Builds Menzen's app catalog: which App Store apps are games, music or video
 apps, and the link to each one's App Store icon (its default icon, never an
-alternate), published on the catalog branch for the tweak to read.
+alternate), published on the catalog branch for the tweak to read as
+games.json, audio.json and video.json, so each only changes with its own apps.
 
     charts   adds the apps on the App Store's top charts and refreshes every app
              already in the catalog, so icon links follow icon changes
@@ -25,6 +26,8 @@ import urllib.parse
 import urllib.request
 
 CATALOG_VERSION = 1
+# One file per kind; an entry's kind is the file it's in.
+CATALOG_FILES = {"game": "games.json", "audio": "audio.json", "video": "video.json"}
 
 GAME_GENRES = {6014} | set(range(7001, 7020))
 AUDIO_GENRES = {6011}  # Music
@@ -124,20 +127,37 @@ def link_works(url):
 # MARK: - Catalog files
 
 
-def load_catalog(path):
-	try:
-		with open(path) as file:
-			catalog = json.load(file)
-	except FileNotFoundError:
-		return {}
-	return catalog.get("apps", {})
+def load_catalog(folder):
+	"""Every app in a catalog checkout, each entry with its kind."""
+	apps = {}
+	for kind, name in CATALOG_FILES.items():
+		try:
+			with open(os.path.join(folder, name)) as file:
+				entries = json.load(file).get("apps", {})
+		except FileNotFoundError:
+			continue
+		for bundle_id, entry in entries.items():
+			apps[bundle_id] = dict(entry, kind=kind)
+	if not apps:
+		# The single file the catalog started as, carried over once.
+		try:
+			with open(os.path.join(folder, "apps.json")) as file:
+				apps = json.load(file).get("apps", {})
+		except FileNotFoundError:
+			pass
+	return apps
 
 
-def write_catalog(path, apps):
-	# One app per line, sorted, so each commit's diff shows just what changed.
-	lines = [f"\t{json.dumps(bundle_id)}: {json.dumps(apps[bundle_id], sort_keys=True, ensure_ascii=False)}" for bundle_id in sorted(apps)]
-	with open(path, "w") as file:
-		file.write('{\n"version": %d,\n"apps": {\n%s\n}\n}\n' % (CATALOG_VERSION, ",\n".join(lines)))
+def write_catalog(folder, apps):
+	for kind, name in CATALOG_FILES.items():
+		entries = {bundle_id: {k: v for k, v in entry.items() if k != "kind"} for bundle_id, entry in apps.items() if entry["kind"] == kind}
+		# One app per line, sorted, so each commit's diff shows just what changed.
+		lines = [f"\t{json.dumps(bundle_id)}: {json.dumps(entries[bundle_id], sort_keys=True, ensure_ascii=False)}" for bundle_id in sorted(entries)]
+		with open(os.path.join(folder, name), "w") as file:
+			file.write('{\n"version": %d,\n"apps": {\n%s\n}\n}\n' % (CATALOG_VERSION, ",\n".join(lines)))
+	legacy = os.path.join(folder, "apps.json")
+	if os.path.exists(legacy):
+		os.remove(legacy)
 
 
 def entry_for(record, country):
@@ -297,14 +317,13 @@ def run_reply(args):
 def run_merge(args):
 	with open(os.path.join(args.stage, "stage.json")) as file:
 		staged = json.load(file)
-	path = os.path.join(args.catalog, "apps.json")
-	apps = load_catalog(path)
+	apps = load_catalog(args.catalog)
 	for bundle_id, entry in staged["apps"].items():
 		if BUNDLE_ID.match(bundle_id) and ICON_HOST.match(entry.get("icon", "")):
 			apps[bundle_id] = entry
 	for bundle_id in staged["remove"]:
 		apps.pop(bundle_id, None)
-	write_catalog(path, apps)
+	write_catalog(args.catalog, apps)
 	log(f"merged {len(staged['apps'])} changes and {len(staged['remove'])} removals, {len(apps)} in the catalog")
 
 
@@ -313,14 +332,14 @@ def main():
 	commands = parser.add_subparsers(dest="command", required=True)
 
 	charts = commands.add_parser("charts")
-	charts.add_argument("--catalog", required=True, help="the current apps.json")
+	charts.add_argument("--catalog", required=True, help="folder with the current catalog files")
 	charts.add_argument("--out", required=True, help="staging folder")
 	charts.add_argument("--countries", type=lambda s: [c for c in re.split(r"[\s,]+", s.lower()) if re.fullmatch(r"[a-z]{2}", c)], default=None)
 	charts.add_argument("--genres", type=lambda s: [int(g) for g in re.split(r"[\s,]+", s) if g.isdigit()], default=None)
 	charts.set_defaults(run=run_charts)
 
 	request = commands.add_parser("request")
-	request.add_argument("--catalog", required=True)
+	request.add_argument("--catalog", required=True, help="folder with the current catalog files")
 	request.add_argument("--out", required=True)
 	request.add_argument("--body-env", required=True, help="environment variable holding the issue body")
 	request.add_argument("--result", required=True)

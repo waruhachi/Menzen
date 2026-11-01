@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Prints the path of the current apps.json from the catalog branch, or of an
-# empty file when the branch doesn't exist yet.
+# Prints a folder holding the catalog branch's current files, empty when the
+# branch doesn't exist yet.
 set -euo pipefail
 
-out="${RUNNER_TEMP:-/tmp}/current-apps.json"
+out="${RUNNER_TEMP:-/tmp}/current-catalog"
+rm -rf "$out"
+mkdir -p "$out"
 if git fetch --depth=1 origin catalog 2>/dev/null; then
-	git show FETCH_HEAD:apps.json >"$out" 2>/dev/null || echo '{}' >"$out"
-else
-	echo '{}' >"$out"
+	git archive FETCH_HEAD | tar -x -C "$out"
 fi
 echo "$out"

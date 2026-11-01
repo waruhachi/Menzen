@@ -1,0 +1,43 @@
+name: Catalog Charts
+
+# Adds the games, music apps and video apps on the App Store's top charts to
+# the catalog branch, and refreshes every app already there so its icon link
+# follows icon changes and apps gone from the App Store are dropped.
+
+permissions:
+    contents: write
+
+on:
+    schedule:
+        - cron: "17 6 * * *"
+    workflow_dispatch:
+        inputs:
+            countries:
+                description: "Countries to scan, like: us gb jp (empty for all)"
+                required: false
+                default: ""
+            genres:
+                description: "Genre ids to scan, like: 6014 (empty for all)"
+                required: false
+                default: ""
+
+jobs:
+    charts:
+        runs-on: ubuntu-latest
+        timeout-minutes: 90
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Scan charts
+              env:
+                  COUNTRIES: ${{ inputs.countries }}
+                  GENRES: ${{ inputs.genres }}
+              run: |
+                  current=$(.github/scripts/checkout-catalog.sh)
+                  args=(charts --catalog "$current" --out "$RUNNER_TEMP/stage")
+                  [ -n "$COUNTRIES" ] && args+=(--countries "$COUNTRIES")
+                  [ -n "$GENRES" ] && args+=(--genres "$GENRES")
+                  python3 -I .github/scripts/catalog.py "${args[@]}"
+
+            - name: Publish
+              run: .github/scripts/publish-catalog.sh "$RUNNER_TEMP/stage" "chore: update app catalog from the app store"

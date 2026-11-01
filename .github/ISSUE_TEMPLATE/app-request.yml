@@ -1,0 +1,19 @@
+name: Request an app
+description: Ask for a game, music app or video app to be added to Menzen's app list.
+title: "App request"
+labels: ["app-request"]
+body:
+    - type: markdown
+      attributes:
+          value: |
+              This adds the app's icon and category to Menzen's app list, so a game you play can show with its icon on Discord. It doesn't add support for an app's songs or videos.
+
+              A bot looks the app up on the App Store and replies within a few minutes.
+    - type: input
+      id: app
+      attributes:
+          label: App Store link or bundle ID
+          description: On the app's App Store page, tap Share → Copy Link.
+          placeholder: https://apps.apple.com/us/app/roblox/id431946152
+      validations:
+          required: true

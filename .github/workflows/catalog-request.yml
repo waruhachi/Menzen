@@ -1,0 +1,51 @@
+name: Catalog Request
+
+# Adds the app an "app-request" issue asks for to the catalog branch, then
+# answers and closes the issue. The issue only supplies an App Store link or
+# bundle ID; the name, category and icon all come from Apple.
+
+permissions:
+    contents: write
+    issues: write
+
+on:
+    issues:
+        types: [opened, reopened]
+
+concurrency:
+    group: catalog-request-${{ github.event.issue.number }}
+
+jobs:
+    request:
+        if: contains(github.event.issue.labels.*.name, 'app-request')
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Look up the app
+              env:
+                  # Passed as data, never pasted into the script.
+                  ISSUE_BODY: ${{ github.event.issue.body }}
+              run: |
+                  current=$(.github/scripts/checkout-catalog.sh)
+                  python3 -I .github/scripts/catalog.py request --catalog "$current" --out "$RUNNER_TEMP/stage" --body-env ISSUE_BODY --result "$RUNNER_TEMP/result.json"
+
+            - name: Publish
+              run: |
+                  if grep -q '"status": "added"' "$RUNNER_TEMP/result.json"; then
+                      .github/scripts/publish-catalog.sh "$RUNNER_TEMP/stage" "chore: add requested app to catalog (#$ISSUE)"
+                  fi
+              env:
+                  ISSUE: ${{ github.event.issue.number }}
+
+            - name: Reply
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  ISSUE: ${{ github.event.issue.number }}
+              run: |
+                  reason=$(python3 -I .github/scripts/catalog.py reply --result "$RUNNER_TEMP/result.json" --comment "$RUNNER_TEMP/comment.md")
+                  gh issue comment "$ISSUE" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/comment.md"
+                  if [ -n "$reason" ]; then
+                      gh issue close "$ISSUE" --repo "$GITHUB_REPOSITORY" --reason "$reason"
+                  fi

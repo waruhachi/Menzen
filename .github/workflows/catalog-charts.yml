@@ -40,4 +40,5 @@ jobs:
                   python3 -I .github/scripts/catalog.py "${args[@]}"
 
             - name: Publish
-              run: .github/scripts/publish-catalog.sh "$RUNNER_TEMP/stage" "chore: update app catalog from the app store"
+              run: |
+                  .github/scripts/publish-catalog.sh "$RUNNER_TEMP/stage" "chore: update app catalog from the app store"

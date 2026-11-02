@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Privacy Policy · Menzen</title>
+	<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main>
+	<nav>
+		<a href="/">Menzen</a>
+		<a href="/privacy/">Privacy</a>
+		<a href="/tos/">Terms</a>
+		<a href="https://github.com/waruhachi/Menzen">GitHub</a>
+	</nav>
+
+	<h1>Privacy Policy</h1>
+	<p class="updated">Last updated November 2, 2026</p>
+
+	<p>Menzen is a tweak for jailbroken iPhones that shows your current media, game or a status you write yourself as a Discord activity. It has no servers of its own. Nothing about you is sent to the developer.</p>
+
+	<h2>Signing in</h2>
+	<p>You sign in on Discord's own sign-in page, from Menzen's settings or from another device. Menzen asks Discord for these permissions only:</p>
+	<ul>
+		<li><code>identify</code> and <code>openid</code>, to show which account is signed in.</li>
+		<li><code>sdk.social_layer_presence</code>, to set your activity.</li>
+	</ul>
+	<p>Menzen can't read your messages, servers, friends list or email, and it never asks for your password or your Discord token. The sign-in tokens Discord returns are stored in the iPhone's Keychain and are only sent back to Discord.</p>
+
+	<h2>What is sent to Discord</h2>
+	<p>While Menzen is on, it sends Discord the activity you see in your status. Depending on what's playing and the options you pick, that can include:</p>
+	<ul>
+		<li>the app's name and icon;</li>
+		<li>the song, album, artist, video, show or episode, and its artwork or thumbnail;</li>
+		<li>how long it has been playing, or how much is left;</li>
+		<li>links to the item on the service it came from;</li>
+		<li>the game on screen and how long you've played;</li>
+		<li>for Apelin, the project name and what the agent is doing, if you turn those on;</li>
+		<li>a custom status you write, with any pictures you link.</li>
+	</ul>
+	<p>Menzen removes sign-in tokens and keys from links and leaves out thumbnails of YouTube videos that aren't public. Privacy Mode cuts the activity down to the app's name and icon.</p>
+	<p>You pick which apps can show up. Browsers, chat apps and social networking apps never do. Discord shows your activity to the people who can see your status, and what happens to it there is covered by <a href="https://discord.com/privacy">Discord's Privacy Policy</a>.</p>
+
+	<h2>Other connections</h2>
+	<ul>
+		<li>Menzen downloads a list of app names and App Store icons from GitHub (<code>raw.githubusercontent.com</code>). The request contains no information about you or your apps.</li>
+		<li>Some app integrations ask that app's own servers for missing details, such as an artist picture, the same way the app itself does.</li>
+		<li>Menzen's settings load app icons and artwork from the addresses above to show previews.</li>
+	</ul>
+	<p>GitHub, Discord and those services see your IP address when your iPhone connects to them, as with any connection.</p>
+
+	<h2>What stays on your iPhone</h2>
+	<p>Your settings, the app list and a small cache stay on the device. Menzen has no analytics, ads or crash reporting. Test builds keep a debug log on the iPhone, readable only by its owner account. Release builds write no log.</p>
+
+	<h2>Removing your data</h2>
+	<p>Tap Sign Out in Menzen's settings to delete the stored tokens, end Menzen's access to your Discord account and clear your activity. You can also remove Menzen under User Settings &gt; Authorized Apps in Discord. Uninstalling the tweak doesn't delete the tokens from the Keychain, so sign out first.</p>
+
+	<h2>Children</h2>
+	<p>Menzen is meant for people who are old enough to use Discord in their country.</p>
+
+	<h2>Changes</h2>
+	<p>If this policy changes, the new version will be posted on this page with a new date. The history of every change is in the <a href="https://github.com/waruhachi/Menzen/commits/main/docs">GitHub repository</a>.</p>
+
+	<h2>Contact</h2>
+	<p>Questions about this policy can be asked by <a href="https://github.com/waruhachi/Menzen/issues">opening an issue on GitHub</a>.</p>
+
+	<footer>Menzen is not affiliated with or endorsed by Discord Inc. or Apple Inc.</footer>
+</main>
+</body>
+</html>

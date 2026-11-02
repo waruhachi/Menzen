@@ -36,6 +36,9 @@ VIDEO_GENRES = {6016, 6008}  # Entertainment, Photo & Video
 CHART_GENRES = sorted(GAME_GENRES | AUDIO_GENRES | VIDEO_GENRES)
 CHARTS = ["topfreeapplications", "topgrossingapplications", "toppaidapplications"]
 DEFAULT_COUNTRIES = ["us", "gb", "ca", "au", "de", "fr", "jp", "kr", "br", "mx", "in"]
+# Apple's own music and video apps come with iOS and never chart: Apple Music
+# and Apple TV, by App Store id, where they're looked up.
+BUILT_IN_APPS = {"1108187390": "us", "1174078549": "us"}
 
 # Apple asks for about 20 lookups a minute, and the chart feeds throttle too.
 LOOKUP_DELAY = 3.2
@@ -151,7 +154,7 @@ def write_catalog(folder, apps):
 		entries = {bundle_id: {k: v for k, v in entry.items() if k != "kind"} for bundle_id, entry in apps.items() if entry["kind"] == kind}
 		# One app per line, sorted, so each commit's diff shows just what
 		# changed. The tweak relies on it too: it reads only the lines of the
-		# apps installed (Daemon/MZGameCatalog.m).
+		# apps installed (Daemon/MZApps/MZAppCatalog.m).
 		lines = [f"\t{json.dumps(bundle_id)}: {json.dumps(entries[bundle_id], sort_keys=True, ensure_ascii=False)}" for bundle_id in sorted(entries)]
 		with open(os.path.join(folder, name), "w") as file:
 			file.write('{\n"version": %d,\n"apps": {\n%s\n}\n}\n' % (CATALOG_VERSION, ",\n".join(lines)))
@@ -214,6 +217,8 @@ def run_charts(args):
 					log(f"  skipped {country} {chart} {genre}: {error}")
 				time.sleep(CHART_DELAY)
 		log(f"{country}: {len(wanted)} apps so far")
+	for app_id, country in BUILT_IN_APPS.items():
+		wanted.setdefault(app_id, country)
 	log(f"{len(wanted)} apps to look up ({len(existing)} already in the catalog, {failed} feeds skipped)")
 
 	by_country = {}

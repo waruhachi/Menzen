@@ -8,8 +8,9 @@ PLIST="$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist"
 
 # Removing Menzen signs out, as the button in Settings does. Upgrades keep
 # the sign-in. The daemon is stopped first so it can't refresh the tokens
-# while they're deleted.
+# while they're deleted. Its output is dropped: other tweaks injected into it
+# print there, and package managers show that as an error.
 if [ "$1" = remove ]; then
-	"$JBROOT/usr/libexec/menzend" --sign-out
+	"$JBROOT/usr/libexec/menzend" --sign-out >/dev/null 2>&1
 fi
 exit 0

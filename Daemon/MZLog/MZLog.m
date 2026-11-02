@@ -57,4 +57,10 @@ void MZLog(NSString *format, ...) {
 	NSLog(@"[Menzen] %@", message);
 }
 
+void MZLogFlush(void) {
+	if (logQueue) dispatch_sync(logQueue, ^{
+		[logHandle synchronizeFile];
+	});
+}
+
 #endif

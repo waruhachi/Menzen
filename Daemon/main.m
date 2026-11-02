@@ -44,7 +44,9 @@ static int MZSignOutForRemoval(void) {
 		setenv("HOME", mobile->pw_dir, 1);
 	}
 
-	return MZSignOutStoredAccount(MZApplicationId, MZSignOutTimeout) ? 0 : 1;
+	BOOL signedOut = MZSignOutStoredAccount(MZApplicationId, MZSignOutTimeout);
+	MZLogFlush();
+	return signedOut ? 0 : 1;
 }
 
 int main(int argc, char *argv[]) {

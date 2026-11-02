@@ -1,0 +1,9 @@
+.theos
+.vscode
+.DS_Store
+
+/packages
+/Research
+
+# Made from each provider's Apps.mk.
+/Providers/*/Menzen*.plist

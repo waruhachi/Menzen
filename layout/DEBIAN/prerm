@@ -1,0 +1,15 @@
+#!/bin/sh
+case "$0" in
+	*/var/lib/dpkg/info/*) JBROOT="${0%/var/lib/dpkg/info/*}" ;;
+	*) JBROOT="${0%/Library/dpkg/info/*}" ;;
+esac
+PLIST="$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist"
+[ -f "$PLIST" ] && launchctl unload "$PLIST" 2>/dev/null
+
+# Removing Menzen signs out, as the button in Settings does. Upgrades keep
+# the sign-in. The daemon is stopped first so it can't refresh the tokens
+# while they're deleted.
+if [ "$1" = remove ]; then
+	"$JBROOT/usr/libexec/menzend" --sign-out
+fi
+exit 0

@@ -1,0 +1,47 @@
+#!/bin/sh
+# dpkg runs this from its database in the jailbreak's root
+# (<jbroot>/Library/dpkg/info on Procursus, <jbroot>/var/lib/dpkg/info on older
+# setups), so the root is what comes before that: empty on rootful, /var/jb on
+# rootless, a random path on roothide. launchctl is under it too, so rely on PATH.
+case "$0" in
+	*/var/lib/dpkg/info/*) JBROOT="${0%/var/lib/dpkg/info/*}" ;;
+	*) JBROOT="${0%/Library/dpkg/info/*}" ;;
+esac
+PLIST="$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist"
+
+# Written here rather than shipped, since only now is the daemon's path known
+# (and release builds turn shipped plists into binary ones). postrm removes it.
+mkdir -p "$JBROOT/Library/LaunchDaemons"
+cat > "$PLIST" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>moe.waru.menzend</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>$JBROOT/usr/libexec/menzend</string>
+	</array>
+	<key>MachServices</key>
+	<dict>
+		<key>moe.waru.menzend</key>
+		<true/>
+	</dict>
+	<key>UserName</key>
+	<string>mobile</string>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ProcessType</key>
+	<string>Background</string>
+</dict>
+</plist>
+PLIST
+chown root:wheel "$PLIST"
+chmod 644 "$PLIST"
+
+launchctl unload "$PLIST" 2>/dev/null
+launchctl load "$PLIST"
+exit 0

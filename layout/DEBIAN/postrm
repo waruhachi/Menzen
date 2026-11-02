@@ -1,0 +1,10 @@
+#!/bin/sh
+case "$0" in
+	*/var/lib/dpkg/info/*) JBROOT="${0%/var/lib/dpkg/info/*}" ;;
+	*) JBROOT="${0%/Library/dpkg/info/*}" ;;
+esac
+# postinst wrote it; prerm already unloaded it.
+case "$1" in
+	remove|purge) rm -f "$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist" ;;
+esac
+exit 0

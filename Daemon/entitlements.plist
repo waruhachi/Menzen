@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>platform-application</key>
+	<true/>
+	<key>com.apple.private.security.no-container</key>
+	<true/>
+	<key>com.apple.mediaremote.now-playing-read-access</key>
+	<true/>
+	<key>com.apple.mediaremote.full-now-playing-read-access</key>
+	<true/>
+	<!-- Which app is on screen, for MZForegroundApps. -->
+	<key>com.apple.runningboard.process-state</key>
+	<true/>
+	<!-- Launching apps for MZAppChecker. -->
+	<key>com.apple.frontboard.launchapplications</key>
+	<true/>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>moe.waru.menzend</string>
+	</array>
+</dict>
+</plist>

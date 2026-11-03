@@ -5,7 +5,6 @@
 #import "../MZApps/MZAppChecker.h"
 #import "../MZApps/MZAppInfo.h"
 #import "../MZDiscord/MZDiscord.h"
-#import "../MZLog/MZLog.h"
 #import "MZServiceListener.h"
 
 // Private, but present on iOS.
@@ -38,14 +37,10 @@ static NSString *MZSettingsApp(NSXPCConnection *connection) {
 	id application = CFBridgingRelease(SecTaskCopyValueForEntitlement(task, CFSTR("application-identifier"), NULL));
 	uint32_t flags = SecTaskGetCodeSignStatus(task);
 	CFRelease(task);
-	if (!(flags & MZCodeSignValid) || !(flags & MZCodeSignPlatformBinary)) {
-		MZLog(@"refused pid %d, %@ (%@): not a valid platform binary, flags 0x%x", connection.processIdentifier, identifier, application, flags);
-		return nil;
-	}
+	if (!(flags & MZCodeSignValid) || !(flags & MZCodeSignPlatformBinary)) return nil;
 
 	if ([identifier isEqualToString:@"com.apple.Preferences"]) return identifier;
 	if ([application isKindOfClass:NSString.class] && [application isEqualToString:MZTweakSettingsIdentifier]) return MZTweakSettingsIdentifier;
-	MZLog(@"refused pid %d, %@ (%@)", connection.processIdentifier, identifier, application);
 	return nil;
 }
 

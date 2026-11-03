@@ -2,7 +2,6 @@
 
 #import "../../Shared/MZMediaRemote.h"
 #import "../../Shared/MZTrackExtras.h"
-#import "../MZLog/MZLog.h"
 #import "MZNowPlaying.h"
 
 // The key constants' values are their own names, so plain strings work and
@@ -82,19 +81,6 @@ static MZTrack *MZTrackFromInfo(NSDictionary *info, NSString *bundleIdentifier, 
 	return track;
 }
 
-#ifdef DEBUG
-static void MZLogTrack(MZTrack *track) {
-	if (!track) {
-		MZLog(@"now playing: nothing");
-		return;
-	}
-
-	// An app's own asset URL can carry a streaming token: only its host.
-	NSString *asset = MZExtrasFromURL(track.assetURL) ? track.assetURL : [NSURLComponents componentsWithString:track.assetURL ?: @""].host;
-	MZLog(@"now playing: %@ playing=%d \"%@\" album=\"%@\" time=%.0f/%.0f type=%@ artwork=%@ asset=%@ content=%@ store=%@/%@/%@", track.bundleIdentifier, track.playing, track.title, track.album, track.elapsed, track.duration, track.mediaType, track.artworkIdentifier, asset, track.contentIdentifier, track.storeIdentifier, track.albumStoreIdentifier, track.artistStoreIdentifier);
-}
-#endif
-
 @implementation MZNowPlaying {
 	void (^_handler)(MZTrack *);
 	BOOL _updatePending;
@@ -112,16 +98,12 @@ static void MZLogTrack(MZTrack *track) {
 
 static void *MZSymbol(void *handle, const char *name) {
 	void *symbol = dlsym(handle, name);
-	if (!symbol) MZLog(@"missing MediaRemote symbol %s", name);
 	return symbol;
 }
 
 - (BOOL)start {
 	void *handle = dlopen(MZMediaRemotePath, RTLD_LAZY);
-	if (!handle) {
-		MZLog(@"could not open MediaRemote: %s", dlerror());
-		return NO;
-	}
+	if (!handle) return NO;
 
 	MRMediaRemoteRegisterForNowPlayingNotificationsFn registerForNotifications = MZSymbol(handle, "MRMediaRemoteRegisterForNowPlayingNotifications");
 	_getNowPlayingInfo = MZSymbol(handle, "MRMediaRemoteGetNowPlayingInfo");
@@ -205,9 +187,6 @@ static void *MZSymbol(void *handle, const char *name) {
 		// Apple Music's animated artwork shows up as its own content item, and
 		// the next song as a "Loading…" placeholder for a moment.
 		if ([track.contentIdentifier hasPrefix:@"animatedArtwork_"] || [track.contentIdentifier hasPrefix:@"\u267B"]) return;
-#ifdef DEBUG
-		MZLogTrack(track);
-#endif
 		strongSelf->_handler(track);
 	});
 }

@@ -1,7 +1,6 @@
 #import "../../Shared/MZApelin.h"
 #import "../../Shared/MZApps.h"
 #import "../../Shared/MZProviders.h"
-#import "../MZLog/MZLog.h"
 #import "MZAppCatalog.h"
 #import "MZAppInfo.h"
 
@@ -173,7 +172,6 @@ static void MZApplicationsChanged(CFNotificationCenterRef center, void *observer
 			self->_builtIn = builtIn;
 			self->_games = games;
 			self->_apps = apps;
-			MZLog(@"app catalog: %lu games, %lu apps with icons", (unsigned long)games.count, (unsigned long)apps.count);
 			if (self.changedHandler) self.changedHandler();
 		});
 	});
@@ -239,7 +237,6 @@ static void MZApplicationsChanged(CFNotificationCenterRef center, void *observer
 				CFPreferencesSetAppValue((__bridge CFStringRef)MZETagKey(file), (__bridge CFStringRef)newETag, MZDaemonDomain);
 				CFPreferencesAppSynchronize(MZDaemonDomain);
 			}
-			if (!current) MZLog(@"couldn't check %@: %ld %@", file, (long)http.statusCode, error.localizedDescription ?: @"");
 			completion(saved, current);
 		});
 	}] resume];

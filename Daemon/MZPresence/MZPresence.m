@@ -6,7 +6,6 @@
 #import "../MZApps/MZAppCatalog.h"
 #import "../MZApps/MZAppInfo.h"
 #import "../MZDiscord/MZDiscord.h"
-#import "../MZLog/MZLog.h"
 #import "MZPresence.h"
 #import "MZTrackActivity.h"
 
@@ -177,7 +176,6 @@ static BOOL MZGameEnabled(NSString *bundleIdentifier) {
 
 - (void)handleVisibleApps:(NSArray<NSString *> *)visibleApps {
 	_visibleApps = visibleApps;
-	MZLog(@"on screen: %@", visibleApps.count ? [visibleApps componentsJoinedByString:@", "] : @"no app");
 	[self updateGame];
 }
 
@@ -197,7 +195,6 @@ static BOOL MZGameEnabled(NSString *bundleIdentifier) {
 	if (game) {
 		_gameEndGeneration++;
 		if (![game isEqualToString:_game]) {
-			MZLog(@"playing %@", game);
 			_game = game;
 			_gameStart = NSDate.date;
 		}
@@ -264,7 +261,6 @@ static BOOL MZGameEnabled(NSString *bundleIdentifier) {
 }
 
 - (void)endGame {
-	MZLog(@"stopped playing %@", _game);
 	_game = nil;
 	_gameStart = nil;
 	_gameEndGeneration++;

@@ -10,7 +10,6 @@
 #import "MZApps/MZAppChecker.h"
 #import "MZDiscord/MZDiscord.h"
 #import "MZForegroundApps/MZForegroundApps.h"
-#import "MZLog/MZLog.h"
 #import "MZNowPlaying/MZNowPlaying.h"
 #import "MZPresence/MZPresence.h"
 #import "MZServiceListener/MZServiceListener.h"
@@ -45,15 +44,12 @@ static int MZSignOutForRemoval(void) {
 	}
 
 	BOOL signedOut = MZSignOutStoredAccount(MZApplicationId, MZSignOutTimeout);
-	MZLogFlush();
 	return signedOut ? 0 : 1;
 }
 
 int main(int argc, char *argv[]) {
 	@autoreleasepool {
 		if (argc == 2 && strcmp(argv[1], "--sign-out") == 0) return MZSignOutForRemoval();
-
-		MZLog(@"menzend starting");
 
 		MZDiscord *discord = [[MZDiscord alloc] initWithApplicationId:MZApplicationId];
 		discord.accountStatusChangedHandler = ^{
@@ -93,13 +89,12 @@ int main(int argc, char *argv[]) {
 
 		[NSNotificationCenter.defaultCenter addObserverForName:@MZSettingsChangedNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *notification) {
 			CFPreferencesAppSynchronize((__bridge CFStringRef)MZSettingsDomain);
-			MZLog(@"settings changed");
 			[presence settingsChanged];
 		}];
 		CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, MZForwardSettingsChanged, CFSTR(MZSettingsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 
-		if (![nowPlaying start]) MZLog(@"could not start the now playing observer");
-		if (![foregroundApps start]) MZLog(@"could not start watching which app is on screen");
+		[nowPlaying start];
+		[foregroundApps start];
 		[NSRunLoop.mainRunLoop run];
 	}
 

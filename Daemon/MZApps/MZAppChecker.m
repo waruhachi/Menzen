@@ -3,7 +3,6 @@
 #import <signal.h>
 
 #import "../../Shared/MZApps.h"
-#import "../MZLog/MZLog.h"
 #import "MZAppChecker.h"
 
 @interface FBSSystemService : NSObject
@@ -146,7 +145,6 @@ static void MZApplicationsChanged(CFNotificationCenterRef center, void *observer
 		[_queue addObject:bundleIdentifier];
 	}
 
-	if (_queue.count) MZLog(@"apps to check: %@", [_queue componentsJoinedByString:@", "]);
 	[self checkNext];
 }
 
@@ -166,13 +164,11 @@ static void MZApplicationsChanged(CFNotificationCenterRef center, void *observer
 	_currentPid = 0;
 	NSUInteger generation = ++_generation;
 	[self setTried:bundleIdentifier version:version];
-	MZLog(@"checking %@ %@ in the background", bundleIdentifier, version);
 	NSDictionary *options = @{MZOptionKey("FBSOpenApplicationOptionKeyActivateSuspended", @"__ActivateSuspended"): @YES};
 	[service openApplication:bundleIdentifier options:options withResult:^(NSError *error) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			if (generation != self->_generation) return;
 			if (error) {
-				MZLog(@"could not launch %@: %@", bundleIdentifier, error.localizedDescription);
 				[self finishCurrent];
 				return;
 			}
@@ -181,7 +177,6 @@ static void MZApplicationsChanged(CFNotificationCenterRef center, void *observer
 	}];
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MZBackgroundTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		if (generation != self->_generation) return;
-		MZLog(@"%@ didn't check in time", bundleIdentifier);
 		[self finishCurrent];
 	});
 }
@@ -203,7 +198,6 @@ static void MZApplicationsChanged(CFNotificationCenterRef center, void *observer
 }
 
 - (void)appChecked:(NSString *)bundleIdentifier {
-	MZLog(@"%@ saved its check", bundleIdentifier);
 	if ([bundleIdentifier isEqual:_current]) [self finishCurrent];
 	// Only the check made with the app open: one made in the background
 	// just before doesn't count.
@@ -211,9 +205,7 @@ static void MZApplicationsChanged(CFNotificationCenterRef center, void *observer
 		NSString *returnTo = _returnTo;
 		_opened = nil;
 		_returnTo = nil;
-		[MZSystemService() openApplication:returnTo options:@{} withResult:^(NSError *error) {
-			if (error) MZLog(@"could not go back to %@: %@", returnTo, error.localizedDescription);
-		}];
+		[MZSystemService() openApplication:returnTo options:@{} withResult:^(NSError *error){}];
 	}
 }
 
@@ -222,11 +214,8 @@ static void MZApplicationsChanged(CFNotificationCenterRef center, void *observer
 	[self observe:bundleIdentifier];
 	_opened = bundleIdentifier;
 	_returnTo = returnBundleIdentifier;
-	MZLog(@"opening %@ to check, then back to %@", bundleIdentifier, returnBundleIdentifier);
 	NSDictionary *options = @{MZOptionKey("FBSOpenApplicationOptionKeyUnlockDevice", @"__UnlockDevice"): @YES};
-	[MZSystemService() openApplication:bundleIdentifier options:options withResult:^(NSError *error) {
-		if (error) MZLog(@"could not open %@: %@", bundleIdentifier, error.localizedDescription);
-	}];
+	[MZSystemService() openApplication:bundleIdentifier options:options withResult:^(NSError *error){}];
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MZOpenTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		if (![self->_opened isEqual:bundleIdentifier]) return;
 		self->_opened = nil;

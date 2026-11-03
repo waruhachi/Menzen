@@ -1,4 +1,3 @@
-#import "../MZLog/MZLog.h"
 #import "MZDeviceSignIn.h"
 
 typedef void (^MZDeviceSignInCompletion)(NSString *accessToken, NSString *refreshToken, NSTimeInterval expiresIn, NSString *error);
@@ -72,7 +71,6 @@ static NSTimeInterval MZJSONSeconds(NSDictionary *json, NSString *key, NSTimeInt
 		NSString *page = MZJSONString(json, @"verification_uri_complete") ?: MZJSONString(json, @"verification_uri");
 		NSURL *verificationURL = page ? [NSURL URLWithString:page] : nil;
 		if (!deviceCode || !userCode || ![verificationURL.scheme isEqualToString:@"https"]) {
-			MZLog(@"device authorization failed: %ld", (long)statusCode);
 			codeHandler(nil, nil, @"Discord couldn't start the sign-in. Try again.");
 			return;
 		}
@@ -142,16 +140,13 @@ static NSTimeInterval MZJSONSeconds(NSDictionary *json, NSString *key, NSTimeInt
 		// No answer or a server hiccup; the code is still good until it expires.
 		[self schedulePoll];
 	} else if (++_unexpectedErrors < MZMaxUnexpectedErrors) {
-		MZLog(@"device token request failed: %ld %@ (%@), retrying", (long)statusCode, error, MZJSONString(json, @"error_description"));
 		[self schedulePoll];
 	} else {
-		MZLog(@"device token request failed: %ld %@ (%@)", (long)statusCode, error, MZJSONString(json, @"error_description"));
 		[self finishWithError:@"Discord couldn't complete the sign-in."];
 	}
 }
 
 - (void)finishWithError:(NSString *)error {
-	MZLog(@"sign in on another device ended: %@", error ?: @"code expired");
 	MZDeviceSignInCompletion completion = _completion;
 	[self cancel];
 	if (completion) completion(nil, nil, 0, error);

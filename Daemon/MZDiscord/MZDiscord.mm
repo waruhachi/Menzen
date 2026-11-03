@@ -4,7 +4,6 @@
 #import <Security/Security.h>
 
 #import "../../Shared/MZService.h"
-#import "../MZLog/MZLog.h"
 #import "MZDeviceSignIn.h"
 #import "MZKeychain.h"
 #include "discordpp.h"
@@ -204,15 +203,8 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 }
 
 - (void)start {
-	MZLog(@"Social SDK %d.%d.%d (%s)", discordpp::Client::GetVersionMajor(), discordpp::Client::GetVersionMinor(), discordpp::Client::GetVersionPatch(), discordpp::Client::GetVersionHash().c_str());
-
 	_client = std::make_shared<discordpp::Client>();
 	_client->SetApplicationId(_applicationId);
-#ifdef DEBUG
-	_client->AddLogCallback([](std::string message, discordpp::LoggingSeverity severity) {
-		MZLog(@"sdk(%d): %s", (int)severity, message.c_str());
-	}, discordpp::LoggingSeverity::Warning);
-#endif
 
 	__weak typeof(self) weakSelf = self;
 	_client->SetStatusChangedCallback([weakSelf](discordpp::Client::Status status, discordpp::Client::Error error, int32_t errorDetail) {
@@ -296,7 +288,6 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 		[NSURLQueryItem queryItemWithName:@"code_challenge" value:@(verifier.Challenge().Challenge().c_str())],
 		[NSURLQueryItem queryItemWithName:@"code_challenge_method" value:@"S256"],
 	];
-	MZLog(@"sign in started");
 	[self expectCallbacks];
 	return components.URL;
 }
@@ -322,14 +313,12 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 	}
 
 	if (![MZQueryValue(components, @"state") isEqualToString:expectedState]) {
-		MZLog(@"sign in redirect had the wrong state");
 		completion(@"The sign-in didn't match the one Menzen started. Try again.");
 		return;
 	}
 
 	NSString *error = MZQueryValue(components, @"error");
 	if (error) {
-		MZLog(@"sign in declined: %@", error);
 		completion([error isEqualToString:@"access_denied"] ? nil : @"Discord couldn't complete the sign-in. Try again.");
 		return;
 	}
@@ -348,7 +337,6 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 		if (!strongSelf || generation != strongSelf->_accountGeneration) return;
 
 		if (!result.Successful()) {
-			MZLog(@"token exchange failed: %s", result.Error().c_str());
 			completion(@"Discord didn't accept the sign-in. Try again.");
 			return;
 		}
@@ -358,7 +346,6 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 
 - (void)beginDeviceSignInWithCodeHandler:(void (^)(NSURL *, NSString *, NSString *))codeHandler completion:(void (^)(BOOL, NSString *))completion {
 	if (!_deviceSignIn) _deviceSignIn = [[MZDeviceSignIn alloc] initWithApplicationId:_applicationId scopes:MZScopes];
-	MZLog(@"sign in on another device started");
 	__weak typeof(self) weakSelf = self;
 	[_deviceSignIn startWithCodeHandler:codeHandler completion:^(NSString *accessToken, NSString *refreshToken, NSTimeInterval expiresIn, NSString *error) {
 		typeof(self) strongSelf = weakSelf;
@@ -379,7 +366,6 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 // A message for the user when the tokens couldn't be kept.
 - (NSString *)signInWithAccessToken:(NSString *)accessToken refreshToken:(NSString *)refreshToken expiresIn:(NSTimeInterval)expiresIn {
 	if (![self saveAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn]) return @"Couldn't save the sign-in to the Keychain.";
-	MZLog(@"signed in");
 	_signedIn = YES;
 	_accountError = nil;
 	[self connectWithAccessToken:accessToken];
@@ -390,8 +376,7 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 
 - (void)signOut {
 	NSDictionary *tokens = MZKeychainLoadTokens(NULL);
-	OSStatus status = MZKeychainDeleteTokens();
-	if (status != errSecSuccess) MZLog(@"could not delete tokens: %d", (int)status);
+	MZKeychainDeleteTokens();
 
 	_accountGeneration++;
 	_refreshGeneration++;
@@ -410,12 +395,9 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 	// the access token too.
 	NSString *token = tokens[MZTokensRefreshTokenKey] ?: tokens[MZTokensAccessTokenKey];
 	if ([token isKindOfClass:NSString.class] && token.length) {
-		_client->RevokeToken(_applicationId, MZStdString(token), [](discordpp::ClientResult result) {
-			if (!result.Successful()) MZLog(@"token revoke failed: %s", result.Error().c_str());
-		});
+		_client->RevokeToken(_applicationId, MZStdString(token), [](discordpp::ClientResult) {});
 	}
 
-	MZLog(@"signed out");
 	[self accountStatusChanged];
 }
 
@@ -425,23 +407,18 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 		MZTokensRefreshTokenKey: refreshToken,
 		MZTokensExpiresAtKey: [NSDate dateWithTimeIntervalSinceNow:expiresIn],
 	};
-	OSStatus status = MZKeychainSaveTokens(tokens);
-	if (status != errSecSuccess) MZLog(@"could not save tokens: %d", (int)status);
-	return status == errSecSuccess;
+	return MZKeychainSaveTokens(tokens) == errSecSuccess;
 }
 
 - (void)loadTokens {
 	OSStatus status;
 	NSDictionary *tokens = MZKeychainLoadTokens(&status);
 	if (status == errSecInteractionNotAllowed) {
-		MZLog(@"Keychain locked, waiting for the first unlock");
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MZKeychainLockedRetry * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 			[self loadTokens];
 		});
 		return;
 	}
-
-	if (status != errSecSuccess && status != errSecItemNotFound) MZLog(@"could not read tokens: %d", (int)status);
 
 	NSString *accessToken = tokens[MZTokensAccessTokenKey];
 	NSString *refreshToken = tokens[MZTokensRefreshTokenKey];
@@ -449,10 +426,7 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 
 	_signedIn = accessToken.length || refreshToken.length;
 	[self accountStatusChanged];
-	if (!_signedIn) {
-		MZLog(@"not signed in");
-		return;
-	}
+	if (!_signedIn) return;
 
 	if (refreshToken.length && (!accessToken.length || ![expiresAt isKindOfClass:NSDate.class] || expiresAt.timeIntervalSinceNow < MZRefreshMargin)) {
 		[self refreshWithToken:refreshToken fallbackAccessToken:accessToken expiresAt:expiresAt];
@@ -464,7 +438,6 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 }
 
 - (void)refreshWithToken:(NSString *)refreshToken fallbackAccessToken:(NSString *)fallbackAccessToken expiresAt:(NSDate *)expiresAt {
-	MZLog(@"refreshing access token");
 	NSUInteger generation = _accountGeneration;
 	__weak typeof(self) weakSelf = self;
 	[self expectCallbacks];
@@ -473,11 +446,9 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 		if (!strongSelf || generation != strongSelf->_accountGeneration) return;
 
 		if (!result.Successful()) {
-			MZLog(@"token refresh failed: %s", result.Error().c_str());
 			if (fallbackAccessToken.length && [expiresAt isKindOfClass:NSDate.class] && expiresAt.timeIntervalSinceNow > 0) {
 				[strongSelf connectWithAccessToken:fallbackAccessToken];
 			} else {
-				MZLog(@"no usable access token left, sign in again");
 				strongSelf->_accountError = @"Discord ended the sign-in. Sign in again.";
 				[strongSelf accountStatusChanged];
 			}
@@ -485,7 +456,6 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 		}
 
 		[strongSelf saveAccessToken:@(accessToken.c_str()) refreshToken:@(newRefreshToken.c_str()) expiresIn:expiresIn];
-		MZLog(@"token refreshed, expires in %d s", expiresIn);
 		[strongSelf connectWithAccessToken:@(accessToken.c_str())];
 		[strongSelf scheduleRefreshAt:[NSDate dateWithTimeIntervalSinceNow:expiresIn]];
 	});
@@ -510,22 +480,13 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 	std::shared_ptr<discordpp::Client> client = _client;
 	[self expectCallbacks];
 	_client->UpdateToken(discordpp::AuthorizationTokenType::Bearer, MZStdString(accessToken), [client](discordpp::ClientResult result) {
-		if (!result.Successful()) {
-			MZLog(@"could not set token: %s", result.Error().c_str());
-			return;
-		}
+		if (!result.Successful()) return;
 		// Already connected: UpdateToken reconnects by itself if it needs to.
 		if (client->GetStatus() == discordpp::Client::Status::Disconnected) client->Connect();
 	});
 }
 
 - (void)statusChanged:(discordpp::Client::Status)status error:(discordpp::Client::Error)error errorDetail:(int32_t)errorDetail {
-	if (error != discordpp::Client::Error::None) {
-		MZLog(@"status %s, error %s (%d)", discordpp::Client::StatusToString(status).c_str(), discordpp::Client::ErrorToString(error).c_str(), errorDetail);
-	} else {
-		MZLog(@"status %s", discordpp::Client::StatusToString(status).c_str());
-	}
-
 	BOOL wasReady = _ready;
 	// Connecting: more is on its way.
 	if (status != discordpp::Client::Status::Ready && status != discordpp::Client::Status::Disconnected) [self expectCallbacks];
@@ -547,12 +508,10 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 	NSString *refreshToken = MZKeychainLoadTokens(NULL)[MZTokensRefreshTokenKey];
 	if (!_rejectedTokenRefreshed && refreshToken.length) {
 		_rejectedTokenRefreshed = YES;
-		MZLog(@"access token rejected");
 		[self refreshWithToken:refreshToken fallbackAccessToken:nil expiresAt:nil];
 		return;
 	}
 
-	MZLog(@"access token rejected, sign in again");
 	_accountError = @"Discord ended the sign-in. Sign in again.";
 	[self accountStatusChanged];
 }
@@ -608,9 +567,6 @@ static NSString *MZStatusName(discordpp::StatusType status) {
 	profile[MZProfileGlobalNameKey] = globalName ? @(globalName->c_str()) : nil;
 	profile[MZProfileAvatarURLKey] = @(user->AvatarUrl(discordpp::UserHandle::AvatarType::Png, discordpp::UserHandle::AvatarType::Png).c_str());
 	profile[MZProfileStatusKey] = MZStatusName(user->Status());
-#ifdef DEBUG
-	MZLog(@"own status: %@", profile[MZProfileStatusKey]);
-#endif
 	if (![profile isEqualToDictionary:_profile]) {
 		_profile = profile;
 		[self accountStatusChanged];
@@ -701,7 +657,6 @@ static NSString *MZAssetPath(id value) {
 - (void)applyProfileDetails:(NSDictionary *)user statusCode:(NSInteger)statusCode {
 	NSMutableDictionary *profile = [_profile mutableCopy];
 	if (!user) {
-		MZLog(@"profile request failed: %ld", (long)statusCode);
 		// Signed in before the identify scope was asked for.
 		if (statusCode == 401 || statusCode == 403) profile[MZProfileLimitedKey] = @YES;
 		_profile = profile;
@@ -754,7 +709,6 @@ static NSString *MZAssetPath(id value) {
 }
 
 - (void)republish {
-	MZLog(@"republishing on request");
 	_publishedKnown = NO;
 	[self schedulePublishAfter:MZPublishDelay];
 }
@@ -778,17 +732,7 @@ static NSString *MZAssetPath(id value) {
 	});
 }
 
-#ifdef DEBUG
-// What Discord made of the activity, name included.
-- (void)logPublishedName {
-	std::optional<discordpp::UserHandle> user = _client->GetCurrentUserV2();
-	std::optional<discordpp::Activity> activity = user ? user->GameActivity() : std::nullopt;
-	MZLog(@"Discord shows: %s", activity ? activity->Name().c_str() : "(no activity)");
-}
-#endif
-
 - (void)publishFailed:(discordpp::ClientResult &)result {
-	MZLog(@"publish failed: %s", result.Error().c_str());
 	// An image key Discord doesn't know fails the whole update: send it again
 	// without that image.
 	NSString *error = @(result.Error().c_str());
@@ -821,7 +765,6 @@ static NSString *MZAssetPath(id value) {
 	while (_publishTimes.count && now - _publishTimes.firstObject.doubleValue >= MZPublishWindow) [_publishTimes removeObjectAtIndex:0];
 	if (_publishTimes.count >= MZPublishLimit) {
 		NSTimeInterval wait = _publishTimes.firstObject.doubleValue + MZPublishWindow - now;
-		MZLog(@"holding the update for %.1f s to stay under Discord's rate limit", wait);
 		[self schedulePublishAfter:wait];
 		return;
 	}
@@ -835,7 +778,6 @@ static NSString *MZAssetPath(id value) {
 	[self expectCallbacks];
 
 	if (!activity) {
-		MZLog(@"clearing activity");
 		_client->ClearRichPresence();
 		return;
 	}
@@ -884,17 +826,9 @@ static NSString *MZAssetPath(id value) {
 		richPresence.SetTimestamps(timestamps);
 	}
 
-#ifdef DEBUG
-	MZLog(@"publishing: %@ — %@ — %@ (%@, small %@) links %@ %@ %@ %@", activity.details, activity.state, activity.largeText, activity.largeImageURL, activity.smallImageURL, activity.detailsURL, activity.stateURL, activity.largeURL, activity.smallURL);
-#else
-	MZLog(@"publishing activity");
-#endif
 	__weak typeof(self) weakSelf = self;
 	_client->UpdateRichPresence(std::move(richPresence), [weakSelf](discordpp::ClientResult result) {
 		if (!result.Successful()) [weakSelf publishFailed:result];
-#ifdef DEBUG
-		else [weakSelf logPublishedName];
-#endif
 	});
 }
 
@@ -905,12 +839,8 @@ BOOL MZSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout) {
 	NSDictionary *tokens = MZKeychainLoadTokens(&status);
 	if (!tokens) return status == errSecItemNotFound;
 	status = MZKeychainDeleteTokens();
-	if (status != errSecSuccess && status != errSecItemNotFound) {
-		MZLog(@"could not delete tokens: %d", (int)status);
-		return NO;
-	}
+	if (status != errSecSuccess && status != errSecItemNotFound) return NO;
 
-	MZLog(@"signed out");
 	NSString *token = tokens[MZTokensRefreshTokenKey] ?: tokens[MZTokensAccessTokenKey];
 	if (![token isKindOfClass:NSString.class] || !token.length) return YES;
 
@@ -920,7 +850,6 @@ BOOL MZSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout) {
 	auto client = std::make_shared<discordpp::Client>();
 	client->SetApplicationId(applicationId);
 	client->RevokeToken(applicationId, MZStdString(token), [&done](discordpp::ClientResult result) {
-		if (!result.Successful()) MZLog(@"token revoke failed: %s", result.Error().c_str());
 		done = true;
 	});
 	NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];

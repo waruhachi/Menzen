@@ -36,9 +36,17 @@ VIDEO_GENRES = {6016, 6008}  # Entertainment, Photo & Video
 CHART_GENRES = sorted(GAME_GENRES | AUDIO_GENRES | VIDEO_GENRES)
 CHARTS = ["topfreeapplications", "topgrossingapplications", "toppaidapplications"]
 DEFAULT_COUNTRIES = ["us", "gb", "ca", "au", "de", "fr", "jp", "kr", "br", "mx", "in"]
-# Apple's own music and video apps come with iOS and never chart: Apple Music
-# and Apple TV, by App Store id, where they're looked up.
-BUILT_IN_APPS = {"1108187390": "us", "1174078549": "us"}
+# Apps Menzen supports that the charts miss, by App Store id: where they're
+# looked up and their kind. Apple's own apps come with iOS and never chart, and
+# podcast apps are listed under News (Apple Podcasts under Entertainment).
+SUPPORTED_APPS = {
+	"1108187390": ("us", "audio"),  # Apple Music
+	"1174078549": ("us", "video"),  # Apple TV
+	"525463029": ("us", "audio"),  # Apple Podcasts
+	"1080840241": ("us", "audio"),  # Castro
+	"888422857": ("us", "audio"),  # Overcast
+	"414834813": ("us", "audio"),  # Pocket Casts
+}
 
 # Apple asks for about 20 lookups a minute, and the chart feeds throttle too.
 LOOKUP_DELAY = 3.2
@@ -98,8 +106,12 @@ def lookup(country, **query):
 
 
 def kind_of(record):
-	"""game, audio or video by the app's primary category, else None. Other
-	categories don't count: Discord lists Games as one, and isn't a game."""
+	"""game, audio or video: its kind in SUPPORTED_APPS, else by the app's
+	primary category, else None. Other categories don't count: Discord lists
+	Games as one, and isn't a game."""
+	supported = SUPPORTED_APPS.get(str(record.get("trackId")))
+	if supported:
+		return supported[1]
 	primary = int(record.get("primaryGenreId") or 0)
 	if primary in GAME_GENRES:
 		return "game"
@@ -217,7 +229,7 @@ def run_charts(args):
 					log(f"  skipped {country} {chart} {genre}: {error}")
 				time.sleep(CHART_DELAY)
 		log(f"{country}: {len(wanted)} apps so far")
-	for app_id, country in BUILT_IN_APPS.items():
+	for app_id, (country, _) in SUPPORTED_APPS.items():
 		wanted.setdefault(app_id, country)
 	log(f"{len(wanted)} apps to look up ({len(existing)} already in the catalog, {failed} feeds skipped)")
 

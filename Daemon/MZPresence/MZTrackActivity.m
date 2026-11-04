@@ -9,6 +9,7 @@
 static NSUInteger const MZMaxURLLength = 256;
 
 static NSString *const MZAppleMusic = @"com.apple.Music";
+static NSString *const MZApplePodcasts = @"com.apple.podcasts";
 
 // Extras are whatever the app put there, so only URLs on the app's own hosts
 // are passed on.
@@ -30,11 +31,11 @@ static NSDictionary<NSString *, NSString *> *MZTrackExtras(MZTrack *track) {
 	return track.assetURL ? @{MZExtrasCoverKey: track.assetURL} : @{};
 }
 
-// Apple Music's artwork identifier points at its image CDN, so the URL needs
-// no lookup. It comes in two forms:
+// Apple Music's and Apple Podcasts' artwork identifiers point at Apple's image
+// CDN, so the URL needs no lookup. They come in two forms:
 //   library items: a path, "Music211/v4/c5/9f/69/<uuid>/<name>.jpg"
 //   streamed items: a template, "https://is1-ssl.mzstatic.com/image/thumb/<path>/{w}x{h}bb.{f}"
-static NSString *MZAppleMusicArtworkURL(NSString *identifier) {
+static NSString *MZAppleArtworkURL(NSString *identifier) {
 	if (!identifier.length || [identifier containsString:@".."]) return nil;
 
 	if ([identifier hasPrefix:@"https://"]) {
@@ -59,13 +60,26 @@ static NSString *MZAppleMusicArtworkURL(NSString *identifier) {
 }
 
 static NSString *MZArtworkURL(MZTrack *track, NSDictionary *extras) {
-	if ([track.bundleIdentifier isEqualToString:MZAppleMusic]) return MZAppleMusicArtworkURL(track.artworkIdentifier);
+	if ([track.bundleIdentifier isEqualToString:MZAppleMusic] || [track.bundleIdentifier isEqualToString:MZApplePodcasts]) return MZAppleArtworkURL(track.artworkIdentifier);
 	return MZURLOnHosts(extras[MZExtrasCoverKey], MZProviderForBundleIdentifier(track.bundleIdentifier)[MZProviderArtworkHostsKey]);
 }
 
 // Apple Music's catalog links redirect to the visitor's own storefront.
 static NSString *MZAppleMusicURL(NSString *type, NSString *identifier) {
 	return identifier ? [NSString stringWithFormat:@"https://music.apple.com/%@/%@", type, identifier] : nil;
+}
+
+// Apple Podcasts reports the episode's store ID and its show's as the album's.
+static NSString *MZApplePodcastsURL(NSString *show, NSString *episode) {
+	if (!show) return nil;
+	NSString *url = [NSString stringWithFormat:@"https://podcasts.apple.com/podcast/id%@", show];
+	return episode ? [url stringByAppendingFormat:@"?i=%@", episode] : url;
+}
+
+// Most podcast apps report plain audio, so a podcast is known by the app, the
+// media type, or for Spotify the item's ID.
+static BOOL MZTrackIsPodcast(MZTrack *track, NSDictionary *provider) {
+	return [provider[MZProviderPodcastKey] boolValue] || [track.mediaType containsString:@"Podcast"] || [track.contentIdentifier hasPrefix:@"spotify:episode:"];
 }
 
 static BOOL MZSameText(NSString *a, NSString *b) {
@@ -121,6 +135,10 @@ static NSDictionary<NSString *, NSString *> *MZLinks(MZTrack *track, NSDictionar
 		artistURL = artistURL ?: MZAppleMusicURL(@"artist", track.artistStoreIdentifier);
 		albumURL = albumURL ?: MZAppleMusicURL(@"album", track.albumStoreIdentifier);
 	}
+	if ([track.bundleIdentifier isEqualToString:MZApplePodcasts]) {
+		titleURL = titleURL ?: MZApplePodcastsURL(track.albumStoreIdentifier, track.storeIdentifier);
+		artistURL = artistURL ?: MZApplePodcastsURL(track.albumStoreIdentifier, nil);
+	}
 
 	titleURL = MZURLOnHosts(titleURL, hosts);
 	artistURL = MZURLOnHosts(artistURL, hosts);
@@ -160,7 +178,9 @@ MZActivity *MZActivityForTrack(MZTrack *track, NSString *logo) {
 	activity.kind = MZActivityKindForTrack(track, provider);
 
 	NSString *title = track.title;
-	NSString *album = track.album;
+	// Podcast apps each put something else in the album (the show again, a
+	// date, a season and episode), so there's none. The artist is the show.
+	NSString *album = MZTrackIsPodcast(track, provider) ? nil : track.album;
 	if (activity.kind == MZActivityKindWatching && (!album.length || MZSameText(album, track.artist))) MZUseEpisodeAsAlbum(track, extras, &title, &album);
 
 	NSDictionary<NSString *, NSString *> *texts = @{

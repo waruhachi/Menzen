@@ -17,6 +17,7 @@ It runs on iOS 14 through 26, on rootful, rootless and RootHide jailbreaks.
 
 - Shows "Listening to" for music, "Watching" for video and "Playing" for games.
 - Built-in support for Apple Music, Apple TV, Spotify, YouTube, YouTube Music, YouTube TV, TIDAL, Deezer, Amazon Music, Pandora, SoundCloud, Qobuz, Audiomack, Netflix, Disney+, Max, Hulu, Prime Video, Paramount+, Pluto TV, Tubi, Crunchyroll, Plex, Twitch and Kick, with album art, thumbnails, episode names and links back to the song or video.
+- Podcasts from Apple Podcasts, Castro, Overcast, Pocket Casts and Spotify, with the episode and the show. Apple Podcasts and Spotify also add the artwork and links to the episode.
 - Other apps that show up in the Now Playing controls can show up too, with less detail. Browsers, chat apps and social networking apps are always left out.
 - Shows the game on screen with its App Store icon, without touching the game itself.
 - Shows what the Apelin agent is working on.

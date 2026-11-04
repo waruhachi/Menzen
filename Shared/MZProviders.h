@@ -14,6 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 // BOOL: listening or watching by what's playing, when the app says (see
 // MZTrack.mediaType), else by MZProviderWatchingKey.
 #define MZProviderKindByMediaTypeKey @"kindByMediaType"
+// BOOL: everything it plays is a podcast, whatever it says (most podcast apps
+// report plain audio).
+#define MZProviderPodcastKey @"podcast"
 // Image hosts the app's cover URLs may come from.
 #define MZProviderArtworkHostsKey @"artworkHosts"
 // Hosts the app's links (track, artist, album) may point at.
@@ -38,10 +41,24 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MZProviders(void) {
 				MZProviderLinkHostsKey: @[@"music.apple.com"],
 			},
 			@{
+				MZProviderBundleIdentifierKey: @"com.apple.podcasts",
+				MZProviderNameKey: @"Apple Podcasts",
+				MZProviderPodcastKey: @YES,
+				MZProviderArtworkHostsKey: @[@"mzstatic.com"],
+				MZProviderLinkHostsKey: @[@"podcasts.apple.com"],
+				// Video podcasts show as watching.
+				MZProviderKindByMediaTypeKey: @YES,
+			},
+			@{
 				MZProviderBundleIdentifierKey: @"com.audiomack.iphone",
 				MZProviderNameKey: @"Audiomack",
 				MZProviderArtworkHostsKey: @[@"audiomack.com"],
 				MZProviderLinkHostsKey: @[@"audiomack.com"],
+			},
+			@{
+				MZProviderBundleIdentifierKey: @"co.supertop.Castro-2",
+				MZProviderNameKey: @"Castro",
+				MZProviderPodcastKey: @YES,
 			},
 			@{
 				MZProviderBundleIdentifierKey: @"com.deezer.Deezer",
@@ -50,10 +67,20 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MZProviders(void) {
 				MZProviderLinkHostsKey: @[@"www.deezer.com"],
 			},
 			@{
+				MZProviderBundleIdentifierKey: @"fm.overcast.overcast",
+				MZProviderNameKey: @"Overcast",
+				MZProviderPodcastKey: @YES,
+			},
+			@{
 				MZProviderBundleIdentifierKey: @"com.pandora",
 				MZProviderNameKey: @"Pandora",
 				MZProviderArtworkHostsKey: @[@"content-images.p-cdn.com"],
 				MZProviderLinkHostsKey: @[@"www.pandora.com"],
+			},
+			@{
+				MZProviderBundleIdentifierKey: @"au.com.shiftyjelly.podcasts",
+				MZProviderNameKey: @"Pocket Casts",
+				MZProviderPodcastKey: @YES,
 			},
 			@{
 				MZProviderBundleIdentifierKey: @"com.qobuz.music",

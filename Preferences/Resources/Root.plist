@@ -136,7 +136,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Shows only app's or game's name and icon.</string>
+			<string>Shows only the app's or game's name and icon.</string>
 			<key>footerTextKey</key>
 			<string>root.shows_only_app_s_or_game</string>
 			<key>id</key>

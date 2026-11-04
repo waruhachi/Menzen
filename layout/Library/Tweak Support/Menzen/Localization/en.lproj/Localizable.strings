@@ -134,7 +134,7 @@
 "root.pull_down_to_refresh" = "Pull down to refresh.";
 "root.reset" = "Reset";
 "root.reset_settings" = "Reset Settings";
-"root.shows_only_app_s_or_game" = "Shows only app's or game's name and icon.";
+"root.shows_only_app_s_or_game" = "Shows only the app's or game's name and icon.";
 "root.sign_in_on_another_device" = "Sign In on Another Device";
 "root.sign_in_with_discord" = "Sign In with Discord";
 "root.sign_out" = "Sign Out";

@@ -89,6 +89,12 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MZProviders(void) {
 				MZProviderLinkHostsKey: @[@"open.qobuz.com"],
 			},
 			@{
+				MZProviderBundleIdentifierKey: @"com.soundcloud.TouchApp",
+				MZProviderNameKey: @"SoundCloud",
+				MZProviderArtworkHostsKey: @[@"sndcdn.com"],
+				MZProviderLinkHostsKey: @[@"soundcloud.com"],
+			},
+			@{
 				MZProviderBundleIdentifierKey: @"com.spotify.client",
 				MZProviderNameKey: @"Spotify",
 				MZProviderArtworkHostsKey: @[@"i.scdn.co", @"spotifycdn.com"],

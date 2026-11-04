@@ -1,3 +1,4 @@
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "MZDeviceSignIn.h"
 
 typedef void (^MZDeviceSignInCompletion)(NSString *accessToken, NSString *refreshToken, NSTimeInterval expiresIn, NSString *error);
@@ -71,7 +72,7 @@ static NSTimeInterval MZJSONSeconds(NSDictionary *json, NSString *key, NSTimeInt
 		NSString *page = MZJSONString(json, @"verification_uri_complete") ?: MZJSONString(json, @"verification_uri");
 		NSURL *verificationURL = page ? [NSURL URLWithString:page] : nil;
 		if (!deviceCode || !userCode || ![verificationURL.scheme isEqualToString:@"https"]) {
-			codeHandler(nil, nil, @"Discord couldn't start the sign-in. Try again.");
+			codeHandler(nil, nil, MZLocalizedString(@"signin.error.discord_couldn_t_start_the_sign", @"Discord couldn't start the sign-in. Try again."));
 			return;
 		}
 		strongSelf->_deviceCode = deviceCode;
@@ -135,14 +136,14 @@ static NSTimeInterval MZJSONSeconds(NSDictionary *json, NSString *key, NSTimeInt
 	} else if ([error isEqualToString:@"expired_token"]) {
 		[self finishWithError:nil];
 	} else if ([error isEqualToString:@"access_denied"]) {
-		[self finishWithError:@"The sign-in was declined."];
+		[self finishWithError:MZLocalizedString(@"signin.error.the_sign_in_was_declined", @"The sign-in was declined.")];
 	} else if (!statusCode || statusCode >= 500) {
 		// No answer or a server hiccup; the code is still good until it expires.
 		[self schedulePoll];
 	} else if (++_unexpectedErrors < MZMaxUnexpectedErrors) {
 		[self schedulePoll];
 	} else {
-		[self finishWithError:@"Discord couldn't complete the sign-in."];
+		[self finishWithError:MZLocalizedString(@"signin.error.discord_couldn_t_complete_the_sign_2", @"Discord couldn't complete the sign-in.")];
 	}
 }
 

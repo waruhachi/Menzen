@@ -3,6 +3,7 @@
 
 #import "../../Shared/MZApelin.h"
 #import "../../Shared/MZApps.h"
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../../Shared/MZProviders.h"
 #import "../../Shared/MZSettings.h"
 #import "../../Shared/MZSupport.h"
@@ -54,14 +55,14 @@ static void MZSetIcon(PSSpecifier *specifier, NSDictionary *provider) {
 }
 
 static NSString *MZGameSummary(NSDictionary *game) {
-	if (!MZSettingBool(MZGameKey(game), YES)) return @"Off";
-	return [game[MZGameListedKey] boolValue] ? @"On" : @"No Icon";
+	if (!MZSettingBool(MZGameKey(game), YES)) return MZLocalizedString(@"common.off", @"Off");
+	return [game[MZGameListedKey] boolValue] ? @"On" : MZLocalizedString(@"common.no_icon", @"No Icon");
 }
 
 static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hooked) {
-	if (!MZInstalled(provider)) return @"Not Installed";
-	if (!MZSettingBool(MZSourceKey(provider), YES)) return @"Off";
-	return MZSupportStateFor(provider, MZAppSupportStatus(provider[MZProviderBundleIdentifierKey]), hooked) == MZSupportStateMayNotWork ? @"May Not Work" : @"On";
+	if (!MZInstalled(provider)) return MZLocalizedString(@"sources.not_installed", @"Not Installed");
+	if (!MZSettingBool(MZSourceKey(provider), YES)) return MZLocalizedString(@"common.off", @"Off");
+	return MZSupportStateFor(provider, MZAppSupportStatus(provider[MZProviderBundleIdentifierKey]), hooked) == MZSupportStateMayNotWork ? MZLocalizedString(@"common.may_not_work", @"May Not Work") : @"On";
 }
 
 @implementation MZSourcesListController {
@@ -93,7 +94,7 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 				[rows addObject:specifier];
 			}
 			if (!rows.count) continue;
-			[specifiers addObject:[PSSpecifier groupSpecifierWithName:watching.boolValue ? @"Watching" : @"Listening"]];
+			[specifiers addObject:[PSSpecifier groupSpecifierWithName:watching.boolValue ? MZLocalizedString(@"common.watching", @"Watching") : MZLocalizedString(@"common.listening", @"Listening")]];
 			[specifiers addObjectsFromArray:rows];
 		}
 
@@ -101,17 +102,17 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 
 		if (missing.count) {
 			PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
-			if (missing.count == MZProviders().count) [group setProperty:@"None of the apps Menzen supports are installed." forKey:@"footerText"];
+			if (missing.count == MZProviders().count) [group setProperty:MZLocalizedString(@"sources.none_of_the_apps_menzen_supports", @"None of the apps Menzen supports are installed.") forKey:@"footerText"];
 			[specifiers addObject:group];
-			PSSpecifier *more = [PSSpecifier preferenceSpecifierNamed:@"More Supported Apps" target:self set:nil get:@selector(missingCount:) detail:MZMoreAppsListController.class cell:PSLinkListCell edit:nil];
+			PSSpecifier *more = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"common.more_supported_apps", @"More Supported Apps") target:self set:nil get:@selector(missingCount:) detail:MZMoreAppsListController.class cell:PSLinkListCell edit:nil];
 			[more setProperty:missing forKey:@"providers"];
 			[specifiers addObject:more];
 		}
 
-		PSSpecifier *other = [PSSpecifier groupSpecifierWithName:@"Experimental"];
-		[other setProperty:@"Shows unsupported apps, with less information. Browsers, chat and social networking apps are skipped." forKey:@"footerText"];
+		PSSpecifier *other = [PSSpecifier groupSpecifierWithName:MZLocalizedString(@"sources.experimental", @"Experimental")];
+		[other setProperty:MZLocalizedString(@"sources.shows_unsupported_apps_with_less_information", @"Shows unsupported apps, with less information. Browsers, chat and social networking apps are skipped.") forKey:@"footerText"];
 		[specifiers addObject:other];
-		PSSpecifier *otherApps = [PSSpecifier preferenceSpecifierNamed:@"Other Apps" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
+		PSSpecifier *otherApps = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"sources.other_apps", @"Other Apps") target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 		MZSetSetting(otherApps, MZSettingOtherApps, @NO);
 		[specifiers addObject:otherApps];
 
@@ -124,7 +125,7 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 - (NSArray<PSSpecifier *> *)gameSpecifiers {
 	if (!_games.count) return @[];
 	NSMutableArray *specifiers = [NSMutableArray array];
-	PSSpecifier *group = [PSSpecifier groupSpecifierWithName:@"Playing"];
+	PSSpecifier *group = [PSSpecifier groupSpecifierWithName:MZLocalizedString(@"common.playing", @"Playing")];
 	[specifiers addObject:group];
 	for (NSDictionary *game in _games) {
 		PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:game[MZGameNameKey] target:self set:nil get:@selector(gameSummary:) detail:MZGameListController.class cell:PSLinkListCell edit:nil];
@@ -151,7 +152,7 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
-	self.title = @"Apps";
+	self.title = MZLocalizedString(@"sources.apps", @"Apps");
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -223,55 +224,55 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 	NSString *version = MZInstalledVersion(provider);
 	NSMutableArray *specifiers = [NSMutableArray array];
 
-	PSSpecifier *group = [PSSpecifier groupSpecifierWithName:@"Support"];
+	PSSpecifier *group = [PSSpecifier groupSpecifierWithName:MZLocalizedString(@"common.support", @"Support")];
 	[specifiers addObject:group];
 	NSString *summary, *footer;
 	switch (state) {
 		case MZSupportStateNotHooked:
-			summary = @"Media Controls Only";
-			footer = [NSString stringWithFormat:@"Menzen shows what %@ shares with the system's media controls.", name];
+			summary = MZLocalizedString(@"sources.media_controls_only", @"Media Controls Only");
+			footer = [NSString stringWithFormat:MZLocalizedString(@"sources.menzen_shows_what_x_shares_with", @"Menzen shows what %@ shares with the system's media controls."), name];
 			break;
 		case MZSupportStateNotChecked:
-			summary = @"Not Checked";
-			footer = [NSString stringWithFormat:@"Menzen hasn't checked this version of %@ yet. Opening it lets Menzen check, then brings you back here.", name];
+			summary = MZLocalizedString(@"sources.not_checked", @"Not Checked");
+			footer = [NSString stringWithFormat:MZLocalizedString(@"sources.menzen_hasn_t_checked_this_version", @"Menzen hasn't checked this version of %@ yet. Opening it lets Menzen check, then brings you back here."), name];
 			break;
 		case MZSupportStateNotFullyChecked:
-			summary = @"Not Fully Checked";
-			footer = [NSString stringWithFormat:@"Some parts of %@ only load once it's open. Opening it lets Menzen finish checking, then brings you back here.", name];
+			summary = MZLocalizedString(@"sources.not_fully_checked", @"Not Fully Checked");
+			footer = [NSString stringWithFormat:MZLocalizedString(@"sources.some_parts_of_x_only_load", @"Some parts of %@ only load once it's open. Opening it lets Menzen finish checking, then brings you back here."), name];
 			break;
 		case MZSupportStateWorks:
-			summary = @"Works";
+			summary = MZLocalizedString(@"common.works", @"Works");
 			break;
 		case MZSupportStateMayNotWork:
-			summary = @"May Not Work";
+			summary = MZLocalizedString(@"common.may_not_work", @"May Not Work");
 			break;
 	}
 
 	[group setProperty:footer forKey:@"footerText"];
 
-	PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:@"Status" target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
+	PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"common.status", @"Status") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
 	[row setProperty:summary forKey:@"supportValue"];
 	[specifiers addObject:row];
 	if (state != MZSupportStateNotHooked) {
-		PSSpecifier *versionRow = [PSSpecifier preferenceSpecifierNamed:@"Version" target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
+		PSSpecifier *versionRow = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"common.version", @"Version") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
 		[versionRow setProperty:version forKey:@"supportValue"];
 		[specifiers addObject:versionRow];
 	}
 
 	if (state == MZSupportStateNotChecked || state == MZSupportStateNotFullyChecked || state == MZSupportStateMayNotWork) [specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 	if (state == MZSupportStateNotChecked || state == MZSupportStateNotFullyChecked) {
-		PSSpecifier *check = [PSSpecifier preferenceSpecifierNamed:[NSString stringWithFormat:@"Open %@ to Check", name] target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+		PSSpecifier *check = [PSSpecifier preferenceSpecifierNamed:[NSString stringWithFormat:MZLocalizedString(@"sources.open_x_to_check", @"Open %@ to Check"), name] target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 		check.buttonAction = @selector(openToCheck:);
 		[specifiers addObject:check];
 	}
 
 	if (state == MZSupportStateMayNotWork) {
 		NSString *details = MZSupportDetails(name, version, provider[MZProviderBundleIdentifierKey], @MZ_VERSION, UIDevice.currentDevice.systemVersion, MZMissingParts(status));
-		PSSpecifier *copy = [PSSpecifier preferenceSpecifierNamed:@"Copy Details" target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+		PSSpecifier *copy = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"common.copy_details", @"Copy Details") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 		copy.buttonAction = @selector(copyDetails:);
 		[copy setProperty:details forKey:@"details"];
 		[specifiers addObject:copy];
-		PSSpecifier *report = [PSSpecifier preferenceSpecifierNamed:@"Report on GitHub" target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+		PSSpecifier *report = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"common.report_on_github", @"Report on GitHub") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 		report.buttonAction = @selector(report:);
 		[report setProperty:details forKey:@"details"];
 		[specifiers addObject:report];
@@ -335,16 +336,16 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 		[specifiers addObject:toggle];
 		if ([game[MZGameBundleIdentifierKey] isEqualToString:MZApelinBundleIdentifier]) [specifiers addObjectsFromArray:[self apelinSpecifiers]];
 
-		[specifiers addObject:[PSSpecifier groupSpecifierWithName:@"Support"]];
-		PSSpecifier *status = [PSSpecifier preferenceSpecifierNamed:@"Status" target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
-		[status setProperty:listed ? @"Works" : @"No Icon" forKey:@"supportValue"];
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MZLocalizedString(@"common.support", @"Support")]];
+		PSSpecifier *status = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"common.status", @"Status") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
+		[status setProperty:listed ? MZLocalizedString(@"common.works", @"Works") : MZLocalizedString(@"common.no_icon", @"No Icon") forKey:@"supportValue"];
 		[specifiers addObject:status];
-		PSSpecifier *versionRow = [PSSpecifier preferenceSpecifierNamed:@"Version" target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
+		PSSpecifier *versionRow = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"common.version", @"Version") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
 		[versionRow setProperty:MZInstalledAppVersion(game[MZGameBundleIdentifierKey]) ?: @"?" forKey:@"supportValue"];
 		[specifiers addObject:versionRow];
 		if (!listed) {
 			[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
-			PSSpecifier *request = [PSSpecifier preferenceSpecifierNamed:@"Request Icon on GitHub" target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+			PSSpecifier *request = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"sources.request_icon_on_github", @"Request Icon on GitHub") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 			request.buttonAction = @selector(requestIcon:);
 			[specifiers addObject:request];
 		}
@@ -360,9 +361,9 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 
 // What the agent's session adds below the name.
 - (NSArray<PSSpecifier *> *)apelinSpecifiers {
-	NSMutableArray *specifiers = [NSMutableArray arrayWithObject:[PSSpecifier groupSpecifierWithName:@"Activity"]];
-	NSDictionary *rows = @{@"Project Name": MZSettingApelinProject, @"Agent Status": MZSettingApelinAgent};
-	for (NSString *name in @[@"Project Name", @"Agent Status"]) {
+	NSMutableArray *specifiers = [NSMutableArray arrayWithObject:[PSSpecifier groupSpecifierWithName:MZLocalizedString(@"sources.activity", @"Activity")]];
+	NSDictionary *rows = @{MZLocalizedString(@"common.project_name", @"Project Name"): MZSettingApelinProject, MZLocalizedString(@"common.agent_status", @"Agent Status"): MZSettingApelinAgent};
+	for (NSString *name in @[MZLocalizedString(@"common.project_name", @"Project Name"), MZLocalizedString(@"common.agent_status", @"Agent Status")]) {
 		PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:name target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 		MZSetSetting(row, rows[name], @YES);
 		[specifiers addObject:row];
@@ -418,7 +419,7 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 				[rows addObject:specifier];
 			}
 			if (!rows.count) continue;
-			[specifiers addObject:[PSSpecifier groupSpecifierWithName:watching.boolValue ? @"Watching" : @"Listening"]];
+			[specifiers addObject:[PSSpecifier groupSpecifierWithName:watching.boolValue ? MZLocalizedString(@"common.watching", @"Watching") : MZLocalizedString(@"common.listening", @"Listening")]];
 			[specifiers addObjectsFromArray:rows];
 		}
 		_specifiers = specifiers;
@@ -430,7 +431,7 @@ static NSString *MZSourceSummary(NSDictionary *provider, NSSet<NSString *> *hook
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
-	self.title = @"More Supported Apps";
+	self.title = MZLocalizedString(@"common.more_supported_apps", @"More Supported Apps");
 	__weak typeof(self) weakSelf = self;
 	[MZServiceProxy(nil) appIconsWithReply:^(NSDictionary<NSString *, NSString *> *icons) {
 		dispatch_async(dispatch_get_main_queue(), ^{

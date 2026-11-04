@@ -1,5 +1,6 @@
 #import <CoreImage/CoreImage.h>
 
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../Helpers/MZServiceClient.h"
 #import "MZOtherDeviceSignIn.h"
 
@@ -51,14 +52,14 @@ static UILabel *MZTextLabel(UIFontTextStyle style, UIColor *color) {
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	self.title = @"Another Device";
+	self.title = MZLocalizedString(@"signin.another_device", @"Another Device");
 	self.view.backgroundColor = UIColor.systemGroupedBackgroundColor;
 	self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancel)];
 	// Closed only through finish, so completion always runs.
 	self.modalInPresentation = YES;
 
 	UILabel *intro = MZTextLabel(UIFontTextStyleSubheadline, UIColor.secondaryLabelColor);
-	intro.text = @"Scan this code with another phone's camera, then sign in to Discord there and approve Menzen.";
+	intro.text = MZLocalizedString(@"signin.scan_this_code_with_another_phone", @"Scan this code with another phone's camera, then sign in to Discord there and approve Menzen.");
 
 	UIView *codeBackground = [UIView new];
 	codeBackground.backgroundColor = UIColor.whiteColor;
@@ -66,7 +67,7 @@ static UILabel *MZTextLabel(UIFontTextStyle style, UIColor *color) {
 	_codeView = [UIImageView new];
 	_codeView.contentMode = UIViewContentModeScaleAspectFit;
 	_codeView.isAccessibilityElement = YES;
-	_codeView.accessibilityLabel = @"QR code for Discord's sign-in page";
+	_codeView.accessibilityLabel = MZLocalizedString(@"signin.qr_code_for_discord_s_sign", @"QR code for Discord's sign-in page");
 	_codeView.translatesAutoresizingMaskIntoConstraints = NO;
 	[codeBackground addSubview:_codeView];
 	_spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
@@ -76,23 +77,23 @@ static UILabel *MZTextLabel(UIFontTextStyle style, UIColor *color) {
 	[codeBackground addSubview:_spinner];
 
 	UILabel *typeIntro = MZTextLabel(UIFontTextStyleSubheadline, UIColor.secondaryLabelColor);
-	typeIntro.text = @"Or go to discord.com/activate on any device and enter:";
+	typeIntro.text = MZLocalizedString(@"signin.or_go_to_discord_com_activate", @"Or go to discord.com/activate on any device and enter:");
 	_userCodeLabel = MZTextLabel(UIFontTextStyleTitle1, UIColor.labelColor);
 	_userCodeLabel.font = [UIFont monospacedSystemFontOfSize:[UIFont preferredFontForTextStyle:UIFontTextStyleTitle1].pointSize weight:UIFontWeightSemibold];
 	_userCodeLabel.text = @" ";
 
 	_copyButton = [UIButton buttonWithType:UIButtonTypeSystem];
-	[_copyButton setTitle:@"Copy Link" forState:UIControlStateNormal];
+	[_copyButton setTitle:MZLocalizedString(@"signin.copy_link", @"Copy Link") forState:UIControlStateNormal];
 	[_copyButton addTarget:self action:@selector(copyLink) forControlEvents:UIControlEventTouchUpInside];
 	_shareButton = [UIButton buttonWithType:UIButtonTypeSystem];
-	[_shareButton setTitle:@"Share" forState:UIControlStateNormal];
+	[_shareButton setTitle:MZLocalizedString(@"signin.share", @"Share") forState:UIControlStateNormal];
 	[_shareButton addTarget:self action:@selector(shareLink) forControlEvents:UIControlEventTouchUpInside];
 	UIStackView *linkButtons = [[UIStackView alloc] initWithArrangedSubviews:@[_copyButton, _shareButton]];
 	linkButtons.spacing = 32;
 
 	_statusLabel = MZTextLabel(UIFontTextStyleFootnote, UIColor.secondaryLabelColor);
 	_retryButton = [UIButton buttonWithType:UIButtonTypeSystem];
-	[_retryButton setTitle:@"Try Again" forState:UIControlStateNormal];
+	[_retryButton setTitle:MZLocalizedString(@"signin.try_again", @"Try Again") forState:UIControlStateNormal];
 	[_retryButton addTarget:self action:@selector(requestCode) forControlEvents:UIControlEventTouchUpInside];
 	_retryButton.hidden = YES;
 
@@ -155,12 +156,12 @@ static UILabel *MZTextLabel(UIFontTextStyle style, UIColor *color) {
 			if (!strongSelf || attempt != strongSelf->_attempt) return;
 			[strongSelf->_spinner stopAnimating];
 			if (!verificationURL || !userCode) {
-				[strongSelf showStatus:error ?: @"Menzen couldn't start the sign-in. Try again."];
+				[strongSelf showStatus:error ?: MZLocalizedString(@"common.menzen_couldn_t_start_the_sign", @"Menzen couldn't start the sign-in. Try again.")];
 				strongSelf->_retryButton.hidden = NO;
 				return;
 			}
 			[strongSelf showCodeURL:verificationURL userCode:userCode];
-			if (message) [strongSelf showStatus:[message stringByAppendingString:@" Here's a new code."]];
+			if (message) [strongSelf showStatus:[message stringByAppendingString:MZLocalizedString(@"signin.here_s_a_new_code", @" Here's a new code.")]];
 			[strongSelf waitForApproval:attempt];
 		});
 	}];
@@ -200,10 +201,10 @@ static UILabel *MZTextLabel(UIFontTextStyle style, UIColor *color) {
 	if (!_verificationURL) return;
 	UIPasteboard.generalPasteboard.URL = _verificationURL;
 	[[UIImpactFeedbackGenerator new] impactOccurred];
-	[_copyButton setTitle:@"Copied" forState:UIControlStateNormal];
+	[_copyButton setTitle:MZLocalizedString(@"signin.copied", @"Copied") forState:UIControlStateNormal];
 	__weak UIButton *button = _copyButton;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MZCopiedDuration * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		[button setTitle:@"Copy Link" forState:UIControlStateNormal];
+		[button setTitle:MZLocalizedString(@"signin.copy_link", @"Copy Link") forState:UIControlStateNormal];
 	});
 }
 

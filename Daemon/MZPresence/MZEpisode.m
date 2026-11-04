@@ -1,3 +1,4 @@
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "MZEpisode.h"
 
 BOOL MZFindEpisode(NSString *title, NSInteger *season, NSInteger *episode, NSString **rest) {
@@ -36,8 +37,8 @@ BOOL MZFindEpisode(NSString *title, NSInteger *season, NSInteger *episode, NSStr
 }
 
 NSString *MZEpisodeText(NSInteger season, NSInteger episode) {
-	if (season > 0 && episode > 0) return [NSString stringWithFormat:@"Season %ld, Episode %ld", (long)season, (long)episode];
-	if (episode > 0) return [NSString stringWithFormat:@"Episode %ld", (long)episode];
-	if (season > 0) return [NSString stringWithFormat:@"Season %ld", (long)season];
+	if (season > 0 && episode > 0) return [NSString stringWithFormat:MZLocalizedString(@"episode.season_x_episode_x", @"Season %ld, Episode %ld"), (long)season, (long)episode];
+	if (episode > 0) return [NSString stringWithFormat:MZLocalizedString(@"episode.episode_x", @"Episode %ld"), (long)episode];
+	if (season > 0) return [NSString stringWithFormat:MZLocalizedString(@"episode.season_x", @"Season %ld"), (long)season];
 	return nil;
 }

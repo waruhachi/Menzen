@@ -25,6 +25,8 @@
 			<string>enabled</string>
 			<key>label</key>
 			<string>Enabled</string>
+			<key>labelKey</key>
+			<string>root.enabled</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -33,6 +35,8 @@
 			<string>appearance</string>
 			<key>label</key>
 			<string>Appearance</string>
+			<key>labelKey</key>
+			<string>root.appearance</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -43,6 +47,8 @@
 			<string>card</string>
 			<key>label</key>
 			<string>Activity</string>
+			<key>labelKey</key>
+			<string>root.activity</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -53,6 +59,8 @@
 			<string>memberList</string>
 			<key>label</key>
 			<string>Member List</string>
+			<key>labelKey</key>
+			<string>root.member_list</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -69,6 +77,8 @@
 			<string>custom</string>
 			<key>label</key>
 			<string>Custom Activity</string>
+			<key>labelKey</key>
+			<string>root.custom_activity</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -77,6 +87,8 @@
 			<string>pausedGroup</string>
 			<key>label</key>
 			<string>Behavior</string>
+			<key>labelKey</key>
+			<string>root.behavior</string>
 		</dict>
 		<dict>
 			<key>PostNotification</key>
@@ -93,6 +105,8 @@
 			<string>pauseGrace</string>
 			<key>label</key>
 			<string>When Paused</string>
+			<key>labelKey</key>
+			<string>root.when_paused</string>
 			<key>validTitles</key>
 			<array>
 				<string>Clear Immediately</string>
@@ -100,6 +114,14 @@
 				<string>Clear After 30 Seconds</string>
 				<string>Clear After 1 Minute</string>
 				<string>Keep Showing</string>
+			</array>
+			<key>validTitlesKeys</key>
+			<array>
+				<string>root.clear_immediately</string>
+				<string>root.clear_after_10_seconds</string>
+				<string>root.clear_after_30_seconds</string>
+				<string>root.clear_after_1_minute</string>
+				<string>root.keep_showing</string>
 			</array>
 			<key>validValues</key>
 			<array>
@@ -115,6 +137,8 @@
 			<string>PSGroupCell</string>
 			<key>footerText</key>
 			<string>Shows only app's or game's name and icon.</string>
+			<key>footerTextKey</key>
+			<string>root.shows_only_app_s_or_game</string>
 			<key>id</key>
 			<string>privacyGroup</string>
 		</dict>
@@ -133,6 +157,8 @@
 			<string>privacy</string>
 			<key>label</key>
 			<string>Privacy Mode</string>
+			<key>labelKey</key>
+			<string>root.privacy_mode</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -141,6 +167,8 @@
 			<string>sourcesGroup</string>
 			<key>label</key>
 			<string>Sources</string>
+			<key>labelKey</key>
+			<string>root.sources</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -151,6 +179,8 @@
 			<string>sources</string>
 			<key>label</key>
 			<string>Apps</string>
+			<key>labelKey</key>
+			<string>root.apps</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -167,6 +197,8 @@
 			<string>resetButton</string>
 			<key>label</key>
 			<string>Reset Settings</string>
+			<key>labelKey</key>
+			<string>root.reset_settings</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -187,6 +219,8 @@
 			<string>PSGroupCell</string>
 			<key>footerText</key>
 			<string>You sign in on Discord's own page. Menzen never sees or stores your password.</string>
+			<key>footerTextKey</key>
+			<string>root.you_sign_in_on_discord_s</string>
 			<key>id</key>
 			<string>otherDevice</string>
 		</dict>
@@ -199,6 +233,8 @@
 			<string>otherDeviceButton</string>
 			<key>label</key>
 			<string>Sign In on Another Device</string>
+			<key>labelKey</key>
+			<string>root.sign_in_on_another_device</string>
 		</dict>
 	</array>
 	<key>title</key>

@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 
+#import "MZLocalization/MZLocalization.h"
 #import "MZSettings.h"
 
 // The parts of the activity card and what each can show, for menzend (which
@@ -40,15 +41,15 @@ static inline NSArray<NSArray<NSString *> *> *MZPartChoices(NSString *part) {
 	static dispatch_once_t once;
 	dispatch_once(&once, ^{
 		choices = @{
-			MZPartHeading: @[@[@"app", @"App Name"], @[@"menzen", @"Menzen"], @[@"artist", @"Artist"], @[@"album", @"Album"], @[@"custom", @"Custom"]],
-			MZPartFirstLine: @[@[@"title", @"Title"], @[@"artist", @"Artist"], @[@"album", @"Album"]],
-			MZPartSecondLine: @[@[@"artist", @"Artist"], @[@"album", @"Album"], @[@"title", @"Title"], @[@"none", @"None"]],
-			MZPartThirdLine: @[@[@"album", @"Album"], @[@"artist", @"Artist"], @[@"title", @"Title"], @[@"none", @"None"]],
-			MZPartBigPicture: @[@[@"cover", @"Cover Art"], @[@"artistImage", @"Artist Picture"], @[@"logo", @"App Logo"], @[@"none", @"None"]],
-			MZPartSmallPicture: @[@[@"artistImage", @"Artist Picture"], @[@"logo", @"App Logo"], @[@"cover", @"Cover Art"], @[@"none", @"None"]],
-			MZPartSmallPictureText: @[@[@"artist", @"Artist"], @[@"app", @"App Name"], @[@"none", @"None"]],
-			MZPartTime: @[@[@"progress", @"Progress Bar"], @[@"elapsed", @"Time Elapsed"]],
-			MZPartMemberList: @[@[@"title", @"Title"], @[@"artist", @"Artist"], @[@"album", @"Album"], @[@"name", @"Heading"]],
+			MZPartHeading: @[@[@"app", MZLocalizedString(@"card.app_name", @"App Name")], @[@"menzen", @"Menzen"], @[@"artist", MZLocalizedString(@"common.artist", @"Artist")], @[@"album", MZLocalizedString(@"common.album", @"Album")], @[@"custom", MZLocalizedString(@"card.custom", @"Custom")]],
+			MZPartFirstLine: @[@[@"title", MZLocalizedString(@"common.title", @"Title")], @[@"artist", MZLocalizedString(@"common.artist", @"Artist")], @[@"album", MZLocalizedString(@"common.album", @"Album")]],
+			MZPartSecondLine: @[@[@"artist", MZLocalizedString(@"common.artist", @"Artist")], @[@"album", MZLocalizedString(@"common.album", @"Album")], @[@"title", MZLocalizedString(@"common.title", @"Title")], @[@"none", MZLocalizedString(@"common.none", @"None")]],
+			MZPartThirdLine: @[@[@"album", MZLocalizedString(@"common.album", @"Album")], @[@"artist", MZLocalizedString(@"common.artist", @"Artist")], @[@"title", MZLocalizedString(@"common.title", @"Title")], @[@"none", MZLocalizedString(@"common.none", @"None")]],
+			MZPartBigPicture: @[@[@"cover", MZLocalizedString(@"card.cover_art", @"Cover Art")], @[@"artistImage", MZLocalizedString(@"card.artist_picture", @"Artist Picture")], @[@"logo", MZLocalizedString(@"card.app_logo", @"App Logo")], @[@"none", MZLocalizedString(@"common.none", @"None")]],
+			MZPartSmallPicture: @[@[@"artistImage", MZLocalizedString(@"card.artist_picture", @"Artist Picture")], @[@"logo", MZLocalizedString(@"card.app_logo", @"App Logo")], @[@"cover", MZLocalizedString(@"card.cover_art", @"Cover Art")], @[@"none", MZLocalizedString(@"common.none", @"None")]],
+			MZPartSmallPictureText: @[@[@"artist", MZLocalizedString(@"common.artist", @"Artist")], @[@"app", MZLocalizedString(@"card.app_name", @"App Name")], @[@"none", MZLocalizedString(@"common.none", @"None")]],
+			MZPartTime: @[@[@"progress", MZLocalizedString(@"card.progress_bar", @"Progress Bar")], @[@"elapsed", MZLocalizedString(@"common.time_elapsed", @"Time Elapsed")]],
+			MZPartMemberList: @[@[@"title", MZLocalizedString(@"common.title", @"Title")], @[@"artist", MZLocalizedString(@"common.artist", @"Artist")], @[@"album", MZLocalizedString(@"common.album", @"Album")], @[@"name", MZLocalizedString(@"common.heading", @"Heading")]],
 		};
 	});
 	return choices[part] ?: @[];

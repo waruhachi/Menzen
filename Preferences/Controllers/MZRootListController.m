@@ -6,7 +6,9 @@
 #import <UIKit/UIKit.h>
 
 #import "../../Shared/MZCustomActivity.h"
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../../Shared/MZSettings.h"
+#import "../Helpers/MZLocalizeSpecifiers.h"
 #import "../Helpers/MZServiceClient.h"
 #import "../Views/MZDestructiveButtonCell.h"
 #import "../Views/MZProfileCell.h"
@@ -53,6 +55,7 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 - (NSArray *)specifiers {
 	if (!_specifiers) {
 		NSMutableArray *specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
+		MZLocalizeSpecifiers(specifiers);
 		if (!_status && !_unreachable) {
 			// Not knowing yet, rather than flashing the sign-in.
 			specifiers = [NSMutableArray array];
@@ -139,15 +142,15 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 }
 
 - (NSString *)unreachableMessage {
-	return @"Menzen's background service isn't running. Try reinstalling Menzen.";
+	return MZLocalizedString(@"root.menzen_s_background_service_isn_t", @"Menzen's background service isn't running. Try reinstalling Menzen.");
 }
 
 - (NSString *)accountFooter {
 	if (_message) return _message;
-	if (self.signedIn) return [self.profile[MZProfileLimitedKey] boolValue] ? @"Sign out and back in to show your badges, banner and Nitro." : nil;
+	if (self.signedIn) return [self.profile[MZProfileLimitedKey] boolValue] ? MZLocalizedString(@"root.sign_out_and_back_in_to", @"Sign out and back in to show your badges, banner and Nitro.") : nil;
 	if (_unreachable) return self.unreachableMessage;
 	if (!_status) return nil;
-	return _status[MZStatusErrorKey] ?: @"If the page doesn't load, sign in on another device.";
+	return _status[MZStatusErrorKey] ?: MZLocalizedString(@"root.if_the_page_doesn_t_load", @"If the page doesn't load, sign in on another device.");
 }
 
 - (NSArray<PSSpecifier *> *)profileSpecifiers {
@@ -165,12 +168,12 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 	} else if (error) {
 		[header setProperty:error forKey:@"overlay"];
 	} else if (![_status[MZStatusConnectedKey] boolValue]) {
-		[header setProperty:@"Connecting to Discord…" forKey:@"overlay"];
+		[header setProperty:MZLocalizedString(@"root.connecting_to_discord", @"Connecting to Discord…") forKey:@"overlay"];
 		[header setProperty:@YES forKey:@"overlayBusy"];
 	}
 
 	PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
-	[group setProperty:@"Pull down to refresh." forKey:@"footerText"];
+	[group setProperty:MZLocalizedString(@"root.pull_down_to_refresh", @"Pull down to refresh.") forKey:@"footerText"];
 	return @[group, header];
 }
 
@@ -193,9 +196,9 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 
 	PSSpecifier *button = MZSpecifier(specifiers, @"accountButton");
 	if (_busy) {
-		button.name = @"Signing In…";
+		button.name = MZLocalizedString(@"root.signing_in", @"Signing In…");
 	} else {
-		button.name = self.signedIn ? @"Sign Out" : @"Sign In with Discord";
+		button.name = self.signedIn ? MZLocalizedString(@"root.sign_out", @"Sign Out") : MZLocalizedString(@"root.sign_in_with_discord", @"Sign In with Discord");
 	}
 
 	BOOL enabled = !_busy && !_unreachable && _status;
@@ -228,7 +231,7 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 			if (authorizeURL) {
 				[strongSelf presentSignInWithURL:authorizeURL];
 			} else {
-				[strongSelf finishWithMessage:@"Menzen couldn't start the sign-in. Try again."];
+				[strongSelf finishWithMessage:MZLocalizedString(@"common.menzen_couldn_t_start_the_sign", @"Menzen couldn't start the sign-in. Try again.")];
 			}
 		});
 	}];
@@ -259,7 +262,7 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 			strongSelf->_session = nil;
 			if (!callbackURL) {
 				BOOL cancelled = [error.domain isEqualToString:ASWebAuthenticationSessionErrorDomain] && error.code == ASWebAuthenticationSessionErrorCodeCanceledLogin;
-				[strongSelf finishWithMessage:cancelled ? nil : @"The sign-in page couldn't be opened. Try again."];
+				[strongSelf finishWithMessage:cancelled ? nil : MZLocalizedString(@"root.the_sign_in_page_couldn_t", @"The sign-in page couldn't be opened. Try again.")];
 				return;
 			}
 			[strongSelf.service finishSignInWithCallbackURL:callbackURL reply:^(NSString *message) {
@@ -275,7 +278,7 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 	_session.prefersEphemeralWebBrowserSession = NO;
 	if (![_session start]) {
 		_session = nil;
-		[self finishWithMessage:@"The sign-in page couldn't be opened. Try again."];
+		[self finishWithMessage:MZLocalizedString(@"root.the_sign_in_page_couldn_t", @"The sign-in page couldn't be opened. Try again.")];
 	}
 }
 
@@ -287,10 +290,10 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 }
 
 - (void)confirmSignOut {
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Sign Out of Discord?" message:@"Menzen will stop showing what you're playing." preferredStyle:UIAlertControllerStyleAlert];
-	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:MZLocalizedString(@"root.sign_out_of_discord", @"Sign Out of Discord?") message:MZLocalizedString(@"root.menzen_will_stop_showing_what_you", @"Menzen will stop showing what you're playing.") preferredStyle:UIAlertControllerStyleAlert];
+	[alert addAction:[UIAlertAction actionWithTitle:MZLocalizedString(@"common.cancel", @"Cancel") style:UIAlertActionStyleCancel handler:nil]];
 	__weak typeof(self) weakSelf = self;
-	[alert addAction:[UIAlertAction actionWithTitle:@"Sign Out" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+	[alert addAction:[UIAlertAction actionWithTitle:MZLocalizedString(@"root.sign_out", @"Sign Out") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
 		[weakSelf.service signOutWithReply:^{
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[weakSelf finishWithMessage:nil];
@@ -304,10 +307,10 @@ static PSSpecifier *MZSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *id
 // tokens are in menzend's keychain, so this keeps Menzen signed in. The
 // custom activity presets are the user's own writing, so they stay too.
 - (void)confirmReset {
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Reset Settings?" message:@"Every setting goes back to its default. You stay signed in, and your custom activity presets are kept." preferredStyle:UIAlertControllerStyleAlert];
-	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:MZLocalizedString(@"root.reset_settings", @"Reset Settings?") message:MZLocalizedString(@"root.every_setting_goes_back_to_its", @"Every setting goes back to its default. You stay signed in, and your custom activity presets are kept.") preferredStyle:UIAlertControllerStyleAlert];
+	[alert addAction:[UIAlertAction actionWithTitle:MZLocalizedString(@"common.cancel", @"Cancel") style:UIAlertActionStyleCancel handler:nil]];
 	__weak typeof(self) weakSelf = self;
-	[alert addAction:[UIAlertAction actionWithTitle:@"Reset" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+	[alert addAction:[UIAlertAction actionWithTitle:MZLocalizedString(@"root.reset", @"Reset") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
 		[weakSelf resetSettings];
 	}]];
 	[self presentViewController:alert animated:YES completion:nil];

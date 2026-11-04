@@ -2,6 +2,7 @@
 #import <Preferences/PSTableCell.h>
 
 #import "../../Shared/MZCard.h"
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../../Shared/MZService.h"
 #import "../../Shared/MZSettings.h"
 #import "../Helpers/MZServiceClient.h"
@@ -17,7 +18,7 @@ static NSString *MZTrimmed(NSString *string) {
 // card's parts the way menzend does. It has no cover or artist picture, so
 // pictures fall back to the logo.
 static NSDictionary<NSString *, id> *MZSampleActivity(void) {
-	NSDictionary *texts = @{@"title": @"Song Title", @"artist": @"Artist", @"album": @"Album"};
+	NSDictionary *texts = @{@"title": MZLocalizedString(@"appearance.song_title", @"Song Title"), @"artist": MZLocalizedString(@"common.artist", @"Artist"), @"album": MZLocalizedString(@"common.album", @"Album")};
 	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
 	activity[MZActivityKindKey] = @"listening";
 
@@ -176,29 +177,29 @@ static BOOL MZPartAllows(NSString *part, NSString *value) {
 		BOOL smallPicture = bigPicture && ![MZPart(MZPartSmallPicture) isEqualToString:@"none"];
 
 		NSMutableArray *specifiers = [NSMutableArray arrayWithObjects:[PSSpecifier emptyGroupSpecifier], self.previewSpecifier, nil];
-		[specifiers addObject:[PSSpecifier groupSpecifierWithName:@"Text"]];
-		[specifiers addObject:[self partSpecifier:MZPartHeading named:@"Heading" enabled:YES]];
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MZLocalizedString(@"common.text", @"Text")]];
+		[specifiers addObject:[self partSpecifier:MZPartHeading named:MZLocalizedString(@"common.heading", @"Heading") enabled:YES]];
 		if ([MZPart(MZPartHeading) isEqualToString:@"custom"]) {
-			PSSpecifier *text = MZSettingSpecifier(self, @"Custom Heading", MZSettingHeadingText, PSEditTextCell);
+			PSSpecifier *text = MZSettingSpecifier(self, MZLocalizedString(@"common.custom_heading", @"Custom Heading"), MZSettingHeadingText, PSEditTextCell);
 			[text setProperty:@"" forKey:@"default"];
-			[text setProperty:@"Name" forKey:@"placeholder"];
+			[text setProperty:MZLocalizedString(@"common.name", @"Name") forKey:@"placeholder"];
 			[text setProperty:@YES forKey:@"noAutoCorrect"];
 			[specifiers addObject:text];
 		}
-		[specifiers addObject:[self partSpecifier:MZPartFirstLine named:@"First Line" enabled:YES]];
-		[specifiers addObject:[self partSpecifier:MZPartSecondLine named:@"Second Line" enabled:YES]];
-		[specifiers addObject:[self partSpecifier:MZPartThirdLine named:@"Third Line" enabled:bigPicture]];
+		[specifiers addObject:[self partSpecifier:MZPartFirstLine named:MZLocalizedString(@"common.first_line", @"First Line") enabled:YES]];
+		[specifiers addObject:[self partSpecifier:MZPartSecondLine named:MZLocalizedString(@"common.second_line", @"Second Line") enabled:YES]];
+		[specifiers addObject:[self partSpecifier:MZPartThirdLine named:MZLocalizedString(@"appearance.third_line", @"Third Line") enabled:bigPicture]];
 
-		[specifiers addObject:[PSSpecifier groupSpecifierWithName:@"Pictures"]];
-		[specifiers addObject:[self partSpecifier:MZPartBigPicture named:@"Big Picture" enabled:YES]];
-		[specifiers addObject:[self partSpecifier:MZPartSmallPicture named:@"Small Picture" enabled:bigPicture]];
-		[specifiers addObject:[self partSpecifier:MZPartSmallPictureText named:@"Small Picture Text" enabled:smallPicture]];
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MZLocalizedString(@"appearance.pictures", @"Pictures")]];
+		[specifiers addObject:[self partSpecifier:MZPartBigPicture named:MZLocalizedString(@"common.big_picture", @"Big Picture") enabled:YES]];
+		[specifiers addObject:[self partSpecifier:MZPartSmallPicture named:MZLocalizedString(@"common.small_picture", @"Small Picture") enabled:bigPicture]];
+		[specifiers addObject:[self partSpecifier:MZPartSmallPictureText named:MZLocalizedString(@"appearance.small_picture_text", @"Small Picture Text") enabled:smallPicture]];
 
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
-		[specifiers addObject:[self partSpecifier:MZPartTime named:@"Time" enabled:YES]];
-		PSSpecifier *links = MZSettingSpecifier(self, @"Links", MZSettingLinks, PSStaticTextCell);
+		[specifiers addObject:[self partSpecifier:MZPartTime named:MZLocalizedString(@"appearance.time", @"Time") enabled:YES]];
+		PSSpecifier *links = MZSettingSpecifier(self, MZLocalizedString(@"appearance.links", @"Links"), MZSettingLinks, PSStaticTextCell);
 		[links setProperty:MZChoiceCell.class forKey:@"cellClass"];
-		[links setProperty:@[@[@YES, @"On"], @[@NO, @"Off"]] forKey:@"choices"];
+		[links setProperty:@[@[@YES, @"On"], @[@NO, MZLocalizedString(@"common.off", @"Off")]] forKey:@"choices"];
 		[links setProperty:@(MZSettingBool(MZSettingLinks, YES)) forKey:@"choice"];
 		[specifiers addObject:links];
 		_specifiers = specifiers;
@@ -267,7 +268,7 @@ static BOOL MZPartAllows(NSString *part, NSString *value) {
 	if (!_specifiers) {
 		NSMutableArray *specifiers = [NSMutableArray arrayWithObjects:[PSSpecifier emptyGroupSpecifier], self.previewSpecifier, nil];
 		PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
-		[group setProperty:@"Member lists can only show the heading, first line or second line. To pick something greyed out, put it on one of those lines on the Activity page." forKey:@"footerText"];
+		[group setProperty:MZLocalizedString(@"appearance.member_lists_can_only_show_the", @"Member lists can only show the heading, first line or second line. To pick something greyed out, put it on one of those lines on the Activity page.") forKey:@"footerText"];
 		[specifiers addObject:group];
 
 		NSString *current = MZPart(MZPartMemberList);
@@ -278,7 +279,7 @@ static BOOL MZPartAllows(NSString *part, NSString *value) {
 				// A heading of Artist or Album is already offered as that.
 				if ([heading isEqualToString:@"artist"] || [heading isEqualToString:@"album"]) continue;
 				NSString *text = MZTrimmed(MZSettingString(MZSettingHeadingText, @""));
-				name = [heading isEqualToString:@"custom"] ? (text.length ? text : @"Custom Heading") : MZPartTitle(MZPartHeading, heading);
+				name = [heading isEqualToString:@"custom"] ? (text.length ? text : MZLocalizedString(@"common.custom_heading", @"Custom Heading")) : MZPartTitle(MZPartHeading, heading);
 			}
 			PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:name target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 			specifier.buttonAction = @selector(choose:);

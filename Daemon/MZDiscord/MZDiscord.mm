@@ -3,6 +3,7 @@
 #define DISCORDPP_IMPLEMENTATION
 #import <Security/Security.h>
 
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../../Shared/MZService.h"
 #import "MZDeviceSignIn.h"
 #import "MZKeychain.h"
@@ -303,29 +304,29 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 
 	NSURLComponents *components = [NSURLComponents componentsWithURL:callbackURL resolvingAgainstBaseURL:NO];
 	if (![components.scheme isEqualToString:MZCallbackScheme()]) {
-		completion(@"Discord sent back an unexpected address. Try again.");
+		completion(MZLocalizedString(@"signin.error.discord_sent_back_an_unexpected_address", @"Discord sent back an unexpected address. Try again."));
 		return;
 	}
 
 	if (!verifier || expiry.timeIntervalSinceNow < 0) {
-		completion(@"The sign-in took too long. Try again.");
+		completion(MZLocalizedString(@"signin.error.the_sign_in_took_too_long", @"The sign-in took too long. Try again."));
 		return;
 	}
 
 	if (![MZQueryValue(components, @"state") isEqualToString:expectedState]) {
-		completion(@"The sign-in didn't match the one Menzen started. Try again.");
+		completion(MZLocalizedString(@"signin.error.the_sign_in_didn_t_match", @"The sign-in didn't match the one Menzen started. Try again."));
 		return;
 	}
 
 	NSString *error = MZQueryValue(components, @"error");
 	if (error) {
-		completion([error isEqualToString:@"access_denied"] ? nil : @"Discord couldn't complete the sign-in. Try again.");
+		completion([error isEqualToString:@"access_denied"] ? nil : MZLocalizedString(@"signin.error.discord_couldn_t_complete_the_sign", @"Discord couldn't complete the sign-in. Try again."));
 		return;
 	}
 
 	NSString *code = MZQueryValue(components, @"code");
 	if (!code.length) {
-		completion(@"Discord didn't send a sign-in code. Try again.");
+		completion(MZLocalizedString(@"signin.error.discord_didn_t_send_a_sign", @"Discord didn't send a sign-in code. Try again."));
 		return;
 	}
 
@@ -337,7 +338,7 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 		if (!strongSelf || generation != strongSelf->_accountGeneration) return;
 
 		if (!result.Successful()) {
-			completion(@"Discord didn't accept the sign-in. Try again.");
+			completion(MZLocalizedString(@"signin.error.discord_didn_t_accept_the_sign", @"Discord didn't accept the sign-in. Try again."));
 			return;
 		}
 		completion([strongSelf signInWithAccessToken:@(accessToken.c_str()) refreshToken:@(refreshToken.c_str()) expiresIn:expiresIn]);
@@ -365,7 +366,7 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 
 // A message for the user when the tokens couldn't be kept.
 - (NSString *)signInWithAccessToken:(NSString *)accessToken refreshToken:(NSString *)refreshToken expiresIn:(NSTimeInterval)expiresIn {
-	if (![self saveAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn]) return @"Couldn't save the sign-in to the Keychain.";
+	if (![self saveAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn]) return MZLocalizedString(@"signin.error.couldn_t_save_the_sign_in", @"Couldn't save the sign-in to the Keychain.");
 	_signedIn = YES;
 	_accountError = nil;
 	[self connectWithAccessToken:accessToken];
@@ -449,7 +450,7 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 			if (fallbackAccessToken.length && [expiresAt isKindOfClass:NSDate.class] && expiresAt.timeIntervalSinceNow > 0) {
 				[strongSelf connectWithAccessToken:fallbackAccessToken];
 			} else {
-				strongSelf->_accountError = @"Discord ended the sign-in. Sign in again.";
+				strongSelf->_accountError = MZLocalizedString(@"signin.error.discord_ended_the_sign_in_sign", @"Discord ended the sign-in. Sign in again.");
 				[strongSelf accountStatusChanged];
 			}
 			return;
@@ -512,7 +513,7 @@ static NSDictionary *MZActivityInfo(MZActivity *activity) {
 		return;
 	}
 
-	_accountError = @"Discord ended the sign-in. Sign in again.";
+	_accountError = MZLocalizedString(@"signin.error.discord_ended_the_sign_in_sign", @"Discord ended the sign-in. Sign in again.");
 	[self accountStatusChanged];
 }
 

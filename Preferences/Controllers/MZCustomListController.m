@@ -2,6 +2,7 @@
 #import <UIKit/UIKit.h>
 
 #import "../../Shared/MZCustomActivity.h"
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../Helpers/MZImageCheck.h"
 #import "../Views/MZChoiceCells.h"
 #import "../Views/MZDestructiveButtonCell.h"
@@ -34,7 +35,7 @@ static void MZUsePreset(NSString *identifier) {
 }
 
 static NSString *MZPresetTitle(NSDictionary *preset) {
-	return MZPresetString(preset, MZPresetNameKey) ?: @"Untitled";
+	return MZPresetString(preset, MZPresetNameKey) ?: MZLocalizedString(@"custom.untitled", @"Untitled");
 }
 
 static void MZConfirmPresetImages(UIViewController *controller, NSDictionary *preset, void (^proceed)(void), void (^cancel)(void)) {
@@ -43,11 +44,11 @@ static void MZConfirmPresetImages(UIViewController *controller, NSDictionary *pr
 			proceed();
 			return;
 		}
-		UIAlertController *alert = [UIAlertController alertControllerWithTitle:problems.count > 1 ? @"These Images Won't Work" : @"This Image Won't Work" message:[problems componentsJoinedByString:@"\n\n"] preferredStyle:UIAlertControllerStyleAlert];
-		[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+		UIAlertController *alert = [UIAlertController alertControllerWithTitle:problems.count > 1 ? MZLocalizedString(@"custom.these_images_won_t_work", @"These Images Won't Work") : MZLocalizedString(@"common.this_image_won_t_work", @"This Image Won't Work") message:[problems componentsJoinedByString:@"\n\n"] preferredStyle:UIAlertControllerStyleAlert];
+		[alert addAction:[UIAlertAction actionWithTitle:MZLocalizedString(@"common.cancel", @"Cancel") style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
 			cancel();
 		}]];
-		[alert addAction:[UIAlertAction actionWithTitle:@"Use Anyway" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+		[alert addAction:[UIAlertAction actionWithTitle:MZLocalizedString(@"custom.use_anyway", @"Use Anyway") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 			proceed();
 		}]];
 		[controller presentViewController:alert animated:YES completion:nil];
@@ -68,7 +69,7 @@ static void MZPushController(PSListController *parent, Class controllerClass, PS
 	if (!_specifiers) {
 		NSMutableArray *specifiers = [NSMutableArray array];
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
-		PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:@"Custom Activity" target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
+		PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"custom.custom_activity", @"Custom Activity") target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 		[toggle setProperty:MZSettingCustom forKey:@"key"];
 		[toggle setProperty:MZSettingsDomain forKey:@"defaults"];
 		[toggle setProperty:@NO forKey:@"default"];
@@ -78,11 +79,11 @@ static void MZPushController(PSListController *parent, Class controllerClass, PS
 		[specifiers addObject:toggle];
 
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
-		PSSpecifier *add = [PSSpecifier preferenceSpecifierNamed:@"Add Preset" target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+		PSSpecifier *add = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"custom.add_preset", @"Add Preset") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 		add.buttonAction = @selector(addPreset:);
 		[specifiers addObject:add];
 
-		if (presets.count) [specifiers addObject:[PSSpecifier groupSpecifierWithName:@"Presets"]];
+		if (presets.count) [specifiers addObject:[PSSpecifier groupSpecifierWithName:MZLocalizedString(@"custom.presets", @"Presets")]];
 		for (NSDictionary *preset in presets) {
 			PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:MZPresetTitle(preset) target:self set:nil get:@selector(presetSummary:) detail:MZPresetListController.class cell:PSLinkListCell edit:nil];
 			[row setProperty:preset[MZPresetIdentifierKey] forKey:@"presetIdentifier"];
@@ -111,7 +112,7 @@ static void MZPushController(PSListController *parent, Class controllerClass, PS
 }
 
 - (NSString *)presetSummary:(PSSpecifier *)specifier {
-	return [[specifier propertyForKey:@"presetIdentifier"] isEqualToString:MZSettingString(MZSettingCustomPreset, nil)] ? @"In Use" : @"";
+	return [[specifier propertyForKey:@"presetIdentifier"] isEqualToString:MZSettingString(MZSettingCustomPreset, nil)] ? MZLocalizedString(@"custom.in_use", @"In Use") : @"";
 }
 
 - (void)addPreset:(PSSpecifier *)specifier {
@@ -132,7 +133,7 @@ static void MZPushController(PSListController *parent, Class controllerClass, PS
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
-	self.title = @"Custom Activity";
+	self.title = MZLocalizedString(@"custom.custom_activity", @"Custom Activity");
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -193,35 +194,35 @@ static void MZPushController(PSListController *parent, Class controllerClass, PS
 
 		if (!showing) {
 			[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
-			PSSpecifier *use = [PSSpecifier preferenceSpecifierNamed:@"Use This Preset" target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+			PSSpecifier *use = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"custom.use_this_preset", @"Use This Preset") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 			use.buttonAction = @selector(usePreset:);
 			[specifiers addObject:use];
 		}
 
-		[specifiers addObject:[PSSpecifier groupSpecifierWithName:@"Text"]];
-		PSSpecifier *kind = [self fieldNamed:@"Type" key:MZPresetKindKey cell:PSStaticTextCell];
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MZLocalizedString(@"common.text", @"Text")]];
+		PSSpecifier *kind = [self fieldNamed:MZLocalizedString(@"custom.type", @"Type") key:MZPresetKindKey cell:PSStaticTextCell];
 		[kind setProperty:MZChoiceCell.class forKey:@"cellClass"];
-		[kind setProperty:@[@[@"playing", @"Playing"], @[@"listening", @"Listening"], @[@"watching", @"Watching"]] forKey:@"choices"];
+		[kind setProperty:@[@[@"playing", MZLocalizedString(@"common.playing", @"Playing")], @[@"listening", MZLocalizedString(@"common.listening", @"Listening")], @[@"watching", MZLocalizedString(@"common.watching", @"Watching")]] forKey:@"choices"];
 		[kind setProperty:MZPresetString(preset, MZPresetKindKey) ?: @"playing" forKey:@"choice"];
 		[specifiers addObject:kind];
-		[specifiers addObject:[self textFieldNamed:@"Name" key:MZPresetNameKey placeholder:@"Menzen"]];
-		[specifiers addObject:[self textFieldNamed:@"First Line" key:MZPresetDetailsKey placeholder:@"None"]];
-		[specifiers addObject:[self textFieldNamed:@"Second Line" key:MZPresetStateKey placeholder:@"None"]];
+		[specifiers addObject:[self textFieldNamed:MZLocalizedString(@"common.name", @"Name") key:MZPresetNameKey placeholder:@"Menzen"]];
+		[specifiers addObject:[self textFieldNamed:MZLocalizedString(@"common.first_line", @"First Line") key:MZPresetDetailsKey placeholder:MZLocalizedString(@"common.none", @"None")]];
+		[specifiers addObject:[self textFieldNamed:MZLocalizedString(@"common.second_line", @"Second Line") key:MZPresetStateKey placeholder:MZLocalizedString(@"common.none", @"None")]];
 
-		[specifiers addObject:[PSSpecifier groupSpecifierWithName:@"Big Picture"]];
-		[specifiers addObject:[self linkFieldNamed:@"Image Link" key:MZPresetLargeImageKey]];
-		[specifiers addObject:[self textFieldNamed:@"Text" key:MZPresetLargeTextKey placeholder:@"None"]];
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MZLocalizedString(@"common.big_picture", @"Big Picture")]];
+		[specifiers addObject:[self linkFieldNamed:MZLocalizedString(@"common.image_link", @"Image Link") key:MZPresetLargeImageKey]];
+		[specifiers addObject:[self textFieldNamed:MZLocalizedString(@"common.text", @"Text") key:MZPresetLargeTextKey placeholder:MZLocalizedString(@"common.none", @"None")]];
 
-		[specifiers addObject:[PSSpecifier groupSpecifierWithName:@"Small Picture"]];
-		[specifiers addObject:[self linkFieldNamed:@"Image Link" key:MZPresetSmallImageKey]];
-		[specifiers addObject:[self textFieldNamed:@"Text" key:MZPresetSmallTextKey placeholder:@"None"]];
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MZLocalizedString(@"common.small_picture", @"Small Picture")]];
+		[specifiers addObject:[self linkFieldNamed:MZLocalizedString(@"common.image_link", @"Image Link") key:MZPresetSmallImageKey]];
+		[specifiers addObject:[self textFieldNamed:MZLocalizedString(@"common.text", @"Text") key:MZPresetSmallTextKey placeholder:MZLocalizedString(@"common.none", @"None")]];
 
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
-		PSSpecifier *timer = [self fieldNamed:@"Time Elapsed" key:MZPresetTimerKey cell:PSSwitchCell];
+		PSSpecifier *timer = [self fieldNamed:MZLocalizedString(@"common.time_elapsed", @"Time Elapsed") key:MZPresetTimerKey cell:PSSwitchCell];
 		[specifiers addObject:timer];
 
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
-		PSSpecifier *delete = [PSSpecifier preferenceSpecifierNamed:@"Delete Preset" target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
+		PSSpecifier *delete = [PSSpecifier preferenceSpecifierNamed:MZLocalizedString(@"custom.delete_preset", @"Delete Preset") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 		delete.buttonAction = @selector(confirmDelete:);
 		[delete setProperty:MZDestructiveButtonCell.class forKey:@"cellClass"];
 		[specifiers addObject:delete];
@@ -267,7 +268,7 @@ static void MZPushController(PSListController *parent, Class controllerClass, PS
 	MZCheckImageLink(link, ^(NSString *problem) {
 		typeof(self) strongSelf = weakSelf;
 		if (!problem || !strongSelf.view.window || strongSelf.presentedViewController) return;
-		UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"This Image Won't Work" message:problem preferredStyle:UIAlertControllerStyleAlert];
+		UIAlertController *alert = [UIAlertController alertControllerWithTitle:MZLocalizedString(@"common.this_image_won_t_work", @"This Image Won't Work") message:problem preferredStyle:UIAlertControllerStyleAlert];
 		[alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
 		[strongSelf presentViewController:alert animated:YES completion:nil];
 	});
@@ -294,10 +295,10 @@ static void MZPushController(PSListController *parent, Class controllerClass, PS
 }
 
 - (void)confirmDelete:(PSSpecifier *)specifier {
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:@"Delete “%@”?", MZPresetTitle(self.preset)] message:nil preferredStyle:UIAlertControllerStyleAlert];
-	[alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:MZLocalizedString(@"custom.delete_x", @"Delete “%@”?"), MZPresetTitle(self.preset)] message:nil preferredStyle:UIAlertControllerStyleAlert];
+	[alert addAction:[UIAlertAction actionWithTitle:MZLocalizedString(@"common.cancel", @"Cancel") style:UIAlertActionStyleCancel handler:nil]];
 	__weak typeof(self) weakSelf = self;
-	[alert addAction:[UIAlertAction actionWithTitle:@"Delete" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+	[alert addAction:[UIAlertAction actionWithTitle:MZLocalizedString(@"common.delete", @"Delete") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
 		[weakSelf deletePreset];
 	}]];
 	[self presentViewController:alert animated:YES completion:nil];

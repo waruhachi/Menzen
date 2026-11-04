@@ -1,3 +1,4 @@
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../../Shared/MZService.h"
 #import "../Helpers/MZDiscordColors.h"
 #import "../Helpers/MZImageLoader.h"
@@ -121,7 +122,7 @@ static UILabel *MZLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTraits tr
 
 		_emptyLabel = MZLabel(UIFontTextStyleSubheadline, 0, UIColor.secondaryLabelColor);
 		_emptyLabel.numberOfLines = 0;
-		_emptyLabel.text = @"Nothing is showing right now. Play something in a supported app and it appears here and on your profile.";
+		_emptyLabel.text = MZLocalizedString(@"activity.nothing_is_showing_right_now_play", @"Nothing is showing right now. Play something in a supported app and it appears here and on your profile.");
 
 		UIStackView *content = [[UIStackView alloc] initWithArrangedSubviews:@[_card, _emptyLabel]];
 		content.axis = UILayoutConstraintAxisVertical;
@@ -167,9 +168,9 @@ static UILabel *MZLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTraits tr
 
 	// Without a name, Discord uses the application's.
 	NSString *name = [activity[MZActivityNameKey] length] ? activity[MZActivityNameKey] : @"Menzen";
-	NSString *format = @"Listening to %@";
-	if ([activity[MZActivityKindKey] isEqualToString:@"watching"]) format = @"Watching %@";
-	if ([activity[MZActivityKindKey] isEqualToString:@"playing"]) format = @"Playing %@";
+	NSString *format = MZLocalizedString(@"activity.listening_to_x", @"Listening to %@");
+	if ([activity[MZActivityKindKey] isEqualToString:@"watching"]) format = MZLocalizedString(@"activity.watching_x", @"Watching %@");
+	if ([activity[MZActivityKindKey] isEqualToString:@"playing"]) format = MZLocalizedString(@"activity.playing_x", @"Playing %@");
 	_headerLabel.text = [NSString stringWithFormat:format, name];
 	_detailsLabel.text = activity[MZActivityDetailsKey];
 	_stateLabel.text = activity[MZActivityStateKey];

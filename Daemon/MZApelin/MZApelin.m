@@ -1,5 +1,6 @@
 #import <roothide.h>
 
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "MZApelin.h"
 
 // Each agent session is a folder in Apelin's documents: session.json has the
@@ -137,11 +138,20 @@ static NSString *MZAgent(NSURL *session) {
 	return state;
 }
 
+// "Installing a package" -> "installing_a_package".
+static NSString *MZStateKey(NSString *state) {
+	NSMutableString *key = [state.lowercaseString mutableCopy];
+	[key replaceOccurrencesOfString:@" " withString:@"_" options:0 range:NSMakeRange(0, key.length)];
+	return key;
+}
+
 MZApelinSession *MZReadApelinSession(void) {
 	NSURL *folder = MZNewestSession();
 	if (!folder) return nil;
 	MZApelinSession *session = [MZApelinSession new];
 	session.project = MZProject(folder);
-	session.agent = MZAgent(folder);
+	NSString *agent = MZAgent(folder);
+	// What the agent is doing, as people read it.
+	session.agent = agent ? MZLocalizedString([@"apelin.state." stringByAppendingString:MZStateKey(agent)], agent) : nil;
 	return session;
 }

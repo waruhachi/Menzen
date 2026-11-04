@@ -1,5 +1,6 @@
 #import <Preferences/PSSpecifier.h>
 
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../../Shared/MZService.h"
 #import "../Helpers/MZDiscordColors.h"
 #import "../Helpers/MZImageLoader.h"
@@ -162,7 +163,7 @@ static CGFloat const MZMemberStatusSize = 14;
 	NSDictionary *profile = [specifier propertyForKey:@"profile"];
 	NSString *globalName = profile[MZProfileGlobalNameKey];
 	NSString *username = profile[MZProfileUsernameKey];
-	_nameLabel.text = globalName.length ? globalName : (username.length ? username : @"You");
+	_nameLabel.text = globalName.length ? globalName : (username.length ? username : MZLocalizedString(@"preview.you", @"You"));
 	_nameColors = profile[MZProfileNameColorsKey];
 	_nameLabel.textColor = MZNameColor(_nameColors, _nameLabel.bounds.size);
 	[self setNeedsLayout];

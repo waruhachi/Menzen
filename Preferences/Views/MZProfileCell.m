@@ -1,5 +1,6 @@
 #import <Preferences/PSSpecifier.h>
 
+#import "../../Shared/MZLocalization/MZLocalization.h"
 #import "../../Shared/MZService.h"
 #import "../Helpers/MZDiscordColors.h"
 #import "../Helpers/MZImageLoader.h"
@@ -17,26 +18,26 @@ static NSArray<NSArray<NSString *> *> *MZBadgeDescriptions(NSDictionary *profile
 	static dispatch_once_t once;
 	dispatch_once(&once, ^{
 		descriptions = @{
-			@"staff": @[@"Discord Staff", @"star.circle.fill"],
-			@"partner": @[@"Partner", @"infinity.circle.fill"],
-			@"moderatorAlumni": @[@"Moderator Alumni", @"shield.fill"],
-			@"hypesquad": @[@"HypeSquad Events", @"house.fill"],
-			@"hypesquadBravery": @[@"HypeSquad Bravery", @"shield.lefthalf.filled"],
-			@"hypesquadBrilliance": @[@"HypeSquad Brilliance", @"diamond.fill"],
-			@"hypesquadBalance": @[@"HypeSquad Balance", @"scalemass.fill"],
-			@"bugHunter": @[@"Bug Hunter", @"ladybug.fill"],
-			@"bugHunterGold": @[@"Gold Bug Hunter", @"ladybug.fill"],
-			@"activeDeveloper": @[@"Active Developer", @"chevron.left.forwardslash.chevron.right"],
-			@"earlyVerifiedBotDeveloper": @[@"Early Verified Bot Developer", @"checkmark.seal.fill"],
-			@"earlySupporter": @[@"Early Supporter", @"heart.fill"],
+			@"staff": @[MZLocalizedString(@"profile.discord_staff", @"Discord Staff"), @"star.circle.fill"],
+			@"partner": @[MZLocalizedString(@"profile.partner", @"Partner"), @"infinity.circle.fill"],
+			@"moderatorAlumni": @[MZLocalizedString(@"profile.moderator_alumni", @"Moderator Alumni"), @"shield.fill"],
+			@"hypesquad": @[MZLocalizedString(@"profile.hypesquad_events", @"HypeSquad Events"), @"house.fill"],
+			@"hypesquadBravery": @[MZLocalizedString(@"profile.hypesquad_bravery", @"HypeSquad Bravery"), @"shield.lefthalf.filled"],
+			@"hypesquadBrilliance": @[MZLocalizedString(@"profile.hypesquad_brilliance", @"HypeSquad Brilliance"), @"diamond.fill"],
+			@"hypesquadBalance": @[MZLocalizedString(@"profile.hypesquad_balance", @"HypeSquad Balance"), @"scalemass.fill"],
+			@"bugHunter": @[MZLocalizedString(@"profile.bug_hunter", @"Bug Hunter"), @"ladybug.fill"],
+			@"bugHunterGold": @[MZLocalizedString(@"profile.gold_bug_hunter", @"Gold Bug Hunter"), @"ladybug.fill"],
+			@"activeDeveloper": @[MZLocalizedString(@"profile.active_developer", @"Active Developer"), @"chevron.left.forwardslash.chevron.right"],
+			@"earlyVerifiedBotDeveloper": @[MZLocalizedString(@"profile.early_verified_bot_developer", @"Early Verified Bot Developer"), @"checkmark.seal.fill"],
+			@"earlySupporter": @[MZLocalizedString(@"profile.early_supporter", @"Early Supporter"), @"heart.fill"],
 		};
 	});
 
 	NSMutableArray *result = [NSMutableArray array];
 	NSInteger premiumType = [profile[MZProfilePremiumTypeKey] integerValue];
-	if (premiumType == 1) [result addObject:@[@"Nitro Classic", @"bolt.circle.fill"]];
-	if (premiumType == 2) [result addObject:@[@"Nitro", @"bolt.circle.fill"]];
-	if (premiumType == 3) [result addObject:@[@"Nitro Basic", @"bolt.circle.fill"]];
+	if (premiumType == 1) [result addObject:@[MZLocalizedString(@"profile.nitro_classic", @"Nitro Classic"), @"bolt.circle.fill"]];
+	if (premiumType == 2) [result addObject:@[MZLocalizedString(@"profile.nitro", @"Nitro"), @"bolt.circle.fill"]];
+	if (premiumType == 3) [result addObject:@[MZLocalizedString(@"profile.nitro_basic", @"Nitro Basic"), @"bolt.circle.fill"]];
 	for (NSString *badge in profile[MZProfileBadgesKey]) {
 		NSArray *description = descriptions[badge];
 		if (description) [result addObject:description];

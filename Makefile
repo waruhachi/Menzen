@@ -10,7 +10,7 @@ $(foreach provider,$(MENZEN_PROVIDERS),$(eval include $(provider)/Apps.mk)$(eval
 undefine MENZEN_BUNDLES
 undefine MENZEN_PROCESSES
 
-SUBPROJECTS += Daemon Preferences
+SUBPROJECTS += Daemon Preferences ControlCenter
 INSTALL_TARGET_PROCESSES += SpringBoard Preferences
 
 include $(THEOS)/makefiles/common.mk

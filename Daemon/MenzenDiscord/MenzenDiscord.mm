@@ -188,6 +188,9 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	BOOL _signedIn;
 	NSString *_username;
 	NSString *_accountError;
+	// When the client started connecting or lost its connection; nil while
+	// connected or signed out.
+	NSDate *_connectingSince;
 	// In memory only, for the /users/@me request.
 	NSString *_accessToken;
 	NSDictionary<NSString *, id> *_profile;
@@ -247,6 +250,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSMutableDictionary *status = [NSMutableDictionary dictionary];
 	status[MenzenStatusSignedInKey] = @(_signedIn);
 	status[MenzenStatusConnectedKey] = @(_ready);
+	if (_signedIn && !_ready && _connectingSince) status[MenzenStatusConnectingSinceKey] = @(_connectingSince.timeIntervalSince1970);
 	status[MenzenStatusUsernameKey] = _username;
 	status[MenzenStatusErrorKey] = _accountError;
 	status[MenzenStatusProfileKey] = _profile;
@@ -388,6 +392,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	_profile = nil;
 	_profileFetchedAt = nil;
 	_ready = NO;
+	_connectingSince = nil;
 	_publishedKnown = NO;
 	[self expectCallbacks];
 	_client->Disconnect();
@@ -478,6 +483,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)connectWithAccessToken:(NSString *)accessToken {
 	_accessToken = accessToken;
+	if (!_ready && !_connectingSince) _connectingSince = NSDate.date;
 	std::shared_ptr<discordpp::Client> client = _client;
 	[self expectCallbacks];
 	_client->UpdateToken(discordpp::AuthorizationTokenType::Bearer, MenzenStdString(accessToken), [client](discordpp::ClientResult result) {
@@ -492,6 +498,11 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	// Connecting: more is on its way.
 	if (status != discordpp::Client::Status::Ready && status != discordpp::Client::Status::Disconnected) [self expectCallbacks];
 	_ready = status == discordpp::Client::Status::Ready;
+	if (_ready) {
+		_connectingSince = nil;
+	} else if (wasReady) {
+		_connectingSince = NSDate.date;
+	}
 	if (status == discordpp::Client::Status::Disconnected && errorDetail == MenzenAuthenticationFailedCloseCode) [self accessTokenRejected];
 	if (_ready) {
 		_rejectedTokenRefreshed = NO;

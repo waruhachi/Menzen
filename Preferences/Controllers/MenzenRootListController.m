@@ -17,6 +17,11 @@
 // The pane never sees a token: menzend hands it an authorize URL, the web
 // sign-in hands back a redirect, and the pane passes it straight to menzend.
 
+// Connecting normally takes a few seconds. Much longer usually means the
+// sign-in stopped working without Discord saying so, and signing in again
+// fixes it.
+static NSTimeInterval const MenzenConnectTimeout = 30;
+
 // The pane's lists have no separators.
 @interface MenzenListItemsController : PSListItemsController
 @end
@@ -50,6 +55,10 @@ static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString
 	// The last sign-in problem, shown until the next attempt.
 	NSString *_message;
 	UIRefreshControl *_refreshControl;
+	// When the pane first saw menzend connecting, used until menzend says
+	// since when (it only does once it has started connecting).
+	NSDate *_connectingSeen;
+	NSTimer *_connectTimer;
 }
 
 - (NSArray *)specifiers {
@@ -103,6 +112,7 @@ static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString
 
 - (void)dealloc {
 	[_session cancel];
+	[_connectTimer invalidate];
 }
 
 - (id<MenzenService>)service {
@@ -125,6 +135,7 @@ static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString
 			if (!strongSelf) return;
 			strongSelf->_status = status;
 			strongSelf->_unreachable = NO;
+			[strongSelf scheduleConnectTimeout];
 			[strongSelf reloadSpecifiers];
 		});
 	}];
@@ -139,6 +150,34 @@ static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString
 	if ([profile isKindOfClass:NSDictionary.class]) return profile;
 	NSString *username = _status[MenzenStatusUsernameKey];
 	return username ? @{MenzenProfileUsernameKey: username} : @{};
+}
+
+- (BOOL)connecting {
+	return self.signedIn && !_unreachable && !_status[MenzenStatusErrorKey] && ![_status[MenzenStatusConnectedKey] boolValue];
+}
+
+- (NSTimeInterval)connectingTime {
+	NSNumber *since = _status[MenzenStatusConnectingSinceKey];
+	NSDate *start = [since isKindOfClass:NSNumber.class] ? [NSDate dateWithTimeIntervalSince1970:since.doubleValue] : _connectingSeen;
+	return start ? MAX(-start.timeIntervalSinceNow, 0) : 0;
+}
+
+// Reloads once connecting has taken too long, to swap the spinner for a hint.
+- (void)scheduleConnectTimeout {
+	[_connectTimer invalidate];
+	_connectTimer = nil;
+	if (!self.connecting) {
+		_connectingSeen = nil;
+		return;
+	}
+
+	if (!_connectingSeen) _connectingSeen = NSDate.date;
+	NSTimeInterval remaining = MenzenConnectTimeout - self.connectingTime;
+	if (remaining <= 0) return;
+	__weak typeof(self) weakSelf = self;
+	_connectTimer = [NSTimer scheduledTimerWithTimeInterval:remaining repeats:NO block:^(NSTimer *timer) {
+		[weakSelf reloadSpecifiers];
+	}];
 }
 
 - (NSString *)unreachableMessage {
@@ -167,7 +206,9 @@ static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString
 		[header setProperty:self.unreachableMessage forKey:@"overlay"];
 	} else if (error) {
 		[header setProperty:error forKey:@"overlay"];
-	} else if (![_status[MenzenStatusConnectedKey] boolValue]) {
+	} else if (self.connecting && self.connectingTime >= MenzenConnectTimeout) {
+		[header setProperty:MenzenLocalizedString(@"root.discord_isn_t_connecting_sign_out", @"Discord isn't connecting. If you're online, sign out and sign in again.") forKey:@"overlay"];
+	} else if (self.connecting) {
 		[header setProperty:MenzenLocalizedString(@"root.connecting_to_discord", @"Connecting to Discord…") forKey:@"overlay"];
 		[header setProperty:@YES forKey:@"overlayBusy"];
 	}

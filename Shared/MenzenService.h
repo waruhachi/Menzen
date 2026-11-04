@@ -16,6 +16,8 @@ static uint64_t const MenzenApplicationId = 1564329461036617748ULL;
 #define MenzenStatusSignedInKey @"signedIn"
 #define MenzenStatusUsernameKey @"username"
 #define MenzenStatusConnectedKey @"connected"
+// Signed in but not connected: since when, in seconds since 1970.
+#define MenzenStatusConnectingSinceKey @"connectingSince"
 #define MenzenStatusErrorKey @"error"
 #define MenzenStatusProfileKey @"profile"
 // What Discord currently shows, when anything.

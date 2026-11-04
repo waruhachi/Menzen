@@ -122,6 +122,7 @@
 "root.clear_immediately" = "Clear Immediately";
 "root.connecting_to_discord" = "Connecting to Discord…";
 "root.custom_activity" = "Custom Activity";
+"root.discord_isn_t_connecting_sign_out" = "Discord isn't connecting. If you're online, sign out and sign in again.";
 "root.enabled" = "Enabled";
 "root.every_setting_goes_back_to_its" = "Every setting goes back to its default. You stay signed in, and your custom activity presets are kept.";
 "root.if_the_page_doesn_t_load" = "If the page doesn't load, sign in on another device.";

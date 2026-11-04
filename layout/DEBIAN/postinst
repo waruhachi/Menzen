@@ -9,6 +9,10 @@ case "$0" in
 esac
 PLIST="$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist"
 
+# Test builds before 1.0.0-rc.1 kept logs here of what was played and which
+# apps were open. Menzen no longer logs anything; don't leave them behind.
+rm -rf "$JBROOT/var/mobile/Library/Logs/Menzen"
+
 # Written here rather than shipped, since only now is the daemon's path known
 # (and release builds turn shipped plists into binary ones). postrm removes it.
 mkdir -p "$JBROOT/Library/LaunchDaemons"

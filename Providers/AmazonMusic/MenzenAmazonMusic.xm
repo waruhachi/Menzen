@@ -1,7 +1,7 @@
 #import <objc/runtime.h>
 
-#import "../../Shared/MZProvider/MZProvider.h"
-#import "../../Shared/MZProvider/MZResponses.h"
+#import "../../Shared/MenzenProvider/MenzenProvider.h"
+#import "../../Shared/MenzenProvider/MenzenResponses.h"
 
 // The app publishes no IDs. The playing track's row (AMPersistentEntity's
 // _objectDictionary) has its ASINs, and the album's cover URL comes from
@@ -13,8 +13,8 @@
 // Podcasts play in another player, driven by the podcast API's
 // SetEMPMediaMetadataMethod answers, matched by episode title and show.
 
-static MZCache<NSString *, NSString *> *covers;
-static MZCache<NSString *, NSDictionary *> *episodes;
+static MenzenCache<NSString *, NSString *> *covers;
+static MenzenCache<NSString *, NSDictionary *> *episodes;
 
 // Main thread only. NSNull for an artist without a picture.
 static NSMutableDictionary<NSString *, id> *artistPictures;
@@ -27,64 +27,64 @@ static NSObject *graphQLLock;
 static Class entityClass;
 static BOOL entityHasRow;
 
-static NSDictionary *MZRow(id entity);
+static NSDictionary *MenzenRow(id entity);
 
-static NSString *MZAmazonImageURL(id value) {
-	NSString *url = MZImageURL(value, @[@"m.media-amazon.com"]);
+static NSString *MenzenAmazonImageURL(id value) {
+	NSString *url = MenzenImageURL(value, @[@"m.media-amazon.com"]);
 	return url && ![url containsString:@"?"] ? url : nil;
 }
 
-static BOOL MZIsPodcastAPI(NSURL *url) {
+static BOOL MenzenIsPodcastAPI(NSURL *url) {
 	return [url.scheme isEqualToString:@"https"] && [url.host.lowercaseString isEqualToString:@"music.amazon.com"] && [url.path containsString:@"/api/podcast/"];
 }
 
-static void MZRememberEpisode(NSDictionary *metadata) {
-	NSString *title = MZString(metadata[@"trackName"]);
-	NSString *show = MZString(metadata[@"artist"]) ?: MZString(metadata[@"playbackSource"]);
-	NSString *key = MZPairKey(title, show);
+static void MenzenRememberEpisode(NSDictionary *metadata) {
+	NSString *title = MenzenString(metadata[@"trackName"]);
+	NSString *show = MenzenString(metadata[@"artist"]) ?: MenzenString(metadata[@"playbackSource"]);
+	NSString *key = MenzenPairKey(title, show);
 	if (!key) return;
-	NSString *showID = MZLinkURL(@"%@", metadata[@"artistId"]);
-	NSString *episodeID = MZLinkURL(@"%@", metadata[@"trackId"]);
+	NSString *showID = MenzenLinkURL(@"%@", metadata[@"artistId"]);
+	NSString *episodeID = MenzenLinkURL(@"%@", metadata[@"trackId"]);
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-	extras[MZExtrasCoverKey] = MZAmazonImageURL(metadata[@"coverId"]);
+	extras[MenzenExtrasCoverKey] = MenzenAmazonImageURL(metadata[@"coverId"]);
 	if (showID) {
 		// The app publishes the show as the album.
-		extras[MZExtrasAlbumURLKey] = [@"https://music.amazon.com/podcasts/" stringByAppendingString:showID];
-		if (episodeID) extras[MZExtrasTitleURLKey] = [NSString stringWithFormat:@"https://music.amazon.com/podcasts/%@/episodes/%@", showID, episodeID];
+		extras[MenzenExtrasAlbumURLKey] = [@"https://music.amazon.com/podcasts/" stringByAppendingString:showID];
+		if (episodeID) extras[MenzenExtrasTitleURLKey] = [NSString stringWithFormat:@"https://music.amazon.com/podcasts/%@/episodes/%@", showID, episodeID];
 	}
 
 	if (extras.count) episodes[key] = extras;
 }
 
-static void MZRemember(id object, NSUInteger depth) {
+static void MenzenRemember(id object, NSUInteger depth) {
 	if (depth > 12) return;
 	if ([object isKindOfClass:NSArray.class]) {
-		for (id item in object) MZRemember(item, depth + 1);
+		for (id item in object) MenzenRemember(item, depth + 1);
 		return;
 	}
 
 	if (![object isKindOfClass:NSDictionary.class]) return;
 	NSDictionary *dictionary = object;
-	if ([MZString(dictionary[@"__type"]) hasSuffix:@"#SetEMPMediaMetadataMethod"] && [dictionary[@"metadata"] isKindOfClass:NSDictionary.class]) MZRememberEpisode(dictionary[@"metadata"]);
+	if ([MenzenString(dictionary[@"__type"]) hasSuffix:@"#SetEMPMediaMetadataMethod"] && [dictionary[@"metadata"] isKindOfClass:NSDictionary.class]) MenzenRememberEpisode(dictionary[@"metadata"]);
 	for (id value in dictionary.allValues) {
-		if ([value isKindOfClass:NSArray.class] || [value isKindOfClass:NSDictionary.class]) MZRemember(value, depth + 1);
+		if ([value isKindOfClass:NSArray.class] || [value isKindOfClass:NSDictionary.class]) MenzenRemember(value, depth + 1);
 	}
 }
 
-static BOOL MZIsGraphQL(NSURL *url) {
+static BOOL MenzenIsGraphQL(NSURL *url) {
 	return [url.scheme isEqualToString:@"https"] && [url.host.lowercaseString isEqualToString:@"gql.music.amazon.dev"];
 }
 
 // The smallest profile picture at least 500 wide, else the widest; else the
 // banner, the same way.
-static NSString *MZArtistPicture(NSArray *images) {
+static NSString *MenzenArtistPicture(NSArray *images) {
 	if (![images isKindOfClass:NSArray.class]) return nil;
 	for (NSString *type in @[@"PROFILE", @"BACKGROUND"]) {
 		NSString *found = nil;
 		double foundWidth = 0;
 		for (NSDictionary *image in images) {
-			if (![image isKindOfClass:NSDictionary.class] || ![MZString(image[@"imageType"]) isEqualToString:type]) continue;
-			NSString *url = MZAmazonImageURL(image[@"url"]);
+			if (![image isKindOfClass:NSDictionary.class] || ![MenzenString(image[@"imageType"]) isEqualToString:type]) continue;
+			NSString *url = MenzenAmazonImageURL(image[@"url"]);
 			double width = [image[@"width"] isKindOfClass:NSNumber.class] ? [image[@"width"] doubleValue] : 0;
 			BOOL better = !found || (foundWidth < 500 ? width > foundWidth : width >= 500 && width < foundWidth);
 			if (url && better) {
@@ -98,7 +98,7 @@ static NSString *MZArtistPicture(NSArray *images) {
 	return nil;
 }
 
-static void MZLoadArtistPicture(NSString *artistASIN) {
+static void MenzenLoadArtistPicture(NSString *artistASIN) {
 	NSMutableURLRequest *request;
 	@synchronized(graphQLLock) {
 		request = [graphQLRequest mutableCopy];
@@ -118,47 +118,47 @@ static void MZLoadArtistPicture(NSString *artistASIN) {
 		NSInteger status = [response isKindOfClass:NSHTTPURLResponse.class] ? ((NSHTTPURLResponse *)response).statusCode : 0;
 		NSDictionary *document = !error && status == 200 && data.length <= 1024 * 1024 ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
 		NSDictionary *artist = [document isKindOfClass:NSDictionary.class] && [document[@"data"] isKindOfClass:NSDictionary.class] ? document[@"data"][@"artist"] : nil;
-		BOOL answered = [artist isKindOfClass:NSDictionary.class] && [MZString(artist[@"id"]) isEqualToString:artistASIN];
-		NSString *picture = answered ? MZArtistPicture(artist[@"images"]) : nil;
+		BOOL answered = [artist isKindOfClass:NSDictionary.class] && [MenzenString(artist[@"id"]) isEqualToString:artistASIN];
+		NSString *picture = answered ? MenzenArtistPicture(artist[@"images"]) : nil;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[artistPicturesLoading removeObject:artistASIN];
 			// No answer: a later update asks again.
 			if (!answered) return;
 			if (artistPictures.count > 1000) [artistPictures removeAllObjects];
 			artistPictures[artistASIN] = picture ?: (id)NSNull.null;
-			if (picture) MZRepublish();
+			if (picture) MenzenRepublish();
 		});
 	}] resume];
 }
 
-static NSDictionary *MZEpisodeExtras(NSDictionary *info) {
-	NSString *key = MZPairKey(MZString(info[MPMediaItemPropertyTitle]), MZString(info[MPMediaItemPropertyAlbumTitle]));
+static NSDictionary *MenzenEpisodeExtras(NSDictionary *info) {
+	NSString *key = MenzenPairKey(MenzenString(info[MPMediaItemPropertyTitle]), MenzenString(info[MPMediaItemPropertyAlbumTitle]));
 	return key ? episodes[key] : nil;
 }
 
-static NSDictionary *MZTrackExtras(NSDictionary *info) {
-	id track = MZGet(MZGet(%c(AMPlayer), @"sharedPlayer"), @"currentTrack");
-	NSDictionary *row = MZRow(track);
+static NSDictionary *MenzenTrackExtras(NSDictionary *info) {
+	id track = MenzenGet(MenzenGet(%c(AMPlayer), @"sharedPlayer"), @"currentTrack");
+	NSDictionary *row = MenzenRow(track);
 	// Only the playing track's; else an episode's.
-	NSString *title = MZString(row[@"name"]);
-	if (!title || ![title isEqualToString:MZString(info[MPMediaItemPropertyTitle])]) return MZEpisodeExtras(info);
+	NSString *title = MenzenString(row[@"name"]);
+	if (!title || ![title isEqualToString:MenzenString(info[MPMediaItemPropertyTitle])]) return MenzenEpisodeExtras(info);
 
-	NSString *trackASIN = MZLinkURL(@"%@", row[@"asin"]);
-	NSString *albumASIN = MZLinkURL(@"%@", row[@"albumASIN"]);
-	NSString *artistASIN = MZLinkURL(@"%@", row[@"trackArtistASIN"]) ?: MZLinkURL(@"%@", row[@"albumArtistASIN"]);
+	NSString *trackASIN = MenzenLinkURL(@"%@", row[@"asin"]);
+	NSString *albumASIN = MenzenLinkURL(@"%@", row[@"albumASIN"]);
+	NSString *artistASIN = MenzenLinkURL(@"%@", row[@"trackArtistASIN"]) ?: MenzenLinkURL(@"%@", row[@"albumArtistASIN"]);
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	if (albumASIN) {
-		extras[MZExtrasCoverKey] = covers[albumASIN];
-		extras[MZExtrasAlbumURLKey] = [@"https://music.amazon.com/albums/" stringByAppendingString:albumASIN];
-		if (trackASIN) extras[MZExtrasTitleURLKey] = [NSString stringWithFormat:@"https://music.amazon.com/albums/%@?trackAsin=%@", albumASIN, trackASIN];
+		extras[MenzenExtrasCoverKey] = covers[albumASIN];
+		extras[MenzenExtrasAlbumURLKey] = [@"https://music.amazon.com/albums/" stringByAppendingString:albumASIN];
+		if (trackASIN) extras[MenzenExtrasTitleURLKey] = [NSString stringWithFormat:@"https://music.amazon.com/albums/%@?trackAsin=%@", albumASIN, trackASIN];
 	}
 
 	if (artistASIN) {
-		extras[MZExtrasArtistURLKey] = [@"https://music.amazon.com/artists/" stringByAppendingString:artistASIN];
-		extras[MZExtrasArtistNameKey] = MZString(row[@"trackArtistName"]);
+		extras[MenzenExtrasArtistURLKey] = [@"https://music.amazon.com/artists/" stringByAppendingString:artistASIN];
+		extras[MenzenExtrasArtistNameKey] = MenzenString(row[@"trackArtistName"]);
 		id picture = artistPictures[artistASIN];
-		if ([picture isKindOfClass:NSString.class]) extras[MZExtrasArtistImageKey] = picture;
-		else if (!picture) MZLoadArtistPicture(artistASIN);
+		if ([picture isKindOfClass:NSString.class]) extras[MenzenExtrasArtistImageKey] = picture;
+		else if (!picture) MenzenLoadArtistPicture(artistASIN);
 	}
 
 	return extras;
@@ -168,8 +168,8 @@ static NSDictionary *MZTrackExtras(NSDictionary *info) {
 
 - (NSURL *)imageURLForRequest:(id)request {
 	NSURL *url = %orig;
-	NSString *asin = MZLinkURL(@"%@", MZRow(self)[@"asin"]);
-	NSString *cover = MZAmazonImageURL(url);
+	NSString *asin = MenzenLinkURL(@"%@", MenzenRow(self)[@"asin"]);
+	NSString *cover = MenzenAmazonImageURL(url);
 	if (asin && cover) covers[asin] = cover;
 	return url;
 }
@@ -178,16 +178,16 @@ static NSDictionary *MZTrackExtras(NSDictionary *info) {
 
 // Read from the ivar: the entity's methods expect the app's own threads and
 // state.
-static NSDictionary *MZRow(id entity) {
+static NSDictionary *MenzenRow(id entity) {
 	if (!entityHasRow || ![entity isKindOfClass:entityClass]) return nil;
 	id row = MSHookIvar<id>(entity, "_objectDictionary");
 	return [row isKindOfClass:NSDictionary.class] ? row : nil;
 }
 
-static NSDictionary<NSString *, NSString *> *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
+static NSDictionary<NSString *, NSString *> *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
 	// The player belongs to the main thread, where the app publishes tracks.
-	return NSThread.isMainThread ? MZTrackExtras(info) : MZEpisodeExtras(info);
+	return NSThread.isMainThread ? MenzenTrackExtras(info) : MenzenEpisodeExtras(info);
 }
 
 %ctor {
@@ -197,31 +197,31 @@ static NSDictionary<NSString *, NSString *> *MZExtras(MPNowPlayingInfoCenter *ce
 	const char *type = ivar ? ivar_getTypeEncoding(ivar) : NULL;
 	entityHasRow = type && type[0] == '@';
 
-	covers = [[MZCache alloc] initWithLimit:2000];
-	episodes = [[MZCache alloc] initWithLimit:2000];
+	covers = [[MenzenCache alloc] initWithLimit:2000];
+	episodes = [[MenzenCache alloc] initWithLimit:2000];
 	artistPictures = [NSMutableDictionary dictionary];
 	artistPicturesLoading = [NSMutableSet set];
 	graphQLLock = [NSObject new];
-	MZProviderCheck(@[
+	MenzenProviderCheck(@[
 		@"AMPlayer +sharedPlayer",
 		@"AMPlayer -currentTrack",
 		@"AMPersistentEntity _objectDictionary",
 		@"AMPersistedAlbum -imageURLForRequest:",
 	], @[]);
-	MZAddExtras(MZExtras);
-	MZModifyRequests(^NSURLRequest *(NSURLRequest *request) {
-		if (MZIsGraphQL(request.URL) && [request.HTTPMethod isEqualToString:@"POST"] && ![NSURLProtocol propertyForKey:@"moe.waru.menzen" inRequest:request]) {
+	MenzenAddExtras(MenzenExtras);
+	MenzenModifyRequests(^NSURLRequest *(NSURLRequest *request) {
+		if (MenzenIsGraphQL(request.URL) && [request.HTTPMethod isEqualToString:@"POST"] && ![NSURLProtocol propertyForKey:@"moe.waru.menzen" inRequest:request]) {
 			@synchronized(graphQLLock) {
 				graphQLRequest = [request copy];
 			}
 		}
 		return request;
 	});
-	MZObserveResponses(^BOOL(NSURL *url) {
-		return MZIsPodcastAPI(url);
+	MenzenObserveResponses(^BOOL(NSURL *url) {
+		return MenzenIsPodcastAPI(url);
 	}, ^(NSURL *url, NSData *body) {
-		id object = MZJSON(body);
-		if (object) MZRemember(object, 0);
+		id object = MenzenJSON(body);
+		if (object) MenzenRemember(object, 0);
 	});
 	%init;
 }

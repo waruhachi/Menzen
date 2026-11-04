@@ -1,6 +1,6 @@
 #import <UIKit/UIKit.h>
 
-#import "../../Shared/MZProvider/MZProvider.h"
+#import "../../Shared/MenzenProvider/MenzenProvider.h"
 
 // An episode is published as "Netflix - <show>". The player's
 // model.videoModel has the real title, show, numbers and cover.
@@ -10,21 +10,21 @@
 
 static __weak UIViewController *player;
 
-static NSString *MZText(id object, NSString *key) {
-	id value = MZGet(object, key);
+static NSString *MenzenText(id object, NSString *key) {
+	id value = MenzenGet(object, key);
 	return [value isKindOfClass:NSString.class] && [value length] ? value : nil;
 }
 
 // Some episode pictures have URLs longer than Discord takes; the show's
 // picture then.
-static NSString *MZCover(id video) {
+static NSString *MenzenCover(id video) {
 	NSMutableArray *pictures = [NSMutableArray array];
 	for (NSString *key in @[@"nowPlayingImageUrl", @"airPlayImageUrl"]) {
-		NSString *picture = MZText(video, key);
+		NSString *picture = MenzenText(video, key);
 		if (picture) [pictures addObject:picture];
 	}
 
-	id panels = MZGet(video, @"shortPanelArt");
+	id panels = MenzenGet(video, @"shortPanelArt");
 	if ([panels isKindOfClass:NSArray.class]) [pictures addObjectsFromArray:panels];
 	for (NSString *picture in pictures) {
 		if ([picture isKindOfClass:NSString.class] && [picture hasPrefix:@"https://"] && picture.length <= 256) return picture;
@@ -33,8 +33,8 @@ static NSString *MZCover(id video) {
 	return nil;
 }
 
-static NSString *MZNumber(id object, NSString *key) {
-	id value = MZGet(object, key);
+static NSString *MenzenNumber(id object, NSString *key) {
+	id value = MenzenGet(object, key);
 	return [value isKindOfClass:NSNumber.class] && [value integerValue] > 0 ? [value stringValue] : nil;
 }
 
@@ -47,11 +47,11 @@ static NSString *MZNumber(id object, NSString *key) {
 
 %end
 
-static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
-	id video = MZGet(MZGet(player, @"model"), @"videoModel");
-	NSString *title = MZText(video, @"title");
-	NSString *show = MZText(video, @"showTitle");
-	NSString *infoTitle = MZString(info[MPMediaItemPropertyTitle]);
+static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
+	id video = MenzenGet(MenzenGet(player, @"model"), @"videoModel");
+	NSString *title = MenzenText(video, @"title");
+	NSString *show = MenzenText(video, @"showTitle");
+	NSString *infoTitle = MenzenString(info[MPMediaItemPropertyTitle]);
 	// Only the video's own info, which is titled after its show (or itself).
 	if (!title || center != MPNowPlayingInfoCenter.defaultCenter || ![infoTitle hasSuffix:show ?: title]) return nil;
 
@@ -66,19 +66,19 @@ static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info
 	}
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-	extras[MZExtrasCoverKey] = MZCover(video);
-	extras[MZExtrasTitleURLKey] = MZLinkURL(@"https://www.netflix.com/watch/%@", MZGet(video, @"videoId"));
-	if (episode) extras[MZExtrasArtistURLKey] = MZLinkURL(@"https://www.netflix.com/title/%@", MZGet(video, @"showId"));
-	if (episode && ![MZGet(video, @"hasHiddenEpisodeNumbers") boolValue]) {
-		extras[MZExtrasSeasonKey] = MZNumber(video, @"seasonNumber");
-		extras[MZExtrasEpisodeKey] = MZNumber(video, @"episodeNumber");
+	extras[MenzenExtrasCoverKey] = MenzenCover(video);
+	extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://www.netflix.com/watch/%@", MenzenGet(video, @"videoId"));
+	if (episode) extras[MenzenExtrasArtistURLKey] = MenzenLinkURL(@"https://www.netflix.com/title/%@", MenzenGet(video, @"showId"));
+	if (episode && ![MenzenGet(video, @"hasHiddenEpisodeNumbers") boolValue]) {
+		extras[MenzenExtrasSeasonKey] = MenzenNumber(video, @"seasonNumber");
+		extras[MenzenExtrasEpisodeKey] = MenzenNumber(video, @"episodeNumber");
 	}
 
 	return extras;
 }
 
 %ctor {
-	MZProviderCheck(@[@"NFUIFullPlayerViewController -viewWillAppear:", @"NFUIFullPlayerViewController -model"], @[]);
-	MZAddExtras(MZExtras);
+	MenzenProviderCheck(@[@"NFUIFullPlayerViewController -viewWillAppear:", @"NFUIFullPlayerViewController -model"], @[]);
+	MenzenAddExtras(MenzenExtras);
 	%init;
 }

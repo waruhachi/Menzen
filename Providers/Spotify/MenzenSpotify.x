@@ -1,6 +1,6 @@
 #import <objc/runtime.h>
 
-#import "../../Shared/MZProvider/MZProvider.h"
+#import "../../Shared/MenzenProvider/MenzenProvider.h"
 
 // The cover and links come from the player's track metadata; the artist's
 // picture from Spotify's internal API, through the app's own signed-in data
@@ -49,59 +49,59 @@ static __weak id signedLoaderFactory;
 static NSMutableDictionary<NSString *, id> *artistPictures;
 static NSMutableSet<NSString *> *artistPicturesLoading;
 
-static NSString *MZURIString(id uri) {
+static NSString *MenzenURIString(id uri) {
 	if ([uri isKindOfClass:NSString.class]) return uri;
 	if ([uri respondsToSelector:@selector(absoluteString)]) return [uri absoluteString];
 	return [uri description];
 }
 
-static NSString *MZMetadataString(SPTPlayerTrack *track, NSString *key) {
+static NSString *MenzenMetadataString(SPTPlayerTrack *track, NSString *key) {
 	NSDictionary *metadata = [track respondsToSelector:@selector(metadata)] ? track.metadata : nil;
 	id value = [metadata isKindOfClass:NSDictionary.class] ? metadata[key] : nil;
 	return [value isKindOfClass:NSString.class] && [value length] ? value : nil;
 }
 
-static NSString *MZSpotifyImageURL(NSString *value) {
+static NSString *MenzenSpotifyImageURL(NSString *value) {
 	if ([value hasPrefix:@"spotify:image:"]) return [@"https://i.scdn.co/image/" stringByAppendingString:[value substringFromIndex:@"spotify:image:".length]];
 	return value && [[NSURL URLWithString:value].scheme isEqualToString:@"https"] ? value : nil;
 }
 
-static NSString *MZCoverURL(SPTPlayerTrack *track) {
+static NSString *MenzenCoverURL(SPTPlayerTrack *track) {
 	for (NSString *field in @[@"image_xlarge_url", @"image_large_url", @"image_url"]) {
-		NSString *url = MZSpotifyImageURL(MZMetadataString(track, field));
+		NSString *url = MenzenSpotifyImageURL(MenzenMetadataString(track, field));
 		if (url) return url;
 	}
 
 	return nil;
 }
 
-static NSString *const MZBase62 = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static NSString *const MenzenBase62 = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 // The base62 ID in "spotify:<type>:<id>".
-static NSString *MZEntityID(NSString *uri, NSString *type) {
+static NSString *MenzenEntityID(NSString *uri, NSString *type) {
 	NSString *prefix = [NSString stringWithFormat:@"spotify:%@:", type];
 	if (![uri hasPrefix:prefix]) return nil;
 	NSString *identifier = [uri substringFromIndex:prefix.length];
-	NSCharacterSet *invalid = [NSCharacterSet characterSetWithCharactersInString:MZBase62].invertedSet;
+	NSCharacterSet *invalid = [NSCharacterSet characterSetWithCharactersInString:MenzenBase62].invertedSet;
 	return identifier.length == 22 && [identifier rangeOfCharacterFromSet:invalid].location == NSNotFound ? identifier : nil;
 }
 
-static NSString *MZWebURL(NSString *uri, NSString *type) {
-	NSString *identifier = MZEntityID(uri, type);
+static NSString *MenzenWebURL(NSString *uri, NSString *type) {
+	NSString *identifier = MenzenEntityID(uri, type);
 	return identifier ? [NSString stringWithFormat:@"https://open.spotify.com/%@/%@", type, identifier] : nil;
 }
 
 // Spotify's API names entities by the ID's 128 bit value in hex.
-static NSString *MZHexID(NSString *base62) {
+static NSString *MenzenHexID(NSString *base62) {
 	unsigned __int128 value = 0;
 	for (NSUInteger i = 0; i < base62.length; i++) {
-		value = value * 62 + [MZBase62 rangeOfString:[base62 substringWithRange:NSMakeRange(i, 1)]].location;
+		value = value * 62 + [MenzenBase62 rangeOfString:[base62 substringWithRange:NSMakeRange(i, 1)]].location;
 	}
 
 	return [NSString stringWithFormat:@"%016llx%016llx", (unsigned long long)(value >> 64), (unsigned long long)value];
 }
 
-static NSString *MZPortraitURL(NSDictionary *artist) {
+static NSString *MenzenPortraitURL(NSDictionary *artist) {
 	NSDictionary *group = artist[@"portrait_group"];
 	NSArray *images = [group isKindOfClass:NSDictionary.class] ? group[@"image"] : nil;
 	if (![images isKindOfClass:NSArray.class]) return nil;
@@ -121,7 +121,7 @@ static NSString *MZPortraitURL(NSDictionary *artist) {
 }
 
 // Tries each factory until one is signed in; done(nil) when none is.
-static void MZLoadArtist(NSString *hexID, NSArray *factories, void (^done)(NSDictionary *artist)) {
+static void MenzenLoadArtist(NSString *hexID, NSArray *factories, void (^done)(NSDictionary *artist)) {
 	if (!factories.count) {
 		done(nil);
 		return;
@@ -139,7 +139,7 @@ static void MZLoadArtist(NSString *hexID, NSArray *factories, void (^done)(NSDic
 		id artist = response.statusCode == 200 && response.body ? [NSJSONSerialization JSONObjectWithData:response.body options:0 error:NULL] : nil;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			if (![artist isKindOfClass:NSDictionary.class]) {
-				MZLoadArtist(hexID, [factories subarrayWithRange:NSMakeRange(1, factories.count - 1)], done);
+				MenzenLoadArtist(hexID, [factories subarrayWithRange:NSMakeRange(1, factories.count - 1)], done);
 				return;
 			}
 			signedLoaderFactory = factory;
@@ -150,8 +150,8 @@ static void MZLoadArtist(NSString *hexID, NSArray *factories, void (^done)(NSDic
 
 // The artist's picture if it's known; otherwise starts loading it and
 // publishes the info again once it's in.
-static NSString *MZArtistPicture(NSString *artistURI) {
-	NSString *identifier = MZEntityID(artistURI, @"artist");
+static NSString *MenzenArtistPicture(NSString *artistURI) {
+	NSString *identifier = MenzenEntityID(artistURI, @"artist");
 	if (!identifier) return nil;
 	id known = artistPictures[artistURI];
 	if (known) return [known isKindOfClass:NSString.class] ? known : nil;
@@ -169,41 +169,41 @@ static NSString *MZArtistPicture(NSString *artistURI) {
 	if (!artistPictures) artistPictures = [NSMutableDictionary dictionary];
 	if (!artistPicturesLoading) artistPicturesLoading = [NSMutableSet set];
 	[artistPicturesLoading addObject:artistURI];
-	MZLoadArtist(MZHexID(identifier), factories, ^(NSDictionary *artist) {
+	MenzenLoadArtist(MenzenHexID(identifier), factories, ^(NSDictionary *artist) {
 		[artistPicturesLoading removeObject:artistURI];
 		// No signed factory yet: a later track tries again.
 		if (!artist) return;
-		artistPictures[artistURI] = MZPortraitURL(artist) ?: (id)NSNull.null;
-		MZRepublish();
+		artistPictures[artistURI] = MenzenPortraitURL(artist) ?: (id)NSNull.null;
+		MenzenRepublish();
 	});
 	return nil;
 }
 
 // The info's external content identifier is "<track uri>#<uuid>".
-static NSString *MZTrackURIInInfo(NSDictionary *info) {
+static NSString *MenzenTrackURIInInfo(NSDictionary *info) {
 	NSString *identifier = info[MPNowPlayingInfoPropertyExternalContentIdentifier];
 	if (![identifier isKindOfClass:NSString.class]) return nil;
 	return [identifier componentsSeparatedByString:@"#"].firstObject;
 }
 
-static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
+static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	// Only when the player is on the same track as the info, so a stale or
 	// early state never pairs a cover with the wrong song.
 	SPTPlayerState *state = [player respondsToSelector:@selector(state)] ? player.state : nil;
 	SPTPlayerTrack *track = [state respondsToSelector:@selector(track)] ? state.track : nil;
-	NSString *trackURI = MZTrackURIInInfo(info);
-	if (!trackURI || ![track respondsToSelector:@selector(URI)] || ![trackURI isEqualToString:MZURIString(track.URI)]) return nil;
+	NSString *trackURI = MenzenTrackURIInInfo(info);
+	if (!trackURI || ![track respondsToSelector:@selector(URI)] || ![trackURI isEqualToString:MenzenURIString(track.URI)]) return nil;
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-	extras[MZExtrasCoverKey] = MZCoverURL(track);
-	extras[MZExtrasTitleURLKey] = MZWebURL(trackURI, @"track") ?: MZWebURL(trackURI, @"episode");
-	NSString *artistURI = MZMetadataString(track, @"artist_uri");
-	extras[MZExtrasArtistURLKey] = MZWebURL(artistURI, @"artist");
-	extras[MZExtrasAlbumURLKey] = MZWebURL(MZMetadataString(track, @"album_uri"), @"album");
-	NSString *picture = MZArtistPicture(artistURI);
+	extras[MenzenExtrasCoverKey] = MenzenCoverURL(track);
+	extras[MenzenExtrasTitleURLKey] = MenzenWebURL(trackURI, @"track") ?: MenzenWebURL(trackURI, @"episode");
+	NSString *artistURI = MenzenMetadataString(track, @"artist_uri");
+	extras[MenzenExtrasArtistURLKey] = MenzenWebURL(artistURI, @"artist");
+	extras[MenzenExtrasAlbumURLKey] = MenzenWebURL(MenzenMetadataString(track, @"album_uri"), @"album");
+	NSString *picture = MenzenArtistPicture(artistURI);
 	if (picture) {
-		extras[MZExtrasArtistImageKey] = picture;
-		extras[MZExtrasArtistNameKey] = MZMetadataString(track, @"artist_name");
+		extras[MenzenExtrasArtistImageKey] = picture;
+		extras[MenzenExtrasArtistNameKey] = MenzenMetadataString(track, @"artist_name");
 	}
 
 	return extras;
@@ -220,7 +220,7 @@ static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info
 
 %group LoaderFactory
 
-%hook MZLoaderFactory
+%hook MenzenLoaderFactory
 
 - (id)createDataLoader {
 	if (!loaderFactories) loaderFactories = [NSHashTable weakObjectsHashTable];
@@ -233,7 +233,7 @@ static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info
 %end
 
 %ctor {
-	MZProviderCheck(@[
+	MenzenProviderCheck(@[
 		@"SPTEsperantoPlayer -addPlayerObserver:",
 		@"SPTEsperantoPlayer -state",
 		@"SPTPlayerState -track",
@@ -245,9 +245,9 @@ static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info
 		@"SPTDataLoaderBlockWrapper -performRequest:completion:",
 		@"Connectivity_HttpClientKit.DataLoaderFactoryHttpClientImpl -createDataLoader | SPTDataLoaderFactory -createDataLoader",
 	]);
-	MZAddExtras(MZExtras);
+	MenzenAddExtras(MenzenExtras);
 	%init;
 	// Spotify's Swift subclass of SPTDataLoaderFactory makes the signed ones.
 	Class factoryClass = objc_getClass("Connectivity_HttpClientKit.DataLoaderFactoryHttpClientImpl") ?: %c(SPTDataLoaderFactory);
-	if (factoryClass) %init(LoaderFactory, MZLoaderFactory = factoryClass);
+	if (factoryClass) %init(LoaderFactory, MenzenLoaderFactory = factoryClass);
 }

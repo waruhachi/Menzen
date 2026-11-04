@@ -10,10 +10,10 @@
 	<true/>
 	<key>com.apple.mediaremote.full-now-playing-read-access</key>
 	<true/>
-	<!-- Which app is on screen, for MZForegroundApps. -->
+	<!-- Which app is on screen, for MenzenForegroundApps. -->
 	<key>com.apple.runningboard.process-state</key>
 	<true/>
-	<!-- Launching apps for MZAppChecker. -->
+	<!-- Launching apps for MenzenAppChecker. -->
 	<key>com.apple.frontboard.launchapplications</key>
 	<true/>
 	<key>keychain-access-groups</key>

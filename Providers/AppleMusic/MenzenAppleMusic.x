@@ -1,6 +1,6 @@
 
-#import "../../Shared/MZProvider/MZProvider.h"
-#import "../../Shared/MZThrottle.h"
+#import "../../Shared/MenzenProvider/MenzenProvider.h"
+#import "../../Shared/MenzenThrottle.h"
 
 // The info already has the cover and catalog IDs, but not the artist's
 // picture, which comes from the app's own store metadata request. The
@@ -41,9 +41,9 @@
 - (id)getStoreItemMetadataForRequest:(MPStoreItemMetadataRequest *)request responseHandler:(void (^)(MPStoreItemMetadataResponse *response, NSError *error))handler;
 @end
 
-static NSTimeInterval const MZPostDelay = 1;
+static NSTimeInterval const MenzenPostDelay = 1;
 // Each refetch asks the store about every artist still held.
-static NSTimeInterval const MZRefetchInterval = 30;
+static NSTimeInterval const MenzenRefetchInterval = 30;
 
 // NSNull for an artist without a picture.
 static NSMutableDictionary<NSString *, id> *artists;
@@ -51,11 +51,11 @@ static NSMutableDictionary<NSString *, NSHashTable *> *artistsLoading;
 // Items handed out that the app still holds, for a refetch.
 static NSHashTable *items;
 
-static void MZSetAssetURL(MRContentItem *contentItem, NSURL *url) {
+static void MenzenSetAssetURL(MRContentItem *contentItem, NSURL *url) {
 	if (![contentItem respondsToSelector:@selector(metadata)] || ![contentItem respondsToSelector:@selector(setMetadata:)]) return;
 	MRContentItemMetadata *metadata = [contentItem.metadata copy] ?: [%c(MRContentItemMetadata) new];
 	// The app's own asset URL (a local file) wins.
-	if (![metadata respondsToSelector:@selector(setAssetURL:)] || (metadata.assetURL && ![metadata.assetURL.scheme isEqualToString:MZExtrasScheme])) return;
+	if (![metadata respondsToSelector:@selector(setAssetURL:)] || (metadata.assetURL && ![metadata.assetURL.scheme isEqualToString:MenzenExtrasScheme])) return;
 	metadata.assetURL = url;
 	contentItem.metadata = metadata;
 }
@@ -64,22 +64,22 @@ static void MZSetAssetURL(MRContentItem *contentItem, NSURL *url) {
 // takes the change the way the app sends its own. Once is enough: the item
 // keeps it. Only a different picture (after a refetch) replaces ours, and
 // the app's own asset URL is never replaced.
-static void MZPostAssetURL(MPNowPlayingContentItem *item, NSURL *url) {
+static void MenzenPostAssetURL(MPNowPlayingContentItem *item, NSURL *url) {
 	if (![item respondsToSelector:@selector(_postItemChangedNotificationWithDeltaBlock:)]) return;
 	MRContentItem *contentItem = (__bridge MRContentItem *)[item _mediaRemoteContentItem];
 	NSURL *current = [contentItem respondsToSelector:@selector(metadata)] ? contentItem.metadata.assetURL : nil;
-	if (current && (![current.scheme isEqualToString:MZExtrasScheme] || [current isEqual:url])) return;
+	if (current && (![current.scheme isEqualToString:MenzenExtrasScheme] || [current isEqual:url])) return;
 	[item _postItemChangedNotificationWithDeltaBlock:^(void *delta) {
-		MZSetAssetURL((__bridge MRContentItem *)delta, url);
+		MenzenSetAssetURL((__bridge MRContentItem *)delta, url);
 	}];
-	MZProviderWorked();
+	MenzenProviderWorked();
 }
 
-static NSURL *MZExtrasURLForArtist(id extras) {
-	return [extras isKindOfClass:NSDictionary.class] ? MZExtrasURL(extras) : nil;
+static NSURL *MenzenExtrasURLForArtist(id extras) {
+	return [extras isKindOfClass:NSDictionary.class] ? MenzenExtrasURL(extras) : nil;
 }
 
-static NSString *MZArtworkURL(NSDictionary *artist) {
+static NSString *MenzenArtworkURL(NSDictionary *artist) {
 	NSDictionary *artwork = [artist isKindOfClass:NSDictionary.class] ? artist[@"artwork"] : nil;
 	NSString *url = [artwork isKindOfClass:NSDictionary.class] ? artwork[@"url"] : nil;
 	if (![url isKindOfClass:NSString.class]) return nil;
@@ -90,15 +90,15 @@ static NSString *MZArtworkURL(NSDictionary *artist) {
 	return [url hasPrefix:@"https://"] && ![url containsString:@"{"] ? url : nil;
 }
 
-static void MZLoadArtist(NSString *artistID) {
+static void MenzenLoadArtist(NSString *artistID) {
 	MPStoreItemMetadataRequest *request = [%c(MPStoreItemMetadataRequest) new];
 	request.itemIdentifiers = @[artistID];
 	[[%c(MPStoreItemMetadataRequestController) sharedStoreItemMetadataRequestController] getStoreItemMetadataForRequest:request responseHandler:^(MPStoreItemMetadataResponse *response, NSError *error) {
 		MPStoreItemMetadata *metadata = [response respondsToSelector:@selector(storeItemMetadataForItemIdentifier:)] ? [response storeItemMetadataForItemIdentifier:artistID] : nil;
-		NSString *picture = [metadata respondsToSelector:@selector(effectiveStorePlatformDictionary)] ? MZArtworkURL(metadata.effectiveStorePlatformDictionary) : nil;
+		NSString *picture = [metadata respondsToSelector:@selector(effectiveStorePlatformDictionary)] ? MenzenArtworkURL(metadata.effectiveStorePlatformDictionary) : nil;
 		NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-		extras[MZExtrasArtistImageKey] = picture;
-		extras[MZExtrasArtistNameKey] = [metadata respondsToSelector:@selector(name)] && [metadata.name isKindOfClass:NSString.class] ? metadata.name : nil;
+		extras[MenzenExtrasArtistImageKey] = picture;
+		extras[MenzenExtrasArtistNameKey] = [metadata respondsToSelector:@selector(name)] && [metadata.name isKindOfClass:NSString.class] ? metadata.name : nil;
 
 		NSArray *waiting;
 		@synchronized(artists) {
@@ -115,15 +115,15 @@ static void MZLoadArtist(NSString *artistID) {
 			[artistsLoading removeObjectForKey:artistID];
 			artists[artistID] = extras;
 		}
-		NSURL *url = MZExtrasURLForArtist(artists[artistID]);
+		NSURL *url = MenzenExtrasURLForArtist(artists[artistID]);
 		if (!url) return;
 		dispatch_async(dispatch_get_main_queue(), ^{
-			for (MPNowPlayingContentItem *item in waiting) MZPostAssetURL(item, url);
+			for (MPNowPlayingContentItem *item in waiting) MenzenPostAssetURL(item, url);
 		});
 	}];
 }
 
-static void MZAddArtistPicture(MPNowPlayingContentItem *item) {
+static void MenzenAddArtistPicture(MPNowPlayingContentItem *item) {
 	if (![item respondsToSelector:@selector(_mediaRemoteContentItem)]) return;
 	id artistID = [item valueForKey:@"storeArtistID"];
 	if (![artistID respondsToSelector:@selector(longLongValue)] || [artistID longLongValue] <= 0) return;
@@ -140,48 +140,48 @@ static void MZAddArtistPicture(MPNowPlayingContentItem *item) {
 			if (!loading) artistsLoading[identifier] = [NSHashTable weakObjectsHashTable];
 			[artistsLoading[identifier] addObject:item];
 			if (!loading) dispatch_async(dispatch_get_main_queue(), ^{
-				MZLoadArtist(identifier);
+				MenzenLoadArtist(identifier);
 			});
 			return;
 		}
 	}
 
-	NSURL *url = MZExtrasURLForArtist(extras);
+	NSURL *url = MenzenExtrasURLForArtist(extras);
 	// After the item is out: a change posted before MediaRemote has the item
 	// is lost (a new song by a known artist comes straight here).
-	if (url) dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MZPostDelay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-		MZPostAssetURL(item, url);
+	if (url) dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenPostDelay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		MenzenPostAssetURL(item, url);
 	});
 }
 
 // Forgets every artist and looks up the ones still playing or queued again.
-static void MZRefetch(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
-	static MZThrottle throttle;
+static void MenzenRefetch(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
+	static MenzenThrottle throttle;
 	dispatch_async(dispatch_get_main_queue(), ^{
-		MZThrottleRun(&throttle, MZRefetchInterval, ^{
+		MenzenThrottleRun(&throttle, MenzenRefetchInterval, ^{
 			NSArray *held;
 			@synchronized(artists) {
 				[artists removeAllObjects];
 				[artistsLoading removeAllObjects];
 				held = items.allObjects;
 			}
-			for (MPNowPlayingContentItem *item in held) MZAddArtistPicture(item);
+			for (MPNowPlayingContentItem *item in held) MenzenAddArtistPicture(item);
 		});
 	});
 }
 
-%hook MZPublisher
+%hook MenzenPublisher
 
 - (id)nowPlayingInfoCenter:(MPNowPlayingInfoCenter *)center contentItemForID:(NSString *)identifier {
 	id item = %orig;
-	if ([item isKindOfClass:%c(MPNowPlayingContentItem)]) MZAddArtistPicture(item);
+	if ([item isKindOfClass:%c(MPNowPlayingContentItem)]) MenzenAddArtistPicture(item);
 	return item;
 }
 
 %end
 
 %ctor {
-	MZProviderCheck(@[
+	MenzenProviderCheck(@[
 		@"_MPCMediaRemotePublisher -nowPlayingInfoCenter:contentItemForID:",
 		@"MPNowPlayingContentItem -_mediaRemoteContentItem",
 		@"MPNowPlayingContentItem -_postItemChangedNotificationWithDeltaBlock:",
@@ -197,6 +197,6 @@ static void MZRefetch(CFNotificationCenterRef center, void *observer, CFNotifica
 	artists = [NSMutableDictionary dictionary];
 	artistsLoading = [NSMutableDictionary dictionary];
 	items = [NSHashTable weakObjectsHashTable];
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, MZRefetch, CFSTR(MZRefetchNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
-	%init(MZPublisher = publisher);
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, MenzenRefetch, CFSTR(MenzenRefetchNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+	%init(MenzenPublisher = publisher);
 }

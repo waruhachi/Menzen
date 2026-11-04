@@ -8,10 +8,10 @@ DISCORD_SDK_DIR = Library/Tweak Support/Menzen/DiscordSDK
 
 TOOL_NAME = menzend
 
-$(TOOL_NAME)_FILES = main.m $(wildcard MZApelin/*.m) $(wildcard MZDiscord/*.m MZDiscord/*.mm) $(wildcard MZPresence/*.m) $(wildcard MZNowPlaying/*.m) $(wildcard MZForegroundApps/*.m) $(wildcard MZApps/*.m) $(wildcard MZServiceListener/*.m) $(wildcard ../Shared/MZLocalization/*.m)
+$(TOOL_NAME)_FILES = main.m $(wildcard MenzenApelin/*.m) $(wildcard MenzenDiscord/*.m MenzenDiscord/*.mm) $(wildcard MenzenPresence/*.m) $(wildcard MenzenNowPlaying/*.m) $(wildcard MenzenForegroundApps/*.m) $(wildcard MenzenApps/*.m) $(wildcard MenzenServiceListener/*.m) $(wildcard ../Shared/MenzenLocalization/*.m)
 MENZEN_VERSION := $(shell sed -n 's/^Version: *//p' ../layout/DEBIAN/control)
 
-$(TOOL_NAME)_CFLAGS = -fobjc-arc -IDiscordSDK/Headers -DMZ_VERSION='"$(MENZEN_VERSION)"'
+$(TOOL_NAME)_CFLAGS = -fobjc-arc -IDiscordSDK/Headers -DMENZEN_VERSION='"$(MENZEN_VERSION)"'
 $(TOOL_NAME)_CCFLAGS = -std=gnu++17
 $(TOOL_NAME)_LDFLAGS = "-F../layout/$(DISCORD_SDK_DIR)" -framework discord_partner_sdk
 # Installed at <jbroot>/usr/libexec, the SDK at <jbroot>/$(DISCORD_SDK_DIR),

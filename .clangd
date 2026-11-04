@@ -28,7 +28,7 @@ Diagnostics:
 
 ---
 If:
-  PathMatch: Daemon/MZDiscord/.*
+  PathMatch: Daemon/MenzenDiscord/.*
 CompileFlags:
   Add: [-I../DiscordSDK/Headers]
 

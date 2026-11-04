@@ -27,7 +27,7 @@
 	<key>MinimumOSVersion</key>
 	<string>14.0</string>
 	<key>NSPrincipalClass</key>
-	<string>MZPrivacyModule</string>
+	<string>MenzenPrivacyModule</string>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>1</integer>

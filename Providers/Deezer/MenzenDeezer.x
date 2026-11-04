@@ -1,54 +1,54 @@
-#import "../../Shared/MZProvider/MZProvider.h"
+#import "../../Shared/MenzenProvider/MenzenProvider.h"
 
 // The app publishes no IDs; +[DZRAudioPlayer sharedAudioPlayer].currentTrack
 // has them, and the cover and artist picture hashes (coverSeed).
 
 // Uploads and other local tracks have none.
-static NSString *MZCatalogID(id value) {
-	NSString *ID = MZString(value);
+static NSString *MenzenCatalogID(id value) {
+	NSString *ID = MenzenString(value);
 	NSCharacterSet *digits = NSCharacterSet.decimalDigitCharacterSet;
 	return ID && ID.length <= 20 && [ID rangeOfCharacterFromSet:digits.invertedSet].location == NSNotFound && ![ID isEqualToString:@"0"] ? ID : nil;
 }
 
-static NSString *MZSeed(id value) {
-	NSString *seed = MZString(value);
+static NSString *MenzenSeed(id value) {
+	NSString *seed = MenzenString(value);
 	NSCharacterSet *hex = [NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdef"];
 	return seed.length == 32 && [seed rangeOfCharacterFromSet:hex.invertedSet].location == NSNotFound ? seed : nil;
 }
 
-static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
+static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
-	id track = MZGet(MZGet(%c(DZRAudioPlayer), @"sharedAudioPlayer"), @"currentTrack");
+	id track = MenzenGet(MenzenGet(%c(DZRAudioPlayer), @"sharedAudioPlayer"), @"currentTrack");
 	Class trackClass = %c(DeezerTrack);
 	if (!trackClass || ![track isKindOfClass:trackClass]) return nil;
 
 	// Only the playing track's.
-	NSString *title = MZString(MZGet(track, @"title"));
-	if (!title || ![title isEqualToString:MZString(info[MPMediaItemPropertyTitle])]) return nil;
-	NSString *trackID = MZCatalogID(MZGet(track, @"deezerId"));
+	NSString *title = MenzenString(MenzenGet(track, @"title"));
+	if (!title || ![title isEqualToString:MenzenString(info[MPMediaItemPropertyTitle])]) return nil;
+	NSString *trackID = MenzenCatalogID(MenzenGet(track, @"deezerId"));
 	// Catalog tracks have uploadId "0".
-	if (!trackID || MZCatalogID(MZGet(track, @"uploadId"))) return nil;
+	if (!trackID || MenzenCatalogID(MenzenGet(track, @"uploadId"))) return nil;
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-	NSString *cover = MZSeed(MZGet(track, @"coverSeed"));
-	if (cover) extras[MZExtrasCoverKey] = [NSString stringWithFormat:@"https://cdn-images.dzcdn.net/images/cover/%@/750x750-000000-80-0-0.jpg", cover];
-	extras[MZExtrasTitleURLKey] = MZLinkURL(@"https://www.deezer.com/track/%@", trackID);
-	extras[MZExtrasAlbumURLKey] = MZLinkURL(@"https://www.deezer.com/album/%@", MZCatalogID(MZGet(track, @"albumId")));
+	NSString *cover = MenzenSeed(MenzenGet(track, @"coverSeed"));
+	if (cover) extras[MenzenExtrasCoverKey] = [NSString stringWithFormat:@"https://cdn-images.dzcdn.net/images/cover/%@/750x750-000000-80-0-0.jpg", cover];
+	extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://www.deezer.com/track/%@", trackID);
+	extras[MenzenExtrasAlbumURLKey] = MenzenLinkURL(@"https://www.deezer.com/album/%@", MenzenCatalogID(MenzenGet(track, @"albumId")));
 
-	id artist = MZGet(track, @"artist");
-	NSString *artistID = MZCatalogID(MZGet(artist, @"deezerId"));
+	id artist = MenzenGet(track, @"artist");
+	NSString *artistID = MenzenCatalogID(MenzenGet(artist, @"deezerId"));
 	if (artistID) {
-		extras[MZExtrasArtistURLKey] = MZLinkURL(@"https://www.deezer.com/artist/%@", artistID);
-		extras[MZExtrasArtistNameKey] = MZString(MZGet(artist, @"name"));
-		NSString *picture = MZSeed(MZGet(artist, @"coverSeed"));
-		if (picture) extras[MZExtrasArtistImageKey] = [NSString stringWithFormat:@"https://cdn-images.dzcdn.net/images/artist/%@/500x500-000000-80-0-0.jpg", picture];
+		extras[MenzenExtrasArtistURLKey] = MenzenLinkURL(@"https://www.deezer.com/artist/%@", artistID);
+		extras[MenzenExtrasArtistNameKey] = MenzenString(MenzenGet(artist, @"name"));
+		NSString *picture = MenzenSeed(MenzenGet(artist, @"coverSeed"));
+		if (picture) extras[MenzenExtrasArtistImageKey] = [NSString stringWithFormat:@"https://cdn-images.dzcdn.net/images/artist/%@/500x500-000000-80-0-0.jpg", picture];
 	}
 
 	return extras;
 }
 
 %ctor {
-	MZProviderCheck(@[
+	MenzenProviderCheck(@[
 		@"DZRAudioPlayer +sharedAudioPlayer",
 		@"DZRAudioPlayer -currentTrack",
 		@"DeezerTrack -title",
@@ -59,5 +59,5 @@ static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info
 		@"DeezerTrack -albumId",
 		@"DeezerTrack -artist",
 	]);
-	MZAddExtras(MZExtras);
+	MenzenAddExtras(MenzenExtras);
 }

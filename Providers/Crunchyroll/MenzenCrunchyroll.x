@@ -1,21 +1,21 @@
-#import "../../Shared/MZProvider/MZProvider.h"
-#import "../../Shared/MZProvider/MZResponses.h"
+#import "../../Shared/MenzenProvider/MenzenProvider.h"
+#import "../../Shared/MenzenProvider/MenzenResponses.h"
 
 // Thumbnails come from the content API, which the app calls through Swift's
 // async URLSession API, matched by content ID, else by title and series.
 // Untested: found from the app's code only.
 
 // By content ID and by title and series.
-static MZCache<NSString *, NSDictionary *> *items;
+static MenzenCache<NSString *, NSDictionary *> *items;
 
-static BOOL MZIsContent(NSURL *url) {
+static BOOL MenzenIsContent(NSURL *url) {
 	NSString *host = url.host.lowercaseString;
 	return [url.scheme isEqualToString:@"https"] && ([host isEqualToString:@"crunchyroll.com"] || [host hasSuffix:@".crunchyroll.com"]) && [url.path hasPrefix:@"/content/"];
 }
 
 // The smallest picture at least 600 wide, else the widest. Episodes nest
 // their pictures in one more array than music.
-static NSString *MZThumbnail(id images) {
+static NSString *MenzenThumbnail(id images) {
 	if (![images isKindOfClass:NSArray.class]) return nil;
 	NSString *found = nil;
 	double foundWidth = 0;
@@ -23,7 +23,7 @@ static NSString *MZThumbnail(id images) {
 		NSArray *pictures = [image isKindOfClass:NSArray.class] ? image : @[image];
 		for (NSDictionary *picture in pictures) {
 			if (![picture isKindOfClass:NSDictionary.class]) continue;
-			NSString *source = MZString(picture[@"source"]);
+			NSString *source = MenzenString(picture[@"source"]);
 			id width = picture[@"width"];
 			if (![source hasPrefix:@"https://imgsrv.crunchyroll.com/"] || source.length > 256 || ![width isKindOfClass:NSNumber.class]) continue;
 			double w = [width doubleValue];
@@ -38,49 +38,49 @@ static NSString *MZThumbnail(id images) {
 	return found;
 }
 
-static void MZRemember(id object, NSUInteger depth) {
+static void MenzenRemember(id object, NSUInteger depth) {
 	if (depth > 8) return;
 	if ([object isKindOfClass:NSArray.class]) {
-		for (id item in object) MZRemember(item, depth + 1);
+		for (id item in object) MenzenRemember(item, depth + 1);
 		return;
 	}
 
 	if (![object isKindOfClass:NSDictionary.class]) return;
 	NSDictionary *images = object[@"images"];
-	NSString *thumbnail = [images isKindOfClass:NSDictionary.class] ? MZThumbnail(images[@"thumbnail"]) : nil;
+	NSString *thumbnail = [images isKindOfClass:NSDictionary.class] ? MenzenThumbnail(images[@"thumbnail"]) : nil;
 	if (thumbnail) {
-		NSString *ID = MZString(object[@"id"]);
-		NSString *title = MZString(object[@"title"]);
+		NSString *ID = MenzenString(object[@"id"]);
+		NSString *title = MenzenString(object[@"title"]);
 		NSDictionary *episode = object[@"episode_metadata"];
-		NSString *series = MZString([episode isKindOfClass:NSDictionary.class] ? episode[@"series_title"] : nil);
+		NSString *series = MenzenString([episode isKindOfClass:NSDictionary.class] ? episode[@"series_title"] : nil);
 		NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-		extras[MZExtrasCoverKey] = thumbnail;
-		extras[MZExtrasTitleURLKey] = MZLinkURL(@"https://www.crunchyroll.com/watch/%@", ID);
+		extras[MenzenExtrasCoverKey] = thumbnail;
+		extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://www.crunchyroll.com/watch/%@", ID);
 		if (ID) items[ID] = extras;
-		NSString *key = MZPairKey(title, series);
+		NSString *key = MenzenPairKey(title, series);
 		if (key) items[key] = extras;
 	}
 
 	for (id value in [object allValues]) {
-		if ([value isKindOfClass:NSArray.class] || [value isKindOfClass:NSDictionary.class]) MZRemember(value, depth + 1);
+		if ([value isKindOfClass:NSArray.class] || [value isKindOfClass:NSDictionary.class]) MenzenRemember(value, depth + 1);
 	}
 }
 
-static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
+static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
-	NSString *ID = MZString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
-	NSString *key = MZPairKey(MZString(info[MPMediaItemPropertyTitle]), MZString(info[MPMediaItemPropertyAlbumTitle]));
+	NSString *ID = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
+	NSString *key = MenzenPairKey(MenzenString(info[MPMediaItemPropertyTitle]), MenzenString(info[MPMediaItemPropertyAlbumTitle]));
 	return (ID ? items[ID] : nil) ?: (key ? items[key] : nil);
 }
 
 %ctor {
-	items = [[MZCache alloc] initWithLimit:2000];
-	MZProviderCheck(@[@"NSURLSession -_dataTaskWithRequest:delegate:completionHandler:"], @[]);
-	MZAddExtras(MZExtras);
-	MZObserveResponses(^BOOL(NSURL *url) {
-		return MZIsContent(url);
+	items = [[MenzenCache alloc] initWithLimit:2000];
+	MenzenProviderCheck(@[@"NSURLSession -_dataTaskWithRequest:delegate:completionHandler:"], @[]);
+	MenzenAddExtras(MenzenExtras);
+	MenzenObserveResponses(^BOOL(NSURL *url) {
+		return MenzenIsContent(url);
 	}, ^(NSURL *url, NSData *body) {
-		id object = MZJSON(body);
-		if (object) MZRemember(object, 0);
+		id object = MenzenJSON(body);
+		if (object) MenzenRemember(object, 0);
 	});
 }

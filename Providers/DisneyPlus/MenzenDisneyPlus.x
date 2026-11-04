@@ -1,5 +1,5 @@
-#import "../../Shared/MZProvider/MZProvider.h"
-#import "../../Shared/MZProvider/MZResponses.h"
+#import "../../Shared/MenzenProvider/MenzenProvider.h"
+#import "../../Shared/MenzenProvider/MenzenResponses.h"
 
 // An episode is published as its show, with "S1:E1 <episode>" as the artist
 // and the stream's signed URL as the asset URL, which is replaced here. The
@@ -12,30 +12,30 @@
 
 // The app's image server, from its configuration
 // (ripcut-delivery/{version}/variant/{partnerId}/{imageId}/scale).
-static NSString *const MZImageServer = @"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/";
+static NSString *const MenzenImageServer = @"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/";
 
-#define MZItemShowKey @"show"
-#define MZItemEpisodeTitleKey @"episodeTitle"
-#define MZItemSeasonKey @"season"
-#define MZItemEpisodeKey @"episode"
-#define MZItemImageKey @"image"
-#define MZItemLeagueKey @"league"
-#define MZItemStartKey @"start"
-#define MZItemEndKey @"end"
-#define MZItemPageKey @"page"
+#define MenzenItemShowKey @"show"
+#define MenzenItemEpisodeTitleKey @"episodeTitle"
+#define MenzenItemSeasonKey @"season"
+#define MenzenItemEpisodeKey @"episode"
+#define MenzenItemImageKey @"image"
+#define MenzenItemLeagueKey @"league"
+#define MenzenItemStartKey @"start"
+#define MenzenItemEndKey @"end"
+#define MenzenItemPageKey @"page"
 
 static NSMutableDictionary<NSString *, NSDictionary *> *items;
 
 // The item's 16:9 picture: its thumbnail (an episode's still), else its tile
 // or background.
-static NSString *MZImageID(NSDictionary *artwork) {
+static NSString *MenzenImageID(NSDictionary *artwork) {
 	static NSCharacterSet *invalid;
 	static dispatch_once_t once;
 	dispatch_once(&once, ^{
 		invalid = [NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF-"].invertedSet;
 	});
 	for (NSString *kind in @[@"thumbnail", @"tile", @"background"]) {
-		NSString *imageID = MZString(MZPath(artwork, @[@"standard", kind, @"1.78", @"imageId"]));
+		NSString *imageID = MenzenString(MenzenPath(artwork, @[@"standard", kind, @"1.78", @"imageId"]));
 		if (imageID && [imageID rangeOfCharacterFromSet:invalid].location == NSNotFound) return imageID;
 	}
 
@@ -43,17 +43,17 @@ static NSString *MZImageID(NSDictionary *artwork) {
 }
 
 // The movie's or the episode's show's.
-static NSString *MZPage(NSArray *actions) {
+static NSString *MenzenPage(NSArray *actions) {
 	if (![actions isKindOfClass:NSArray.class]) return nil;
 	for (NSDictionary *action in actions) {
-		NSString *page = [action isKindOfClass:NSDictionary.class] ? MZString(action[@"pageId"]) : nil;
+		NSString *page = [action isKindOfClass:NSDictionary.class] ? MenzenString(action[@"pageId"]) : nil;
 		if ([page hasPrefix:@"entity-"]) return page;
 	}
 
 	return nil;
 }
 
-static NSString *MZSeconds(id value) {
+static NSString *MenzenSeconds(id value) {
 	static NSISO8601DateFormatter *formatter;
 	static dispatch_once_t once;
 	dispatch_once(&once, ^{
@@ -63,28 +63,28 @@ static NSString *MZSeconds(id value) {
 	return date ? @((long long)date.timeIntervalSince1970).stringValue : nil;
 }
 
-static void MZRememberItems(id object) {
+static void MenzenRememberItems(id object) {
 	if ([object isKindOfClass:NSArray.class]) {
-		for (id child in object) MZRememberItems(child);
+		for (id child in object) MenzenRememberItems(child);
 		return;
 	}
 
 	if (![object isKindOfClass:NSDictionary.class]) return;
-	NSString *ID = MZString(object[@"id"]);
+	NSString *ID = MenzenString(object[@"id"]);
 	NSDictionary *visuals = object[@"visuals"];
 	if (ID && [visuals isKindOfClass:NSDictionary.class]) {
 		NSMutableDictionary *item = [NSMutableDictionary dictionary];
-		item[MZItemShowKey] = MZString(visuals[@"title"]);
-		item[MZItemEpisodeTitleKey] = MZString(visuals[@"episodeTitle"]);
-		item[MZItemSeasonKey] = MZString(visuals[@"seasonNumber"]);
-		item[MZItemEpisodeKey] = MZString(visuals[@"episodeNumber"]);
-		item[MZItemImageKey] = MZImageID(visuals[@"artwork"]);
-		item[MZItemLeagueKey] = MZString(MZPath(visuals, @[@"metastringParts", @"sportsLeague", @"name"]));
-		NSDictionary *timeline = MZPath(visuals, @[@"badging", @"airingEventState", @"timeline"]);
-		item[MZItemStartKey] = MZSeconds(MZPath(timeline, @[@"startTime"]));
-		item[MZItemEndKey] = MZSeconds(MZPath(timeline, @[@"endTime"]));
-		item[MZItemPageKey] = MZPage(object[@"actions"]);
-		if (item[MZItemImageKey] || item[MZItemEpisodeTitleKey]) {
+		item[MenzenItemShowKey] = MenzenString(visuals[@"title"]);
+		item[MenzenItemEpisodeTitleKey] = MenzenString(visuals[@"episodeTitle"]);
+		item[MenzenItemSeasonKey] = MenzenString(visuals[@"seasonNumber"]);
+		item[MenzenItemEpisodeKey] = MenzenString(visuals[@"episodeNumber"]);
+		item[MenzenItemImageKey] = MenzenImageID(visuals[@"artwork"]);
+		item[MenzenItemLeagueKey] = MenzenString(MenzenPath(visuals, @[@"metastringParts", @"sportsLeague", @"name"]));
+		NSDictionary *timeline = MenzenPath(visuals, @[@"badging", @"airingEventState", @"timeline"]);
+		item[MenzenItemStartKey] = MenzenSeconds(MenzenPath(timeline, @[@"startTime"]));
+		item[MenzenItemEndKey] = MenzenSeconds(MenzenPath(timeline, @[@"endTime"]));
+		item[MenzenItemPageKey] = MenzenPage(object[@"actions"]);
+		if (item[MenzenItemImageKey] || item[MenzenItemEpisodeTitleKey]) {
 			// A live event's info has the first part of its ID.
 			NSString *contentID = [ID componentsSeparatedByString:@":"].firstObject;
 			@synchronized(items) {
@@ -96,16 +96,16 @@ static void MZRememberItems(id object) {
 	}
 
 	for (id child in [object allValues]) {
-		if ([child isKindOfClass:NSDictionary.class] || [child isKindOfClass:NSArray.class]) MZRememberItems(child);
+		if ([child isKindOfClass:NSDictionary.class] || [child isKindOfClass:NSArray.class]) MenzenRememberItems(child);
 	}
 }
 
-static BOOL MZIsExplore(NSURL *url) {
+static BOOL MenzenIsExplore(NSURL *url) {
 	return [url.host isEqualToString:@"disney.api.edge.bamgrid.com"] && [url.path hasPrefix:@"/explore/"];
 }
 
 // "S1:E1 <episode>" as season, episode and title.
-static NSArray<NSString *> *MZEpisodeParts(NSString *text) {
+static NSArray<NSString *> *MenzenEpisodeParts(NSString *text) {
 	static NSRegularExpression *expression;
 	static dispatch_once_t once;
 	dispatch_once(&once, ^{
@@ -117,18 +117,18 @@ static NSArray<NSString *> *MZEpisodeParts(NSString *text) {
 }
 
 // The player publishes through its MPNowPlayingSession's own center.
-static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
-	NSString *contentID = MZString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
-	NSString *show = contentID ? MZString(info[MPMediaItemPropertyTitle]) : nil;
+static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
+	NSString *contentID = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
+	NSString *show = contentID ? MenzenString(info[MPMediaItemPropertyTitle]) : nil;
 	if (!show) return nil;
 	NSDictionary *item = nil;
 	@synchronized(items) {
 		item = items[contentID];
 	}
 
-	NSString *title = item[MZItemEpisodeTitleKey];
-	NSString *season = item[MZItemSeasonKey], *episode = item[MZItemEpisodeKey];
-	NSArray *parts = MZEpisodeParts(info[MPMediaItemPropertyArtist]);
+	NSString *title = item[MenzenItemEpisodeTitleKey];
+	NSString *season = item[MenzenItemSeasonKey], *episode = item[MenzenItemEpisodeKey];
+	NSArray *parts = MenzenEpisodeParts(info[MPMediaItemPropertyArtist]);
 	if (!title && parts) {
 		season = parts[0];
 		episode = parts[1];
@@ -139,27 +139,27 @@ static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info
 	[withExtras removeObjectForKey:MPNowPlayingInfoPropertyAssetURL];
 	if (title) {
 		withExtras[MPMediaItemPropertyTitle] = title;
-		withExtras[MPMediaItemPropertyArtist] = item[MZItemShowKey] ?: show;
+		withExtras[MPMediaItemPropertyArtist] = item[MenzenItemShowKey] ?: show;
 		// An album that's the artist again is taken as none.
-		withExtras[MPMediaItemPropertyAlbumTitle] = item[MZItemShowKey] ?: show;
-	} else if (item[MZItemLeagueKey]) {
-		withExtras[MPMediaItemPropertyArtist] = item[MZItemLeagueKey];
-		withExtras[MPMediaItemPropertyAlbumTitle] = item[MZItemLeagueKey];
+		withExtras[MPMediaItemPropertyAlbumTitle] = item[MenzenItemShowKey] ?: show;
+	} else if (item[MenzenItemLeagueKey]) {
+		withExtras[MPMediaItemPropertyArtist] = item[MenzenItemLeagueKey];
+		withExtras[MPMediaItemPropertyAlbumTitle] = item[MenzenItemLeagueKey];
 	}
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-	if (item[MZItemImageKey]) extras[MZExtrasCoverKey] = [NSString stringWithFormat:@"%@%@/scale?width=600&format=jpeg", MZImageServer, item[MZItemImageKey]];
+	if (item[MenzenItemImageKey]) extras[MenzenExtrasCoverKey] = [NSString stringWithFormat:@"%@%@/scale?width=600&format=jpeg", MenzenImageServer, item[MenzenItemImageKey]];
 	if (title) {
-		extras[MZExtrasSeasonKey] = season.integerValue > 0 ? season : nil;
-		extras[MZExtrasEpisodeKey] = episode.integerValue > 0 ? episode : nil;
+		extras[MenzenExtrasSeasonKey] = season.integerValue > 0 ? season : nil;
+		extras[MenzenExtrasEpisodeKey] = episode.integerValue > 0 ? episode : nil;
 	}
 
-	NSString *page = MZLinkURL(@"https://www.disneyplus.com/browse/%@", item[MZItemPageKey]);
-	extras[MZExtrasTitleURLKey] = page;
-	if (title) extras[MZExtrasArtistURLKey] = page;
-	if ([item[MZItemEndKey] longLongValue] > [item[MZItemStartKey] longLongValue]) {
-		extras[MZExtrasStartKey] = item[MZItemStartKey];
-		extras[MZExtrasEndKey] = item[MZItemEndKey];
+	NSString *page = MenzenLinkURL(@"https://www.disneyplus.com/browse/%@", item[MenzenItemPageKey]);
+	extras[MenzenExtrasTitleURLKey] = page;
+	if (title) extras[MenzenExtrasArtistURLKey] = page;
+	if ([item[MenzenItemEndKey] longLongValue] > [item[MenzenItemStartKey] longLongValue]) {
+		extras[MenzenExtrasStartKey] = item[MenzenItemStartKey];
+		extras[MenzenExtrasEndKey] = item[MenzenItemEndKey];
 	}
 
 	return extras;
@@ -167,11 +167,11 @@ static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info
 
 %ctor {
 	items = [NSMutableDictionary dictionary];
-	MZProviderCheck(@[], @[]);
-	MZAddExtras(MZExtras);
-	MZObserveResponses(^BOOL(NSURL *url) {
-		return MZIsExplore(url);
+	MenzenProviderCheck(@[], @[]);
+	MenzenAddExtras(MenzenExtras);
+	MenzenObserveResponses(^BOOL(NSURL *url) {
+		return MenzenIsExplore(url);
 	}, ^(NSURL *url, NSData *body) {
-		MZRememberItems(MZJSON(body));
+		MenzenRememberItems(MenzenJSON(body));
 	});
 }

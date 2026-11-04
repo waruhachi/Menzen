@@ -1,4 +1,4 @@
-#import "../../Shared/MZProvider/MZProvider.h"
+#import "../../Shared/MenzenProvider/MenzenProvider.h"
 
 // An episode is published as its show, with "Season 1, Ep. 1 <episode>" as
 // the artist. The cover and ID come from the playing AIVPlaybackTitle; the
@@ -15,12 +15,12 @@ static NSString *titleID;
 static NSString *titleCover;
 static NSObject *lock;
 
-static void MZRememberTitle(id title, id image) {
+static void MenzenRememberTitle(id title, id image) {
 	id ASIN = [title respondsToSelector:@selector(titleId)] ? [title titleId] : nil;
 	if ([ASIN respondsToSelector:@selector(internalString)]) ASIN = [ASIN internalString];
-	NSString *ID = MZLinkURL(@"%@", ASIN);
+	NSString *ID = MenzenLinkURL(@"%@", ASIN);
 	if (!ID) return;
-	NSString *cover = MZImageURL(image, @[@"m.media-amazon.com", @"ssl-images-amazon.com", @".ssl-images-amazon.com"]);
+	NSString *cover = MenzenImageURL(image, @[@"m.media-amazon.com", @"ssl-images-amazon.com", @".ssl-images-amazon.com"]);
 	@synchronized(lock) {
 		titleID = ID;
 		titleCover = cover;
@@ -28,7 +28,7 @@ static void MZRememberTitle(id title, id image) {
 }
 
 // "Season 1, Ep. 1 <episode>" as season, episode and title.
-static NSArray<NSString *> *MZEpisodeParts(NSString *text) {
+static NSArray<NSString *> *MenzenEpisodeParts(NSString *text) {
 	static NSRegularExpression *expression;
 	static dispatch_once_t once;
 	dispatch_once(&once, ^{
@@ -43,14 +43,14 @@ static NSArray<NSString *> *MZEpisodeParts(NSString *text) {
 
 - (id)nowPlayingImageURL {
 	id image = %orig;
-	MZRememberTitle(self, image);
+	MenzenRememberTitle(self, image);
 	return image;
 }
 
 %end
 
-static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
-	NSString *contentID = MZString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
+static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
+	NSString *contentID = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
 	NSString *ID, *cover;
 	@synchronized(lock) {
 		ID = titleID;
@@ -61,25 +61,25 @@ static NSDictionary *MZExtras(MPNowPlayingInfoCenter *center, NSDictionary *info
 	if (!ID || !contentID || center != MPNowPlayingInfoCenter.defaultCenter || !([contentID isEqualToString:ID] || [contentID hasPrefix:[ID stringByAppendingString:@":"]])) return nil;
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
-	NSArray *parts = MZEpisodeParts(info[MPMediaItemPropertyArtist]);
-	NSString *show = MZString(info[MPMediaItemPropertyTitle]);
+	NSArray *parts = MenzenEpisodeParts(info[MPMediaItemPropertyArtist]);
+	NSString *show = MenzenString(info[MPMediaItemPropertyTitle]);
 	if (parts && show) {
 		withExtras[MPMediaItemPropertyTitle] = parts[2];
 		withExtras[MPMediaItemPropertyArtist] = show;
 		// An album that's the artist again is taken as none.
 		withExtras[MPMediaItemPropertyAlbumTitle] = show;
-		extras[MZExtrasSeasonKey] = [parts[0] integerValue] > 0 ? parts[0] : nil;
-		extras[MZExtrasEpisodeKey] = [parts[1] integerValue] > 0 ? parts[1] : nil;
+		extras[MenzenExtrasSeasonKey] = [parts[0] integerValue] > 0 ? parts[0] : nil;
+		extras[MenzenExtrasEpisodeKey] = [parts[1] integerValue] > 0 ? parts[1] : nil;
 	}
 
-	extras[MZExtrasCoverKey] = cover;
-	extras[MZExtrasTitleURLKey] = MZLinkURL(@"https://www.primevideo.com/detail/%@", ID);
+	extras[MenzenExtrasCoverKey] = cover;
+	extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://www.primevideo.com/detail/%@", ID);
 	return extras;
 }
 
 %ctor {
 	lock = [NSObject new];
-	MZProviderCheck(@[@"AIVPlaybackTitle -nowPlayingImageURL", @"AIVPlaybackTitle -titleId"], @[]);
-	MZAddExtras(MZExtras);
+	MenzenProviderCheck(@[@"AIVPlaybackTitle -nowPlayingImageURL", @"AIVPlaybackTitle -titleId"], @[]);
+	MenzenAddExtras(MenzenExtras);
 	%init;
 }

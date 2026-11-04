@@ -42,7 +42,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>detail</key>
-			<string>MZCardListController</string>
+			<string>MenzenCardListController</string>
 			<key>id</key>
 			<string>card</string>
 			<key>label</key>
@@ -54,7 +54,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>detail</key>
-			<string>MZMemberListController</string>
+			<string>MenzenMemberListController</string>
 			<key>id</key>
 			<string>memberList</string>
 			<key>label</key>
@@ -72,7 +72,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>detail</key>
-			<string>MZCustomListController</string>
+			<string>MenzenCustomListController</string>
 			<key>id</key>
 			<string>custom</string>
 			<key>label</key>
@@ -100,7 +100,7 @@
 			<key>defaults</key>
 			<string>moe.waru.menzen</string>
 			<key>detail</key>
-			<string>MZListItemsController</string>
+			<string>MenzenListItemsController</string>
 			<key>key</key>
 			<string>pauseGrace</string>
 			<key>label</key>
@@ -174,7 +174,7 @@
 			<key>cell</key>
 			<string>PSLinkCell</string>
 			<key>detail</key>
-			<string>MZSourcesListController</string>
+			<string>MenzenSourcesListController</string>
 			<key>id</key>
 			<string>sources</string>
 			<key>label</key>

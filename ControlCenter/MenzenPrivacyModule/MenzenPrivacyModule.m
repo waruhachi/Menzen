@@ -1,7 +1,6 @@
 #import "../../Shared/MenzenSettings.h"
 #import "MenzenPrivacyModule.h"
 
-// Settings (or this toggle) changed Privacy Mode: show the new state.
 static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
 	MenzenPrivacyModule *module = (__bridge MenzenPrivacyModule *)observer;
 	dispatch_async(dispatch_get_main_queue(), ^{

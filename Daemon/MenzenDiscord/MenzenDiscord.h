@@ -45,7 +45,6 @@ typedef NS_ENUM(NSInteger, MenzenStatusDisplay) {
 // Owns the Social SDK client: signs in, keeps the OAuth tokens refreshed,
 // connects, and publishes the latest activity once connected. Main queue only.
 @interface MenzenDiscord : NSObject
-// Called whenever accountStatus changes.
 @property (nonatomic, copy, nullable) void (^accountStatusChangedHandler)(void);
 // MenzenService status: MenzenStatus*Key (Shared/MenzenService.h).
 @property (nonatomic, readonly) NSDictionary<NSString *, id> *accountStatus;

@@ -151,7 +151,6 @@ MenzenApelinSession *MenzenReadApelinSession(void) {
 	MenzenApelinSession *session = [MenzenApelinSession new];
 	session.project = MenzenProject(folder);
 	NSString *agent = MenzenAgent(folder);
-	// What the agent is doing, as people read it.
 	session.agent = agent ? MenzenLocalizedString([@"apelin.state." stringByAppendingString:MenzenStateKey(agent)], agent) : nil;
 	return session;
 }

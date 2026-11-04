@@ -2,11 +2,11 @@ BUNDLE_NAME = MenzenPreferences
 
 MENZEN_VERSION := $(shell sed -n 's/^Version: *//p' ../layout/DEBIAN/control)
 
-MenzenPreferences_FILES = $(wildcard Controllers/*.m) $(wildcard Helpers/*.m) $(wildcard Views/*.m)
-MenzenPreferences_CFLAGS = -fobjc-arc -DMZ_VERSION='"$(MENZEN_VERSION)"'
-MenzenPreferences_FRAMEWORKS = UIKit AuthenticationServices CoreImage
-MenzenPreferences_PRIVATE_FRAMEWORKS = Preferences
-MenzenPreferences_INSTALL_PATH = /Library/PreferenceBundles
+$(BUNDLE_NAME)_FILES = $(wildcard Controllers/*.m) $(wildcard Helpers/*.m) $(wildcard Views/*.m)
+$(BUNDLE_NAME)_CFLAGS = -fobjc-arc -DMZ_VERSION='"$(MENZEN_VERSION)"'
+$(BUNDLE_NAME)_FRAMEWORKS = UIKit AuthenticationServices CoreImage
+$(BUNDLE_NAME)_PRIVATE_FRAMEWORKS = Preferences
+$(BUNDLE_NAME)_INSTALL_PATH = /Library/PreferenceBundles
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/bundle.mk

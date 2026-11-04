@@ -8,18 +8,18 @@ DISCORD_SDK_DIR = Library/Tweak Support/Menzen/DiscordSDK
 
 TOOL_NAME = menzend
 
-menzend_FILES = main.m $(wildcard MZApelin/*.m) $(wildcard MZDiscord/*.m MZDiscord/*.mm) $(wildcard MZPresence/*.m) $(wildcard MZNowPlaying/*.m) $(wildcard MZForegroundApps/*.m) $(wildcard MZApps/*.m) $(wildcard MZServiceListener/*.m)
+$(TOOL_NAME)_FILES = main.m $(wildcard MZApelin/*.m) $(wildcard MZDiscord/*.m MZDiscord/*.mm) $(wildcard MZPresence/*.m) $(wildcard MZNowPlaying/*.m) $(wildcard MZForegroundApps/*.m) $(wildcard MZApps/*.m) $(wildcard MZServiceListener/*.m)
 MENZEN_VERSION := $(shell sed -n 's/^Version: *//p' ../layout/DEBIAN/control)
 
-menzend_CFLAGS = -fobjc-arc -IDiscordSDK/Headers -DMZ_VERSION='"$(MENZEN_VERSION)"'
-menzend_CCFLAGS = -std=gnu++17
-menzend_LDFLAGS = "-F../layout/$(DISCORD_SDK_DIR)" -framework discord_partner_sdk
+$(TOOL_NAME)_CFLAGS = -fobjc-arc -IDiscordSDK/Headers -DMZ_VERSION='"$(MENZEN_VERSION)"'
+$(TOOL_NAME)_CCFLAGS = -std=gnu++17
+$(TOOL_NAME)_LDFLAGS = "-F../layout/$(DISCORD_SDK_DIR)" -framework discord_partner_sdk
 # Installed at <jbroot>/usr/libexec, the SDK at <jbroot>/$(DISCORD_SDK_DIR),
 # whatever kind of jailbreak it is.
-menzend_LDFLAGS += -Xlinker -rpath -Xlinker "@executable_path/../../$(DISCORD_SDK_DIR)"
-menzend_FRAMEWORKS = Foundation Security MobileCoreServices
-menzend_CODESIGN_FLAGS = -Sentitlements.plist
-menzend_INSTALL_PATH = /usr/libexec
+$(TOOL_NAME)_LDFLAGS += -Xlinker -rpath -Xlinker "@executable_path/../../$(DISCORD_SDK_DIR)"
+$(TOOL_NAME)_FRAMEWORKS = Foundation Security MobileCoreServices
+$(TOOL_NAME)_CODESIGN_FLAGS = -Sentitlements.plist
+$(TOOL_NAME)_INSTALL_PATH = /usr/libexec
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/tool.mk

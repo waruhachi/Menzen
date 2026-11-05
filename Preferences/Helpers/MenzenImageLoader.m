@@ -1,15 +1,8 @@
 #import <objc/runtime.h>
 
+#import "../../Shared/MenzenCustomActivity.h"
 #import "../../Shared/MenzenService.h"
 #import "MenzenImageLoader.h"
-
-static BOOL MenzenAllowedHost(NSString *host) {
-	for (NSString *allowed in @[@"cdn.discordapp.com", @"mzstatic.com", @"i.scdn.co", @"spotifycdn.com", @"sndcdn.com"]) {
-		if ([host isEqualToString:allowed] || [host hasSuffix:[@"." stringByAppendingString:allowed]]) return YES;
-	}
-
-	return NO;
-}
 
 // The CDN URL of the Discord application's art asset named key (Apelin's
 // logo), from the application's public asset list. Main thread only.
@@ -55,8 +48,8 @@ void MenzenLoadImage(NSString *urlString, void (^completion)(UIImage *image)) {
 		cache = [NSCache new];
 	});
 
-	NSURL *url = urlString ? [NSURL URLWithString:urlString] : nil;
-	if (![url.scheme isEqualToString:@"https"] || !MenzenAllowedHost(url.host)) {
+	NSURL *url = MenzenCustomImageURLIsAllowed(urlString) ? [NSURL URLWithString:urlString] : nil;
+	if (!url) {
 		completion(nil);
 		return;
 	}

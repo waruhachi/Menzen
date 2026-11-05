@@ -2,10 +2,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Loads and caches images over https, only from Discord's CDN and the cover
-// art servers of the apps menzen supports. The URLs come from the daemon, but
-// there's no reason for this pane to load anything else. urlString can
-// also be the key of one of the Discord application's art assets.
+// Loads and caches the images menzend puts in the activity: https links that
+// pass MenzenCustomImageURLIsAllowed, from the apps' artwork servers or the
+// user's own presets. urlString can also be the key of one of the Discord
+// application's art assets.
 FOUNDATION_EXPORT void MenzenLoadImage(NSString *_Nullable urlString, void (^completion)(UIImage *_Nullable image));
 
 // Shows urlString in imageView once loaded, unless it was asked for

@@ -36,6 +36,7 @@ static NSTimeInterval const MenzenConnectTimeout = 30;
 @end
 
 @interface MenzenRootListController : PSListController <ASWebAuthenticationPresentationContextProviding>
+- (void)settingsChanged;
 @end
 
 static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString *identifier) {
@@ -44,6 +45,11 @@ static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString
 	}
 
 	return nil;
+}
+
+// Darwin notifications arrive on the main run loop, where the pane observes.
+static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
+	[(__bridge MenzenRootListController *)observer settingsChanged];
 }
 
 @implementation MenzenRootListController {
@@ -91,6 +97,7 @@ static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString
 	[super viewDidLoad];
 	self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
 	[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(refreshStatus) name:MenzenStatusDidChangeNotification object:nil];
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge void *)self, MenzenRootSettingsChanged, CFSTR(MenzenSettingsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	[self refreshStatus];
 
 	_refreshControl = [UIRefreshControl new];
@@ -111,8 +118,16 @@ static PSSpecifier *MenzenSpecifier(NSArray<PSSpecifier *> *specifiers, NSString
 }
 
 - (void)dealloc {
+	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge void *)self, CFSTR(MenzenSettingsChangedNotification), NULL);
 	[_session cancel];
 	[_connectTimer invalidate];
+}
+
+// The Control Center modules change these switches' settings from SpringBoard.
+- (void)settingsChanged {
+	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	[self reloadSpecifierID:@"enabled" animated:NO];
+	[self reloadSpecifierID:@"privacy" animated:NO];
 }
 
 - (id<MenzenService>)service {

@@ -1,0 +1,398 @@
+/* Menzen, English. Keys are grouped by where the text appears. The comment
+   above each string tells translators where it shows and what any %@ or %ld
+   stands for. Keep Menzen, Discord, Nitro, HypeSquad and GitHub as they are. */
+
+/* Activity preview at the top of Settings, above the person's Discord card. %@ is an app or game name. */
+"activity.listening_to_x" = "Listening to %@";
+/* Activity preview, shown when nothing is playing. */
+"activity.nothing_is_showing_right_now_open" = "Nothing is showing right now. Open a game or play something in a supported app, and it shows here and on your profile.";
+/* Activity preview. %@ is a game name. */
+"activity.playing_x" = "Playing %@";
+/* Activity preview. %@ is an app name. */
+"activity.watching_x" = "Watching %@";
+
+/* What the Apelin coding agent is doing, shown on Discord. Apelin is a product name; don't translate it. */
+"apelin.state.building" = "Building";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.cloning_a_repository" = "Cloning a repository";
+/* Apelin agent status, shown on Discord. The agent is shortening its conversation history. */
+"apelin.state.compacting" = "Compacting";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.editing_files" = "Editing files";
+/* Apelin agent status, shown on Discord. A package is a jailbreak tweak or app package. */
+"apelin.state.installing_a_package" = "Installing a package";
+/* Apelin agent status, shown on Discord. Building an installable package. */
+"apelin.state.packaging" = "Packaging";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.reading_files" = "Reading files";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.reconnecting" = "Reconnecting";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.removing_a_package" = "Removing a package";
+/* Apelin agent status, shown on Discord. The agent is writing its reply. */
+"apelin.state.responding" = "Responding";
+/* Apelin agent status, shown on Discord. Restarting the iPhone's home screen (SpringBoard), jailbreak slang "respring". */
+"apelin.state.respringing" = "Respringing";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.running_tools" = "Running tools";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.thinking" = "Thinking";
+/* Apelin agent status, shown on Discord. The agent is waiting for the person to allow an action. */
+"apelin.state.waiting_for_approval" = "Waiting for approval";
+
+/* Sample text in the Activity settings preview: the title of a TV episode. */
+"appearance.episode_title" = "Episode Title";
+/* Activity settings: preview picker segment, and the sample name for a game. */
+"appearance.game" = "Game";
+/* Activity settings, footer while the Game preview is picked. */
+"appearance.games_show_their_name_icon" = "Games show their name, icon and time played, whatever these settings are.";
+/* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
+"appearance.links" = "Links";
+/* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
+"appearance.member_lists_can_only_show_the" = "Member lists can only show the heading, first line or second line. To pick something greyed out, put it on one of those lines on the Activity page.";
+/* Activity settings: preview picker segment. */
+"appearance.music" = "Music";
+/* Activity settings: section header for the big and small pictures. */
+"appearance.pictures" = "Pictures";
+/* Sample text in the Activity settings preview: the name of a TV show. */
+"appearance.show" = "Show";
+/* Activity settings: row for the text shown when hovering the small picture on Discord. */
+"appearance.small_picture_text" = "Small Picture Text";
+/* Sample text in the Activity settings preview: the title of a song. */
+"appearance.song_title" = "Song Title";
+/* Activity settings: row for the third line of text on the activity card. */
+"appearance.third_line" = "Third Line";
+/* Activity settings: row for how time is shown (progress bar or time elapsed). */
+"appearance.time" = "Time";
+/* Activity settings: preview picker segment. */
+"appearance.video" = "Video";
+
+/* Activity settings: an option for a line of the card. The album for music, the episode for video. */
+"card.album_or_episode" = "Album or Episode";
+/* Activity settings: an option for a picture, the playing app's icon. */
+"card.app_logo" = "App Logo";
+/* Activity settings: an option for a line, the playing app's name. */
+"card.app_name" = "App Name";
+/* Activity settings: an option for a line. The artist for music, the show for video. */
+"card.artist_or_show" = "Artist or Show";
+/* Activity settings: an option for a picture. The artist's or show's picture. */
+"card.artist_or_show_picture" = "Artist or Show Picture";
+/* Activity settings: an option for a picture, the album art or video thumbnail. */
+"card.artwork" = "Artwork";
+/* Activity settings: an option for the heading, text the person types. */
+"card.custom" = "Custom";
+/* Activity settings: an option for Time, a bar showing how far into the song or video it is. */
+"card.progress_bar" = "Progress Bar";
+
+/* App details for Apelin: row showing what the agent is doing. */
+"common.agent_status" = "Agent Status";
+/* Sample text in the Activity settings preview: an album name. */
+"common.album" = "Album";
+/* Sample text in the Activity settings preview: an artist name. */
+"common.artist" = "Artist";
+/* Row and section header: the large picture on the left of a Discord activity. */
+"common.big_picture" = "Big Picture";
+/* Alert button. */
+"common.cancel" = "Cancel";
+/* Button on an app's details page that copies its support details for a bug report. */
+"common.copy_details" = "Copy Details";
+/* Activity settings: row and field for heading text the person types. */
+"common.custom_heading" = "Custom Heading";
+/* Alert button that deletes a custom activity preset. */
+"common.delete" = "Delete";
+/* Row: the first line of text under the heading of a Discord activity. */
+"common.first_line" = "First Line";
+/* Row: the bold top line of a Discord activity. */
+"common.heading" = "Heading";
+/* Custom activity: field for a picture's web address. */
+"common.image_link" = "Image Link";
+/* Activity type (as in "Listening to Spotify"), used as a section header and a picker option. */
+"common.listening" = "Listening";
+/* App status: Menzen supports the app, but this version of it may not work fully. Keep it short. */
+"common.may_not_work" = "May Not Work";
+/* Error under the sign-in button. */
+"common.menzen_couldn_t_start_the_sign" = "Menzen couldn't start the sign-in. Try again.";
+/* Row and page title: supported apps that aren't installed. */
+"common.more_supported_apps" = "More Supported Apps";
+/* Field: the name shown as the activity heading. */
+"common.name" = "Name";
+/* App status for a game Menzen has no icon for yet. Keep it short. */
+"common.no_icon" = "No Icon";
+/* Option meaning nothing is shown; also the placeholder of empty text fields. */
+"common.none" = "None";
+/* Value of a setting that's switched off. Keep it short. */
+"common.off" = "Off";
+/* Value of a setting that's switched on. Keep it short. */
+"common.on" = "On";
+/* Activity type (as in "Playing a game"), used as a section header and a picker option. */
+"common.playing" = "Playing";
+/* App details for Apelin: row showing the project's name. */
+"common.project_name" = "Project Name";
+/* Button that opens a bug report on GitHub. */
+"common.report_on_github" = "Report on GitHub";
+/* Row: the second line of text under the heading of a Discord activity. */
+"common.second_line" = "Second Line";
+/* Row and section header: the small round picture on the corner of the big picture. */
+"common.small_picture" = "Small Picture";
+/* App details: row showing whether Menzen works with the app. */
+"common.status" = "Status";
+/* App details: section header about how well Menzen works with the app. */
+"common.support" = "Support";
+/* Section header for text rows, and the field for the text shown when hovering a picture. */
+"common.text" = "Text";
+/* Alert title when a custom activity's picture link can't be used. */
+"common.this_image_won_t_work" = "This Image Won't Work";
+/* Option and switch: show a timer counting up from when the activity started. */
+"common.time_elapsed" = "Time Elapsed";
+/* Activity settings: an option for a line, the song or video title. */
+"common.title" = "Title";
+/* App details: row showing the installed app's version. */
+"common.version" = "Version";
+/* Activity type (as in "Watching Netflix"), used as a section header and a picker option. */
+"common.watching" = "Watching";
+/* App status: Menzen fully works with this app. Keep it short. */
+"common.works" = "Works";
+
+/* Connected Apps page: section header for the tweaks that asked to show activity. */
+"connected.apps" = "Apps";
+/* Connected Apps page, footer under the list of tweaks. */
+"connected.apps_show_here_the_first" = "Apps show here the first time they ask. The one that updated last shows.";
+/* Connected Apps page, footer when the list is empty. */
+"connected.no_apps_have_asked_yet" = "No apps have asked yet. Apps show here the first time they ask.";
+/* Connected Apps page, footer under the switch. "Tweaks" are jailbreak add-ons. */
+"connected.other_tweaks_can_show_activity" = "Other tweaks can show their own activity through Menzen, each only once you allow it below.";
+
+/* Custom Activity page: button that adds a new preset (a saved custom status). */
+"custom.add_preset" = "Add Preset";
+/* Custom Activity page title and its on/off switch. */
+"custom.custom_activity" = "Custom Activity";
+/* Button that deletes the preset being edited. */
+"custom.delete_preset" = "Delete Preset";
+/* Alert title. %@ is the preset's name. */
+"custom.delete_x" = "Delete “%@”?";
+/* Shown next to the preset that's in use. Keep it short. */
+"custom.in_use" = "In Use";
+/* Section header for the list of saved custom statuses. */
+"custom.presets" = "Presets";
+/* Alert title when more than one picture link can't be used. */
+"custom.these_images_won_t_work" = "These Images Won't Work";
+/* Row picking Playing, Listening or Watching. */
+"custom.type" = "Type";
+/* Name of a preset that has no name yet. */
+"custom.untitled" = "Untitled";
+/* Alert button: use the preset even though a picture won't show. */
+"custom.use_anyway" = "Use Anyway";
+/* Button that makes this preset the one shown on Discord. */
+"custom.use_this_preset" = "Use This Preset";
+
+/* Shown on Discord under a show's name. %ld is the episode number. */
+"episode.episode_x" = "Episode %ld";
+/* Shown on Discord under a show's name. %ld is the season number. */
+"episode.season_x" = "Season %ld";
+/* Shown on Discord under a show's name. %1$ld is the season number, %2$ld the episode number; you can swap their order. */
+"episode.season_x_episode_x" = "Season %1$ld, Episode %2$ld";
+
+/* Starts a line naming which picture has a problem, before a colon and the problem. */
+"image.big_picture" = "Big picture";
+/* Problem with a picture link: Discord can't show this file type. */
+"image.discord_only_shows_png_jpeg_gif" = "Discord only shows PNG, JPEG, GIF and WebP images.";
+/* Problem with a picture link. %@ is the system's error message. */
+"image.it_couldn_t_be_loaded_x" = "It couldn't be loaded: %@";
+/* Starts a line naming which picture has a problem, before a colon and the problem. */
+"image.small_picture" = "Small picture";
+/* Problem with a picture link: it downloaded but isn't a readable image. */
+"image.the_image_couldn_t_be_read" = "The image couldn't be read.";
+/* Problem with a picture link. Keep https:// as it is. */
+"image.the_link_has_to_start_with" = "The link has to start with https:// and can't contain a token, key or password.";
+/* Problem with a picture link: it points to a web page, not an image file. */
+"image.the_link_isn_t_an_image" = "The link isn't an image. Use the image's own link, not the page it's on.";
+/* Problem with a picture link. %ld is an HTTP status code, such as 404. */
+"image.the_server_answered_with_error_x" = "The server answered with error %ld.";
+
+/* Name on the preview card when the person's Discord name isn't known yet. */
+"preview.you" = "You";
+
+/* Priority page row and Connected Apps switch: activity other tweaks send through Menzen. */
+"priority.connected_apps" = "Connected Apps";
+/* Priority page row. */
+"priority.games" = "Games";
+/* Priority page footer. The rows can be dragged into a different order. */
+"priority.menzen_shows_the_first_of" = "Menzen shows the first of these that has something to show. Drag to reorder.";
+/* Priority page row. */
+"priority.music_and_video" = "Music & Video";
+
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.active_developer" = "Active Developer";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.bug_hunter" = "Bug Hunter";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.discord_staff" = "Discord Staff";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.early_supporter" = "Early Supporter";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.early_verified_bot_developer" = "Early Verified Bot Developer";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.gold_bug_hunter" = "Gold Bug Hunter";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_balance" = "HypeSquad Balance";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_bravery" = "HypeSquad Bravery";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_brilliance" = "HypeSquad Brilliance";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_events" = "HypeSquad Events";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.moderator_alumni" = "Moderator Alumni";
+/* Discord's subscription; a name, usually kept as is. */
+"profile.nitro" = "Nitro";
+/* Discord subscription tier. Nitro is a name; keep it. */
+"profile.nitro_basic" = "Nitro Basic";
+/* Discord subscription tier. Nitro is a name; keep it. */
+"profile.nitro_classic" = "Nitro Classic";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.partner" = "Partner";
+
+/* Settings row that opens the page choosing what each line and picture of the activity shows. */
+"root.activity" = "Activity";
+/* Settings footer under the activity options. */
+"root.activity_stops_when_media_pauses" = "Activity stops when media pauses or you leave a game.";
+/* Settings section header. */
+"root.appearance" = "Appearance";
+/* Settings row that opens the list of supported apps and games. */
+"root.apps" = "Apps";
+/* Settings section header. */
+"root.behavior" = "Behavior";
+/* Option for When Activity Stops. */
+"root.clear_after_10_seconds" = "Clear After 10 Seconds";
+/* Option for When Activity Stops. */
+"root.clear_after_1_minute" = "Clear After 1 Minute";
+/* Option for When Activity Stops. */
+"root.clear_after_30_seconds" = "Clear After 30 Seconds";
+/* Option for When Activity Stops. */
+"root.clear_immediately" = "Clear Immediately";
+/* Shown over the profile card while Menzen connects. */
+"root.connecting_to_discord" = "Connecting to Discord…";
+/* Settings row and Priority page row. */
+"root.custom_activity" = "Custom Activity";
+/* Shown over the profile card when Menzen can't reach Discord. */
+"root.discord_isn_t_connecting_sign_out" = "Discord isn't connecting. If you're online, sign out and sign in again.";
+/* Main on/off switch for Menzen. */
+"root.enabled" = "Enabled";
+/* Reset Settings alert message. A preset is a saved custom status. */
+"root.every_setting_goes_back_to_its" = "Every setting goes back to its default. You stay signed in, and your custom activity presets are kept.";
+/* Note under the sign-in button. */
+"root.if_the_page_doesn_t_load" = "If the page doesn't load, sign in on another device.";
+/* Option for When Activity Stops: never clear it. */
+"root.keep_showing" = "Keep Showing";
+/* Settings row that opens what shows under the person's name in Discord's member list. */
+"root.member_list" = "Member List";
+/* Error at the top of Settings when Menzen's background process isn't running. */
+"root.menzen_s_background_service_isn_t" = "Menzen's background service isn't running. Try reinstalling Menzen.";
+/* Sign Out alert message. */
+"root.menzen_will_stop_showing_your" = "Menzen will stop showing your activity on Discord.";
+/* Settings row that opens the page ordering what shows first. */
+"root.priority" = "Priority";
+/* Settings switch that hides everything but the app's name and icon. */
+"root.privacy_mode" = "Privacy Mode";
+/* Settings footer under the profile card. */
+"root.pull_down_to_refresh" = "Pull down to refresh.";
+/* Reset Settings alert button. */
+"root.reset" = "Reset";
+/* Settings button that opens the reset alert. */
+"root.reset_settings" = "Reset Settings";
+/* Reset Settings alert title. */
+"root.reset_settings_question" = "Reset Settings?";
+/* Privacy Mode footer. */
+"root.shows_only_app_s_or_game" = "Shows only the app's or game's name and icon.";
+/* Button for signing in with a code on another phone or computer. */
+"root.sign_in_on_another_device" = "Sign In on Another Device";
+/* Sign-in button. */
+"root.sign_in_with_discord" = "Sign In with Discord";
+/* Button and alert button. */
+"root.sign_out" = "Sign Out";
+/* Note under the sign-out button when Discord gave Menzen only part of the profile. */
+"root.sign_out_and_back_in_to" = "Sign out and back in to show your badges, banner and Nitro.";
+/* Sign Out alert title. */
+"root.sign_out_of_discord" = "Sign Out of Discord?";
+/* Sign-in button while signing in. */
+"root.signing_in" = "Signing In…";
+/* Settings section header for where activity comes from. */
+"root.sources" = "Sources";
+/* Error under the sign-in button. */
+"root.the_sign_in_page_couldn_t" = "The sign-in page couldn't be opened. Try again.";
+/* Settings row: what happens when music pauses or a game closes. */
+"root.when_activity_stops" = "When Activity Stops";
+/* Note under the sign-in button. */
+"root.you_sign_in_on_discord_s" = "You sign in on Discord's own page. Menzen never sees or stores your password.";
+
+/* Title of the page for signing in on another device. */
+"signin.another_device" = "Another Device";
+/* Button title for a moment after the link is copied. */
+"signin.copied" = "Copied";
+/* Button that copies the sign-in link. */
+"signin.copy_link" = "Copy Link";
+/* Sign-in error. The Keychain is where iOS stores passwords. */
+"signin.error.couldn_t_save_the_sign_in" = "Couldn't save the sign-in to the Keychain.";
+/* Sign-in error. */
+"signin.error.discord_couldn_t_complete_the_sign" = "Discord couldn't complete the sign-in. Try again.";
+/* Sign-in error on the Another Device page; a new code follows it. */
+"signin.error.discord_couldn_t_complete_the_sign_2" = "Discord couldn't complete the sign-in.";
+/* Sign-in error. */
+"signin.error.discord_couldn_t_start_the_sign" = "Discord couldn't start the sign-in. Try again.";
+/* Sign-in error. */
+"signin.error.discord_didn_t_accept_the_sign" = "Discord didn't accept the sign-in. Try again.";
+/* Sign-in error. */
+"signin.error.discord_didn_t_send_a_sign" = "Discord didn't send a sign-in code. Try again.";
+/* Sign-in error when Discord signed Menzen out. */
+"signin.error.discord_ended_the_sign_in_sign" = "Discord ended the sign-in. Sign in again.";
+/* Sign-in error. */
+"signin.error.discord_sent_back_an_unexpected_address" = "Discord sent back an unexpected address. Try again.";
+/* Sign-in error. */
+"signin.error.the_sign_in_didn_t_match" = "The sign-in didn't match the one Menzen started. Try again.";
+/* Sign-in error. */
+"signin.error.the_sign_in_took_too_long" = "The sign-in took too long. Try again.";
+/* Sign-in error on the Another Device page; a new code follows it. */
+"signin.error.the_sign_in_was_declined" = "The sign-in was declined.";
+/* Added after a sign-in error when a new code appears, so keep the space at the start. */
+"signin.here_s_a_new_code" = " Here's a new code.";
+/* Above a short code. Keep discord.com/activate as it is. */
+"signin.or_go_to_discord_com_activate" = "Or go to discord.com/activate on any device and enter:";
+/* Read aloud by VoiceOver for the QR code. */
+"signin.qr_code_for_discord_s_sign" = "QR code for Discord's sign-in page";
+/* Above the QR code. */
+"signin.scan_this_code_with_another_phone" = "Scan this code with another phone's camera, then sign in to Discord there and approve Menzen.";
+/* Button that shares the sign-in link. */
+"signin.share" = "Share";
+/* Button that gets a new code. */
+"signin.try_again" = "Try Again";
+
+/* Apelin details: section header for what the agent shows on Discord. */
+"sources.activity" = "Activity";
+/* Page title: the list of supported apps and games. */
+"sources.apps" = "Apps";
+/* Section header for features that may not work well. */
+"sources.experimental" = "Experimental";
+/* App status: Menzen uses only what the app tells the system's media controls. Keep it short. */
+"sources.media_controls_only" = "Media Controls Only";
+/* App details footer. %@ is the app's name. */
+"sources.menzen_hasn_t_checked_this_version" = "Menzen hasn't checked this version of %@ yet. Opening it lets Menzen check, then brings you back here.";
+/* App details footer. %@ is the app's name. */
+"sources.menzen_shows_what_x_shares_with" = "Menzen shows what %@ shares with the system's media controls.";
+/* Footer on the Apps page. */
+"sources.none_of_the_apps_menzen_supports" = "None of the apps Menzen supports are installed.";
+/* App status. Keep it short. */
+"sources.not_checked" = "Not Checked";
+/* App status. Keep it short. */
+"sources.not_fully_checked" = "Not Fully Checked";
+/* App status. Keep it short. */
+"sources.not_installed" = "Not Installed";
+/* Button that opens the app. %@ is the app's name. */
+"sources.open_x_to_check" = "Open %@ to Check";
+/* Switch that shows apps Menzen doesn't support. */
+"sources.other_apps" = "Other Apps";
+/* Button that asks on GitHub for a game's icon to be added. */
+"sources.request_icon_on_github" = "Request Icon on GitHub";
+/* Footer under Other Apps. */
+"sources.shows_unsupported_apps_with_less_information" = "Shows unsupported apps, with less information. Browsers, chat and social networking apps are skipped.";
+/* App details footer. %@ is the app's name. */
+"sources.some_parts_of_x_only_load" = "Some parts of %@ only load once it's open. Opening it lets Menzen finish checking, then brings you back here.";

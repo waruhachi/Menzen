@@ -1,3 +1,6 @@
+commit_message: "chore: update %language% translations"
+append_commit_message: false
+
 files:
   - source: "/layout/Library/Tweak Support/Menzen/Localization/en.lproj/Localizable.strings"
     translation: "/layout/Library/Tweak Support/Menzen/Localization/%osx_locale%.lproj/Localizable.strings"

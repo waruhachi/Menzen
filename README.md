@@ -6,6 +6,7 @@
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-GPLv3-blue?style=for-the-badge" /></a>
   <img alt="Language" src="https://img.shields.io/badge/language-Objective--C%20%26%20Logos-2b2b2b?style=for-the-badge" />
   <a href="https://havoc.app/package/menzen"><img src="https://img.shields.io/badge/available_on-Havoc-1757FF?style=for-the-badge" alt="Available on Havoc" /></a>
+  <a href="https://crowdin.com/project/menzen"><img src="https://img.shields.io/badge/translate_on-Crowdin-2E3340?style=for-the-badge&amp;logo=crowdin" alt="Translate on Crowdin" /></a>
 </p>
 
 ## About
@@ -35,7 +36,7 @@ Menzen has no servers and no analytics. It only talks to Discord, to GitHub for 
 
 ## Localization and open source
 
-Menzen includes English. Contributions that add a language or improve a translation are welcome.
+Menzen includes English. You can help translate it into your language on [Crowdin](https://crowdin.com/project/menzen). You don't need to know how to code, and translations come with Menzen's next update. If your language isn't listed, [open an issue](https://github.com/waruhachi/Menzen/issues) and it'll be added.
 
 Menzen is open source under the [GNU GPLv3 license](LICENSE). You can explore the code, contribute improvements, or [report an issue](https://github.com/waruhachi/Menzen/issues).
 

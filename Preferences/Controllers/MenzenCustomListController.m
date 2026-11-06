@@ -3,9 +3,11 @@
 
 #import "../../Shared/MenzenCustomActivity.h"
 #import "../../Shared/MenzenLocalization/MenzenLocalization.h"
+#import "../../Shared/MenzenService.h"
 #import "../Helpers/MenzenImageCheck.h"
 #import "../Views/MenzenChoiceCells.h"
 #import "../Views/MenzenDestructiveButtonCell.h"
+#import "../Views/MenzenPreviewCells.h"
 #import "MenzenCustomListController.h"
 
 @interface UITableViewCell (MenzenEditable)
@@ -165,6 +167,53 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	return MenzenCustomPreset(self.identifier) ?: @{};
 }
 
+// The preset as menzend would show it (-[MenzenPresence customActivity]),
+// timed from when it was chosen, or from now when it isn't in use.
+- (NSDictionary<NSString *, id> *)previewActivity {
+	NSDictionary *preset = self.preset;
+	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
+	NSString *kind = MenzenPresetString(preset, MenzenPresetKindKey);
+	activity[MenzenActivityKindKey] = [kind isEqualToString:@"listening"] || [kind isEqualToString:@"watching"] ? kind : @"playing";
+	activity[MenzenActivityStatusDisplayKey] = @"name";
+	activity[MenzenActivityNameKey] = MenzenPresetString(preset, MenzenPresetNameKey);
+	NSString *largeImage = MenzenPresetString(preset, MenzenPresetLargeImageKey);
+	if (MenzenCustomImageURLIsAllowed(largeImage)) activity[MenzenActivityImageURLKey] = largeImage;
+	if (MenzenSettingBool(MenzenSettingPrivacy, NO)) return activity;
+
+	activity[MenzenActivityDetailsKey] = MenzenPresetString(preset, MenzenPresetDetailsKey);
+	activity[MenzenActivityStateKey] = MenzenPresetString(preset, MenzenPresetStateKey);
+	if (activity[MenzenActivityImageURLKey]) {
+		activity[MenzenActivityLargeTextKey] = MenzenPresetString(preset, MenzenPresetLargeTextKey);
+		NSString *smallImage = MenzenPresetString(preset, MenzenPresetSmallImageKey);
+		if (MenzenCustomImageURLIsAllowed(smallImage)) {
+			activity[MenzenActivitySmallImageURLKey] = smallImage;
+			activity[MenzenActivitySmallTextKey] = MenzenPresetString(preset, MenzenPresetSmallTextKey);
+		}
+	}
+
+	id timer = preset[MenzenPresetTimerKey];
+	if (![timer respondsToSelector:@selector(boolValue)] || [timer boolValue]) {
+		NSDate *start = MenzenSettingValue(MenzenSettingCustomStart);
+		BOOL inUse = [self.identifier isEqualToString:MenzenSettingString(MenzenSettingCustomPreset, nil)];
+		activity[MenzenActivityStartKey] = @((inUse && [start isKindOfClass:NSDate.class] ? start : NSDate.date).timeIntervalSince1970);
+	}
+
+	return activity;
+}
+
+- (PSSpecifier *)previewSpecifier {
+	PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:nil target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
+	specifier.identifier = @"preview";
+	[specifier setProperty:MenzenCardPreviewCell.class forKey:@"cellClass"];
+	[specifier setProperty:self.previewActivity forKey:@"activity"];
+	return specifier;
+}
+
+- (void)reloadPreview {
+	PSSpecifier *old = [self specifierForID:@"preview"];
+	if (old) [self replaceContiguousSpecifiers:@[old] withSpecifiers:@[self.previewSpecifier] animated:NO];
+}
+
 - (PSSpecifier *)fieldNamed:(NSString *)name key:(NSString *)key cell:(PSCellType)cell {
 	PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:name target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:cell edit:nil];
 	[specifier setProperty:key forKey:@"presetKey"];
@@ -191,6 +240,8 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		BOOL inUse = [self.identifier isEqualToString:MenzenSettingString(MenzenSettingCustomPreset, nil)];
 		BOOL showing = inUse && MenzenSettingBool(MenzenSettingCustom, NO);
 		NSMutableArray *specifiers = [NSMutableArray array];
+		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
+		[specifiers addObject:self.previewSpecifier];
 
 		if (!showing) {
 			[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
@@ -258,6 +309,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	MenzenWritePresets(presets);
 	if ([key isEqualToString:MenzenPresetNameKey]) self.title = MenzenPresetTitle(self.preset);
 	if ([key isEqualToString:MenzenPresetKindKey]) [self reloadSpecifiers];
+	else [self reloadPreview];
 	if (([key isEqualToString:MenzenPresetLargeImageKey] || [key isEqualToString:MenzenPresetSmallImageKey]) && [value isKindOfClass:NSString.class]) [self checkLink:value];
 }
 
@@ -292,6 +344,16 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	else if ([cell respondsToSelector:@selector(textField)]) field = cell.textField;
 	if ([field isKindOfClass:UITextField.class]) field.textAlignment = NSTextAlignmentRight;
 	return cell;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+	if ([[self specifierAtIndexPath:indexPath].identifier isEqualToString:@"preview"]) return UITableViewAutomaticDimension;
+	return [super tableView:tableView heightForRowAtIndexPath:indexPath];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
+	if ([[self specifierAtIndexPath:indexPath].identifier isEqualToString:@"preview"]) return 140;
+	return [super tableView:tableView estimatedHeightForRowAtIndexPath:indexPath];
 }
 
 - (void)confirmDelete:(PSSpecifier *)specifier {

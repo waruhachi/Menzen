@@ -214,7 +214,7 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MenzenProviders(void) {
 				MenzenProviderBundleIdentifierKey: @"com.google.ios.youtube",
 				MenzenProviderNameKey: @"YouTube",
 				MenzenProviderWatchingKey: @YES,
-				MenzenProviderArtworkHostsKey: @[@"i.ytimg.com"],
+				MenzenProviderArtworkHostsKey: @[@"i.ytimg.com", @"yt3.ggpht.com"],
 				MenzenProviderLinkHostsKey: @[@"www.youtube.com"],
 			},
 			@{

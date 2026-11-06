@@ -8,6 +8,9 @@
 // album, but the queue's renderer does (the byline, and the menu's "Go to
 // album"). The artist's picture is on their page, asked for through the
 // app's browse service as the app does when the artist is tapped.
+//
+// In YouTube, the channel's picture is in the watch page's response, which
+// the app has already loaded.
 
 @interface YTIThumbnailDetails_Thumbnail : NSObject
 @property (nonatomic, readonly) NSString *URL;
@@ -101,6 +104,16 @@
 - (id)header;
 @end
 
+// Its owner row is an element (EML) renderer, kept as data, with the
+// channel's ID and picture.
+@interface YTIWatchNextResponse : NSObject
+- (NSData *)data;
+@end
+
+@interface YTWatchNextViewController : UIViewController
+- (YTIWatchNextResponse *)watchNextResponse;
+@end
+
 @interface YTBrowseServiceImpl : NSObject
 - (void)makeRequest:(YTIBrowseRequest *)request refresh:(BOOL)refresh responseBlock:(void (^)(id response))responseBlock errorBlock:(void (^)(NSError *error))errorBlock;
 @end
@@ -136,10 +149,14 @@ static BOOL publishing;
 static BOOL music;
 static NSHashTable<YTQueueItem *> *queueItems;
 // Main thread only, except artistPictures, which is guarded by itself.
-// NSNull for an artist without a picture.
+// Artist or channel ID to picture; NSNull for an artist without one.
 static __weak YTBrowseServiceImpl *browseService;
 static NSMutableDictionary<NSString *, id> *artistPictures;
 static NSMutableSet<NSString *> *artistPicturesLoading;
+// The watch page, and the last response looked through, for which channel.
+static __weak YTWatchNextViewController *watchPage;
+static __weak YTIWatchNextResponse *searchedResponse;
+static NSString *searchedChannel;
 // Video ID to whether it's public, from the player's details.
 static MenzenCache<NSString *, NSNumber *> *publicVideos;
 
@@ -324,6 +341,91 @@ static NSString *MenzenArtistPicture(NSString *artistID) {
 	return [picture isKindOfClass:NSString.class] ? picture : nil;
 }
 
+// The first yt3.ggpht.com picture in the next `length` bytes, without its
+// options ("=s88-c-k-c0x00ffffff-no-rj").
+static NSString *MenzenPictureAfter(NSData *data, NSUInteger location, NSUInteger length) {
+	NSData *prefix = [@"https://yt3.ggpht.com/" dataUsingEncoding:NSUTF8StringEncoding];
+	const char *bytes = data.bytes;
+	NSRange range = NSMakeRange(location, MIN(length, data.length - location));
+	while (true) {
+		NSRange found = [data rangeOfData:prefix options:0 range:range];
+		if (found.location == NSNotFound) return nil;
+		NSUInteger start = NSMaxRange(found);
+		NSUInteger end = start;
+		while (end < data.length && end - start < 200 && (isalnum((unsigned char)bytes[end]) || bytes[end] == '-' || bytes[end] == '_' || bytes[end] == '/')) end++;
+		// Emoji in text are under /proxy/. Channels without a picture of their
+		// own have a generated one under /ytc/.
+		BOOL proxy = end - start > 6 && !memcmp(bytes + start, "proxy/", 6);
+		if (end > start && end < data.length && bytes[end] == '=' && !proxy) return [[NSString alloc] initWithBytes:bytes + start length:end - start encoding:NSASCIIStringEncoding];
+		range = NSMakeRange(start, NSMaxRange(range) > start ? NSMaxRange(range) - start : 0);
+	}
+}
+
+// The owner row under the video, as a larger square. Its channel's name,
+// subscriber count and picture are in field 477514866, a little after the
+// channel's ID. Pictures elsewhere (members, comments, related videos)
+// aren't in that field.
+static NSString *MenzenChannelPictureInData(NSData *data, NSString *channelID) {
+	static uint8_t const ownerField[] = {0x92, 0xc7, 0xc9, 0x9d, 0x0e};
+	NSData *field = [NSData dataWithBytesNoCopy:(void *)ownerField length:sizeof(ownerField) freeWhenDone:NO];
+	NSData *channel = [channelID dataUsingEncoding:NSUTF8StringEncoding];
+	const uint8_t *bytes = data.bytes;
+	NSRange range = NSMakeRange(0, data.length);
+	while (channel.length) {
+		NSRange found = [data rangeOfData:field options:0 range:range];
+		if (found.location == NSNotFound) return nil;
+		range = NSMakeRange(NSMaxRange(found), data.length - NSMaxRange(found));
+		NSUInteger before = MIN(found.location, (NSUInteger)1500);
+		if ([data rangeOfData:channel options:0 range:NSMakeRange(found.location - before, before)].location == NSNotFound) continue;
+
+		// The field's length, a varint.
+		NSUInteger length = 0, start = NSMaxRange(found);
+		for (NSUInteger shift = 0; start < data.length && shift < 28; shift += 7) {
+			uint8_t byte = bytes[start++];
+			length |= (NSUInteger)(byte & 0x7f) << shift;
+			if (!(byte & 0x80)) break;
+		}
+
+		NSString *picture = MenzenPictureAfter(data, start, MIN(length, (NSUInteger)4096));
+		if (picture) return [NSString stringWithFormat:@"https://yt3.ggpht.com/%@=s544-c-k-c0x00ffffff-no-rj", picture];
+	}
+
+	return nil;
+}
+
+// Main thread only. Looks through each response once per channel, since
+// encoding it takes a moment. Not found: the response may still be the
+// previous video's, so the next one is looked through too.
+static NSString *MenzenSearchChannelPicture(NSString *channelID) {
+	YTWatchNextViewController *page = watchPage;
+	YTIWatchNextResponse *response = [page respondsToSelector:@selector(watchNextResponse)] ? page.watchNextResponse : nil;
+	if (!response || (response == searchedResponse && [channelID isEqualToString:searchedChannel]) || ![response respondsToSelector:@selector(data)]) return nil;
+	searchedResponse = response;
+	searchedChannel = channelID;
+	NSString *picture = MenzenChannelPictureInData(response.data, channelID);
+	if (!picture) return nil;
+	@synchronized(artistPictures) {
+		if (artistPictures.count > 1000) [artistPictures removeAllObjects];
+		artistPictures[channelID] = picture;
+	}
+
+	return picture;
+}
+
+static NSString *MenzenChannelPicture(NSString *channelID) {
+	id picture;
+	@synchronized(artistPictures) {
+		picture = artistPictures[channelID];
+	}
+
+	if (picture) return [picture isKindOfClass:NSString.class] ? picture : nil;
+	if (NSThread.isMainThread) return MenzenSearchChannelPicture(channelID);
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (MenzenSearchChannelPicture(channelID)) MenzenRepublishPlayer();
+	});
+	return nil;
+}
+
 // details are the player's for the video, when it has them (YouTube Music
 // with Premium publishes the info itself, off the main thread, so the queue
 // alone has to do).
@@ -379,6 +481,7 @@ static NSDictionary *MenzenExtras(YTPlayerViewController *controller, YTIVideoDe
 	NSString *channelID = [details respondsToSelector:@selector(channelId)] ? details.channelId : nil;
 	if ([channelID hasPrefix:@"UC"] && [channelID rangeOfCharacterFromSet:NSCharacterSet.URLPathAllowedCharacterSet.invertedSet].location == NSNotFound) {
 		extras[MenzenExtrasArtistURLKey] = [@"https://www.youtube.com/channel/" stringByAppendingString:channelID];
+		extras[MenzenExtrasArtistImageKey] = MenzenChannelPicture(channelID);
 	}
 
 	return extras;
@@ -523,6 +626,21 @@ static NSDictionary *MenzenInfoWithExtras(NSDictionary *info) {
 
 %end
 
+%group Video
+
+%hook YTWatchNextViewController
+
+// The page often loads after the video has started.
+- (void)loadWithResponse:(id)response {
+	%orig;
+	watchPage = self;
+	MenzenRepublishPlayer();
+}
+
+%end
+
+%end
+
 %group Music
 
 %hook YTMBrowseServiceImpl
@@ -558,6 +676,10 @@ static NSDictionary *MenzenInfoWithExtras(NSDictionary *info) {
 		@"YTMBrowseServiceImpl -makeRequest:refresh:responseBlock:errorBlock:",
 		@"YTIBrowseRequest +message",
 	];
+	NSArray *videoParts = @[
+		@"YTWatchNextViewController -loadWithResponse:",
+		@"YTWatchNextViewController -watchNextResponse",
+	];
 	MenzenProviderCheck(@[
 		@"YTPlayerViewController -contentVideoID",
 		@"YTPlayerViewController -contentPlayerResponse | YTPlaybackData -playerResponse",
@@ -577,14 +699,16 @@ static NSDictionary *MenzenInfoWithExtras(NSDictionary *info) {
 		@"YTIVideoDetails -isCrawlable",
 		@"YTIVideoDetails -thumbnail",
 		@"YTIThumbnailDetails -thumbnailsArray",
-	] arrayByAddingObjectsFromArray:music ? musicParts : @[]]);
+	] arrayByAddingObjectsFromArray:music ? musicParts : videoParts]);
 	if (!%c(YTPlayerViewController)) return;
 	publicVideos = [[MenzenCache alloc] initWithLimit:64];
+	artistPictures = [NSMutableDictionary dictionary];
 	%init;
 	if (music && %c(YTQueueItem)) {
 		queueItems = [NSHashTable weakObjectsHashTable];
-		artistPictures = [NSMutableDictionary dictionary];
 		artistPicturesLoading = [NSMutableSet set];
 		%init(Music);
 	}
+
+	if (!music && %c(YTWatchNextViewController)) %init(Video);
 }

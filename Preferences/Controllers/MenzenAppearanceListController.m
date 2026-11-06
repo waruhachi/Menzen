@@ -29,7 +29,7 @@ static NSString *const MenzenAppleTV = @"com.apple.tv";
 // artist picture, so pictures fall back to the app's icon.
 static NSDictionary<NSString *, id> *MenzenSampleActivity(MenzenPreviewKind kind, NSDictionary<NSString *, NSString *> *icons) {
 	BOOL video = kind == MenzenPreviewKindVideo;
-	NSDictionary *texts = video ? @{@"title": MenzenLocalizedString(@"appearance.episode_title", @"Episode Title"), @"artist": MenzenLocalizedString(@"appearance.show", @"Show"), @"album": [NSString stringWithFormat:MenzenLocalizedString(@"episode.season_x_episode_x", @"Season %ld, Episode %ld"), 1L, 4L]}
+	NSDictionary *texts = video ? @{@"title": MenzenLocalizedString(@"appearance.episode_title", @"Episode Title"), @"artist": MenzenLocalizedString(@"appearance.show", @"Show"), @"album": [NSString stringWithFormat:MenzenLocalizedString(@"episode.season_x_episode_x", @"Season %1$ld, Episode %2$ld"), 1L, 4L]}
 								: @{@"title": MenzenLocalizedString(@"appearance.song_title", @"Song Title"), @"artist": MenzenLocalizedString(@"common.artist", @"Artist"), @"album": MenzenLocalizedString(@"common.album", @"Album")};
 	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
 	activity[MenzenActivityKindKey] = video ? @"watching" : @"listening";
@@ -285,7 +285,7 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 		[specifiers addObject:[self partSpecifier:MenzenPartTime named:MenzenLocalizedString(@"appearance.time", @"Time") enabled:YES]];
 		PSSpecifier *links = MenzenSettingSpecifier(self, MenzenLocalizedString(@"appearance.links", @"Links"), MenzenSettingLinks, PSStaticTextCell);
 		[links setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
-		[links setProperty:@[@[@YES, @"On"], @[@NO, MenzenLocalizedString(@"common.off", @"Off")]] forKey:@"choices"];
+		[links setProperty:@[@[@YES, MenzenLocalizedString(@"common.on", @"On")], @[@NO, MenzenLocalizedString(@"common.off", @"Off")]] forKey:@"choices"];
 		[links setProperty:@(MenzenSettingBool(MenzenSettingLinks, YES)) forKey:@"choice"];
 		[specifiers addObject:links];
 		_specifiers = specifiers;

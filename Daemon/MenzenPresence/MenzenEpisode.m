@@ -37,7 +37,7 @@ BOOL MenzenFindEpisode(NSString *title, NSInteger *season, NSInteger *episode, N
 }
 
 NSString *MenzenEpisodeText(NSInteger season, NSInteger episode) {
-	if (season > 0 && episode > 0) return [NSString stringWithFormat:MenzenLocalizedString(@"episode.season_x_episode_x", @"Season %ld, Episode %ld"), (long)season, (long)episode];
+	if (season > 0 && episode > 0) return [NSString stringWithFormat:MenzenLocalizedString(@"episode.season_x_episode_x", @"Season %1$ld, Episode %2$ld"), (long)season, (long)episode];
 	if (episode > 0) return [NSString stringWithFormat:MenzenLocalizedString(@"episode.episode_x", @"Episode %ld"), (long)episode];
 	if (season > 0) return [NSString stringWithFormat:MenzenLocalizedString(@"episode.season_x", @"Season %ld"), (long)season];
 	return nil;

@@ -361,7 +361,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 // tokens are in menzend's keychain, so this keeps Menzen signed in. The
 // custom activity presets are the user's own writing, so they stay too.
 - (void)confirmReset {
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:MenzenLocalizedString(@"root.reset_settings", @"Reset Settings?") message:MenzenLocalizedString(@"root.every_setting_goes_back_to_its", @"Every setting goes back to its default. You stay signed in, and your custom activity presets are kept.") preferredStyle:UIAlertControllerStyleAlert];
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:MenzenLocalizedString(@"root.reset_settings_question", @"Reset Settings?") message:MenzenLocalizedString(@"root.every_setting_goes_back_to_its", @"Every setting goes back to its default. You stay signed in, and your custom activity presets are kept.") preferredStyle:UIAlertControllerStyleAlert];
 	[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"common.cancel", @"Cancel") style:UIAlertActionStyleCancel handler:nil]];
 	__weak typeof(self) weakSelf = self;
 	[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"root.reset", @"Reset") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {

@@ -56,13 +56,13 @@ static void MenzenSetIcon(PSSpecifier *specifier, NSDictionary *provider) {
 
 static NSString *MenzenGameSummary(NSDictionary *game) {
 	if (!MenzenSettingBool(MenzenGameKey(game), YES)) return MenzenLocalizedString(@"common.off", @"Off");
-	return [game[MenzenGameListedKey] boolValue] ? @"On" : MenzenLocalizedString(@"common.no_icon", @"No Icon");
+	return [game[MenzenGameListedKey] boolValue] ? MenzenLocalizedString(@"common.on", @"On") : MenzenLocalizedString(@"common.no_icon", @"No Icon");
 }
 
 static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *hooked) {
 	if (!MenzenInstalled(provider)) return MenzenLocalizedString(@"sources.not_installed", @"Not Installed");
 	if (!MenzenSettingBool(MenzenSourceKey(provider), YES)) return MenzenLocalizedString(@"common.off", @"Off");
-	return MenzenSupportStateFor(provider, MenzenAppSupportStatus(provider[MenzenProviderBundleIdentifierKey]), hooked) == MenzenSupportStateMayNotWork ? MenzenLocalizedString(@"common.may_not_work", @"May Not Work") : @"On";
+	return MenzenSupportStateFor(provider, MenzenAppSupportStatus(provider[MenzenProviderBundleIdentifierKey]), hooked) == MenzenSupportStateMayNotWork ? MenzenLocalizedString(@"common.may_not_work", @"May Not Work") : MenzenLocalizedString(@"common.on", @"On");
 }
 
 @implementation MenzenSourcesListController {

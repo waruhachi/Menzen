@@ -228,9 +228,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 		[header setProperty:@YES forKey:@"overlayBusy"];
 	}
 
-	PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
-	[group setProperty:MenzenLocalizedString(@"root.pull_down_to_refresh", @"Pull down to refresh.") forKey:@"footerText"];
-	return @[group, header];
+	return @[[PSSpecifier emptyGroupSpecifier], header];
 }
 
 - (BOOL)isSelfSizingRowAtIndexPath:(NSIndexPath *)indexPath {

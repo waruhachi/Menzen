@@ -7,6 +7,10 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Pull down to refresh.</string>
+			<key>footerTextKey</key>
+			<string>root.pull_down_to_refresh</string>
 			<key>id</key>
 			<string>general</string>
 		</dict>

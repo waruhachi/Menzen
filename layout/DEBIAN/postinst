@@ -31,6 +31,8 @@ cat > "$PLIST" <<PLIST
 	<dict>
 		<key>moe.waru.menzend</key>
 		<true/>
+		<key>moe.waru.menzend.api</key>
+		<true/>
 	</dict>
 	<key>UserName</key>
 	<string>mobile</string>

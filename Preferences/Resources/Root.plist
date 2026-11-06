@@ -86,6 +86,18 @@
 		</dict>
 		<dict>
 			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>MenzenConnectedListController</string>
+			<key>id</key>
+			<string>connected</string>
+			<key>label</key>
+			<string>Connected Apps</string>
+			<key>labelKey</key>
+			<string>priority.connected_apps</string>
+		</dict>
+		<dict>
+			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
 			<string>Activity stops when media pauses or you leave a game.</string>

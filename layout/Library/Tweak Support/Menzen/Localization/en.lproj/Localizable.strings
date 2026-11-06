@@ -77,6 +77,11 @@
 "common.watching" = "Watching";
 "common.works" = "Works";
 
+"connected.apps" = "Apps";
+"connected.apps_show_here_the_first" = "Apps show here the first time they ask. The one that updated last shows.";
+"connected.no_apps_have_asked_yet" = "No apps have asked yet. Apps show here the first time they ask.";
+"connected.other_tweaks_can_show_activity" = "Other tweaks can show their own activity through Menzen, each only once you allow it below.";
+
 "custom.add_preset" = "Add Preset";
 "custom.custom_activity" = "Custom Activity";
 "custom.delete_preset" = "Delete Preset";

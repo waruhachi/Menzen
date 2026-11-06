@@ -8,7 +8,7 @@ DISCORD_SDK_DIR = Library/Tweak Support/Menzen/DiscordSDK
 
 TOOL_NAME = menzend
 
-$(TOOL_NAME)_FILES = main.m $(wildcard MenzenApelin/*.m) $(wildcard MenzenDiscord/*.m MenzenDiscord/*.mm) $(wildcard MenzenPresence/*.m) $(wildcard MenzenNowPlaying/*.m) $(wildcard MenzenForegroundApps/*.m) $(wildcard MenzenApps/*.m) $(wildcard MenzenServiceListener/*.m) $(wildcard ../Shared/MenzenLocalization/*.m)
+$(TOOL_NAME)_FILES = main.m $(wildcard MenzenApelin/*.m) $(wildcard MenzenDiscord/*.m MenzenDiscord/*.mm) $(wildcard MenzenPresence/*.m) $(wildcard MenzenNowPlaying/*.m) $(wildcard MenzenForegroundApps/*.m) $(wildcard MenzenApps/*.m) $(wildcard MenzenServiceListener/*.m) $(wildcard MenzenConnectedApps/*.m) $(wildcard ../Shared/MenzenLocalization/*.m)
 MENZEN_VERSION := $(shell sed -n 's/^Version: *//p' ../layout/DEBIAN/control)
 
 $(TOOL_NAME)_CFLAGS = -fobjc-arc -IDiscordSDK/Headers -DMENZEN_VERSION='"$(MENZEN_VERSION)"'

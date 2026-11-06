@@ -8,6 +8,7 @@
 #import "../Shared/MenzenTrackExtras.h"
 #import "MenzenApps/MenzenAppCatalog.h"
 #import "MenzenApps/MenzenAppChecker.h"
+#import "MenzenConnectedApps/MenzenConnectedListener.h"
 #import "MenzenDiscord/MenzenDiscord.h"
 #import "MenzenForegroundApps/MenzenForegroundApps.h"
 #import "MenzenNowPlaying/MenzenNowPlaying.h"
@@ -74,6 +75,8 @@ int main(int argc, char *argv[]) {
 		MenzenForegroundApps *foregroundApps = [[MenzenForegroundApps alloc] initWithHandler:^(NSArray<NSString *> *visible) {
 			[presence handleVisibleApps:visible];
 		}];
+		MenzenConnectedListener *connected = [[MenzenConnectedListener alloc] initWithPresence:presence];
+		[connected start];
 		appCatalog.changedHandler = ^{
 			[presence appCatalogChanged];
 		};
@@ -90,6 +93,7 @@ int main(int argc, char *argv[]) {
 		[NSNotificationCenter.defaultCenter addObserverForName:@MenzenSettingsChangedNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *notification) {
 			CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
 			[presence settingsChanged];
+			[connected settingsChanged];
 		}];
 		CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, MenzenForwardSettingsChanged, CFSTR(MenzenSettingsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 

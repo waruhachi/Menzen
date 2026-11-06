@@ -96,6 +96,11 @@
 
 "preview.you" = "You";
 
+"priority.connected_apps" = "Connected Apps";
+"priority.games" = "Games";
+"priority.menzen_shows_the_first_of" = "Menzen shows the first of these that has something to show. Drag to reorder.";
+"priority.music_and_video" = "Music & Video";
+
 "profile.active_developer" = "Active Developer";
 "profile.bug_hunter" = "Bug Hunter";
 "profile.discord_staff" = "Discord Staff";
@@ -113,6 +118,7 @@
 "profile.partner" = "Partner";
 
 "root.activity" = "Activity";
+"root.activity_stops_when_media_pauses" = "Activity stops when media pauses or you leave a game.";
 "root.appearance" = "Appearance";
 "root.apps" = "Apps";
 "root.behavior" = "Behavior";
@@ -130,6 +136,7 @@
 "root.member_list" = "Member List";
 "root.menzen_s_background_service_isn_t" = "Menzen's background service isn't running. Try reinstalling Menzen.";
 "root.menzen_will_stop_showing_what_you" = "Menzen will stop showing what you're playing.";
+"root.priority" = "Priority";
 "root.privacy_mode" = "Privacy Mode";
 "root.pull_down_to_refresh" = "Pull down to refresh.";
 "root.reset" = "Reset";
@@ -143,7 +150,7 @@
 "root.signing_in" = "Signing In…";
 "root.sources" = "Sources";
 "root.the_sign_in_page_couldn_t" = "The sign-in page couldn't be opened. Try again.";
-"root.when_paused" = "When Paused";
+"root.when_activity_stops" = "When Activity Stops";
 "root.you_sign_in_on_discord_s" = "You sign in on Discord's own page. Menzen never sees or stores your password.";
 
 "signin.another_device" = "Another Device";

@@ -83,12 +83,28 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
+			<key>footerText</key>
+			<string>Activity stops when media pauses or you leave a game.</string>
+			<key>footerTextKey</key>
+			<string>root.activity_stops_when_media_pauses</string>
 			<key>id</key>
-			<string>pausedGroup</string>
+			<string>behaviorGroup</string>
 			<key>label</key>
 			<string>Behavior</string>
 			<key>labelKey</key>
 			<string>root.behavior</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>MenzenPriorityListController</string>
+			<key>id</key>
+			<string>priority</string>
+			<key>label</key>
+			<string>Priority</string>
+			<key>labelKey</key>
+			<string>root.priority</string>
 		</dict>
 		<dict>
 			<key>PostNotification</key>
@@ -104,9 +120,9 @@
 			<key>key</key>
 			<string>pauseGrace</string>
 			<key>label</key>
-			<string>When Paused</string>
+			<string>When Activity Stops</string>
 			<key>labelKey</key>
-			<string>root.when_paused</string>
+			<string>root.when_activity_stops</string>
 			<key>validTitles</key>
 			<array>
 				<string>Clear Immediately</string>

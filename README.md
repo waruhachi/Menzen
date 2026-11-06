@@ -25,7 +25,7 @@ It runs on iOS 14 through 26, on rootful, rootless and RootHide jailbreaks.
 - You pick what each line and picture of your activity shows, and what shows in member lists.
 - Custom statuses with your own text, pictures and a timer.
 - Privacy Mode shows only the app's name and icon. You can turn it on from Settings or from Control Center, which also has a toggle to turn Menzen on and off.
-- You choose which apps and games can show up.
+- You choose which apps and games can show up, and which comes first when more than one has something to show.
 - You sign in on Discord's own page, on the iPhone or from another device with a code. Menzen never asks for your Discord token and keeps the sign-in in the iPhone's Keychain. If Discord stops connecting, Settings asks you to sign in again.
 
 ## Privacy

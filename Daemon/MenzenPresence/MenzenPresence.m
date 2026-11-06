@@ -9,14 +9,16 @@
 #import "MenzenPresence.h"
 #import "MenzenTrackActivity.h"
 
-// Pausing briefly (or skipping around) shouldn't flicker the status.
-static NSTimeInterval const MenzenDefaultPauseGrace = 10;
-// Nor should a look at the app switcher or a quick reply in another app
-// while playing a game.
-static NSTimeInterval const MenzenGameGrace = 10;
+// Pausing briefly, skipping around, a look at the app switcher or a quick
+// reply in another app shouldn't flicker the status.
+static NSTimeInterval const MenzenDefaultStopGrace = 10;
 // Apelin's agent moves on while the app stays on screen. Discord takes five
 // updates in 20 s.
 static NSTimeInterval const MenzenApelinRefresh = 5;
+
+static NSTimeInterval MenzenStopGrace(void) {
+	return MenzenSettingDouble(MenzenSettingPauseGrace, MenzenDefaultStopGrace);
+}
 
 static BOOL MenzenSourceEnabled(NSString *bundleIdentifier) {
 	if (!bundleIdentifier.length || !MenzenSettingBool(MenzenSettingEnabled, YES)) return NO;
@@ -32,11 +34,15 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 @implementation MenzenPresence {
 	MenzenDiscord *_discord;
 	MenzenAppCatalog *_appCatalog;
-	MenzenActivity *_shown;
+	// Each source's activity; publish shows the first in MenzenPriority().
+	MenzenActivity *_media;
+	MenzenActivity *_connected;
 	NSArray<NSString *> *_visibleApps;
-	// The game showing, since it came on screen; it shows over any track.
+	// The game, since it came on screen. Once it's left (_gameLeft) it ends
+	// when the grace period runs out or something starts playing.
 	NSString *_game;
 	NSDate *_gameStart;
+	BOOL _gameLeft;
 	NSUInteger _gameEndGeneration;
 	NSTimer *_gameRefresh;
 	MenzenTrack *_lastTrack;
@@ -90,12 +96,30 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	return activity;
 }
 
-- (void)publish {
-	[_discord setActivity:[self customActivity] ?: _shown];
+- (MenzenActivity *)activityForSource:(NSString *)source {
+	if ([source isEqualToString:MenzenSourceCustom]) return [self customActivity];
+	if ([source isEqualToString:MenzenSourceConnected]) return MenzenSettingBool(MenzenSettingEnabled, YES) ? _connected : nil;
+	if ([source isEqualToString:MenzenSourceGames]) return _game ? [self activityForGame:_game] : nil;
+	return _media;
 }
 
-- (void)show:(MenzenActivity *)activity {
-	_shown = activity;
+- (void)publish {
+	MenzenActivity *activity;
+	for (NSString *source in MenzenPriority()) {
+		activity = [self activityForSource:source];
+		if (activity) break;
+	}
+
+	[_discord setActivity:activity];
+}
+
+- (void)showMedia:(MenzenActivity *)activity {
+	_media = activity;
+	[self publish];
+}
+
+- (void)setConnectedActivity:(MenzenActivity *)activity {
+	_connected = activity;
 	[self publish];
 }
 
@@ -120,45 +144,46 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 - (void)handleTrack:(MenzenTrack *)track {
 	_lastTrack = track;
 	[self updatePreviewWithTrack:track];
-	if (_game) return;
 
 	// Stopped, closed, or a source that's switched off took over: clear now.
 	if (!track || !MenzenSourceEnabled(track.bundleIdentifier)) {
 		[self cancelClear];
-		if (_shown) [self show:nil];
+		if (_media) [self showMedia:nil];
 		return;
 	}
 
 	MenzenActivity *activity = MenzenActivityForTrack(track, [_appCatalog iconURLForApp:track.bundleIdentifier]);
 	// A live stream has no duration or position: its clock counts from when
 	// it first showed, not from each update.
-	if (track.duration <= 0 && activity.startDate && !activity.endDate && _shown.startDate && !_shown.endDate && [_shown.details isEqualToString:activity.details]) activity.startDate = _shown.startDate;
+	if (track.duration <= 0 && activity.startDate && !activity.endDate && _media.startDate && !_media.endDate && [_media.details isEqualToString:activity.details]) activity.startDate = _media.startDate;
 	if (track.playing && activity) {
 		[self cancelClear];
-		[self show:activity];
+		// Playing something after leaving a game takes over from it.
+		if (_gameLeft) [self endGame];
+		[self showMedia:activity];
 		return;
 	}
 
-	if (_shown) [self showPaused:activity];
+	if (_media) [self showPaused:activity];
 }
 
 // Paused (or a Spotify ad): stop the progress bar, then clear if playback
 // doesn't resume within the grace period.
 - (void)showPaused:(MenzenActivity *)activity {
-	NSTimeInterval grace = MenzenSettingDouble(MenzenSettingPauseGrace, MenzenDefaultPauseGrace);
+	NSTimeInterval grace = MenzenStopGrace();
 	if (grace == 0) {
 		[self cancelClear];
-		[self show:nil];
+		[self showMedia:nil];
 		return;
 	}
 
 	if (activity) {
-		[self show:activity];
-	} else if (_shown.startDate) {
-		MenzenActivity *paused = [_shown copy];
+		[self showMedia:activity];
+	} else if (_media.startDate) {
+		MenzenActivity *paused = [_media copy];
 		paused.startDate = nil;
 		paused.endDate = nil;
-		[self show:paused];
+		[self showMedia:paused];
 	}
 
 	// Negative: keep showing until playback stops.
@@ -170,7 +195,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || generation != strongSelf->_clearGeneration) return;
 		strongSelf->_clearPending = NO;
-		[strongSelf show:nil];
+		[strongSelf showMedia:nil];
 	});
 }
 
@@ -194,27 +219,32 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 
 	if (game) {
 		_gameEndGeneration++;
+		_gameLeft = NO;
 		if (![game isEqualToString:_game]) {
 			_game = game;
 			_gameStart = NSDate.date;
 		}
-		// A track's pause countdown would clear the game.
-		[self cancelClear];
-		[self show:[self activityForGame:game]];
+		[self publish];
 		[self updateGameRefresh];
 		return;
 	}
 
 	if (!_game) return;
 	// Switched off: at once.
-	if (!MenzenGameEnabled(_game)) {
+	NSTimeInterval grace = MenzenStopGrace();
+	if (!MenzenGameEnabled(_game) || grace == 0) {
 		[self endGame];
 		return;
 	}
 
+	// Left: it stays for the grace period, or with a negative one until
+	// something else takes over. Other apps coming and going don't restart it.
+	if (_gameLeft) return;
+	_gameLeft = YES;
 	NSUInteger generation = ++_gameEndGeneration;
+	if (grace < 0) return;
 	__weak typeof(self) weakSelf = self;
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenGameGrace * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(grace * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		typeof(self) strongSelf = weakSelf;
 		if (strongSelf && generation == strongSelf->_gameEndGeneration) [strongSelf endGame];
 	});
@@ -256,24 +286,23 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	__weak typeof(self) weakSelf = self;
 	_gameRefresh = [NSTimer scheduledTimerWithTimeInterval:MenzenApelinRefresh repeats:YES block:^(NSTimer *timer) {
 		typeof(self) strongSelf = weakSelf;
-		if (strongSelf && strongSelf->_game) [strongSelf show:[strongSelf activityForGame:strongSelf->_game]];
+		if (strongSelf && strongSelf->_game) [strongSelf publish];
 	}];
 }
 
 - (void)endGame {
 	_game = nil;
 	_gameStart = nil;
+	_gameLeft = NO;
 	_gameEndGeneration++;
 	[self updateGameRefresh];
-	MenzenActivity *shown = _shown;
-	// A paused track only shows while it's already showing.
-	_shown = nil;
-	[self handleTrack:_lastTrack];
-	if (shown && !_shown) [self publish];
+	[self publish];
 }
 
 - (void)settingsChanged {
 	[self cancelClear];
+	// Restarts a left game's countdown with the new grace period.
+	_gameLeft = NO;
 	[self updateGame];
 	[self handleTrack:_lastTrack];
 	// A preset switched on or off, or edited, with nothing else changing.

@@ -25,9 +25,12 @@
 #define MenzenSettingHeading @"heading"
 #define MenzenSettingHeadingText @"headingText"
 #define MenzenSettingMemberList @"memberList"
-// Seconds to keep a paused activity before clearing it; 0 clears at once,
-// -1 keeps it until playback stops. Default 10.
+// Seconds to keep an activity once it stops (media paused, or the game left)
+// before clearing it; 0 clears at once, -1 keeps it until something else takes
+// over. Default 10.
 #define MenzenSettingPauseGrace @"pauseGrace"
+// Array of MenzenSource* strings, the first shown over the others.
+#define MenzenSettingPriority @"priority"
 // BOOL, default NO: only the app's (or game's) name and icon, with no
 // titles, pictures, links or time.
 #define MenzenSettingPrivacy @"privacy"
@@ -49,4 +52,27 @@ static inline NSString *MenzenSettingString(NSString *key, NSString *fallback) {
 static inline double MenzenSettingDouble(NSString *key, double fallback) {
 	id value = MenzenSettingValue(key);
 	return [value respondsToSelector:@selector(doubleValue)] ? [value doubleValue] : fallback;
+}
+
+// What Menzen can show, for MenzenSettingPriority.
+#define MenzenSourceCustom @"custom"
+#define MenzenSourceConnected @"connected"
+#define MenzenSourceGames @"games"
+#define MenzenSourceMedia @"media"
+
+// The sources, the first shown over the others: the setting's order, with any
+// it's missing after them in the default order.
+static inline NSArray<NSString *> *MenzenPriority(void) {
+	NSArray<NSString *> *defaults = @[MenzenSourceCustom, MenzenSourceConnected, MenzenSourceGames, MenzenSourceMedia];
+	NSMutableArray<NSString *> *order = [NSMutableArray array];
+	id value = MenzenSettingValue(MenzenSettingPriority);
+	for (id source in [value isKindOfClass:NSArray.class] ? value : nil) {
+		if ([defaults containsObject:source] && ![order containsObject:source]) [order addObject:source];
+	}
+
+	for (NSString *source in defaults) {
+		if (![order containsObject:source]) [order addObject:source];
+	}
+
+	return order;
 }

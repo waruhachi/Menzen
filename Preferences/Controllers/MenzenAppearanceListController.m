@@ -8,30 +8,43 @@
 #import "../Helpers/MenzenServiceClient.h"
 #import "../Views/MenzenChoiceCells.h"
 #import "../Views/MenzenPreviewCells.h"
+#import "../Views/MenzenSegmentCell.h"
 #import "MenzenAppearanceListController.h"
 
 static NSString *MenzenTrimmed(NSString *string) {
 	return [string stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 }
 
-// Made-up song for the previews until something has played, following the
-// card's parts the way menzend does. It has no cover or artist picture, so
-// pictures fall back to the logo.
-static NSDictionary<NSString *, id> *MenzenSampleActivity(void) {
-	NSDictionary *texts = @{@"title": MenzenLocalizedString(@"appearance.song_title", @"Song Title"), @"artist": MenzenLocalizedString(@"common.artist", @"Artist"), @"album": MenzenLocalizedString(@"common.album", @"Album")};
+typedef NS_ENUM(NSInteger, MenzenPreviewKind) {
+	MenzenPreviewKindMusic,
+	MenzenPreviewKindVideo,
+	MenzenPreviewKindGame,
+};
+
+static NSString *const MenzenAppleMusic = @"com.apple.Music";
+static NSString *const MenzenAppleTV = @"com.apple.tv";
+
+// A made-up song or episode for the previews, until something of that kind has
+// played, following the card's parts the way menzend does. It has no cover or
+// artist picture, so pictures fall back to the app's icon.
+static NSDictionary<NSString *, id> *MenzenSampleActivity(MenzenPreviewKind kind, NSDictionary<NSString *, NSString *> *icons) {
+	BOOL video = kind == MenzenPreviewKindVideo;
+	NSDictionary *texts = video ? @{@"title": MenzenLocalizedString(@"appearance.episode_title", @"Episode Title"), @"artist": MenzenLocalizedString(@"appearance.show", @"Show"), @"album": [NSString stringWithFormat:MenzenLocalizedString(@"episode.season_x_episode_x", @"Season %ld, Episode %ld"), 1L, 4L]}
+								: @{@"title": MenzenLocalizedString(@"appearance.song_title", @"Song Title"), @"artist": MenzenLocalizedString(@"common.artist", @"Artist"), @"album": MenzenLocalizedString(@"common.album", @"Album")};
 	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
-	activity[MenzenActivityKindKey] = @"listening";
+	activity[MenzenActivityKindKey] = video ? @"watching" : @"listening";
 
 	NSString *heading = MenzenPart(MenzenPartHeading);
 	NSString *headingText = MenzenTrimmed(MenzenSettingString(MenzenSettingHeadingText, @""));
 	if ([heading isEqualToString:@"custom"]) activity[MenzenActivityNameKey] = headingText.length ? headingText : nil;
-	else if (![heading isEqualToString:@"menzen"]) activity[MenzenActivityNameKey] = texts[heading] ?: @"Apple Music";
+	else if (![heading isEqualToString:@"menzen"]) activity[MenzenActivityNameKey] = texts[heading] ?: (video ? @"Apple TV" : @"Apple Music");
 
 	activity[MenzenActivityDetailsKey] = texts[MenzenPart(MenzenPartFirstLine)];
 	NSString *state = texts[MenzenPart(MenzenPartSecondLine)];
 	if (![state isEqualToString:activity[MenzenActivityDetailsKey]]) activity[MenzenActivityStateKey] = state;
-	if (![MenzenPart(MenzenPartBigPicture) isEqualToString:@"none"]) {
-		activity[MenzenActivityImageURLKey] = @"apple_music";
+	NSString *logo = icons[video ? MenzenAppleTV : MenzenAppleMusic];
+	if (![MenzenPart(MenzenPartBigPicture) isEqualToString:@"none"] && logo) {
+		activity[MenzenActivityImageURLKey] = logo;
 		NSString *thirdLine = texts[MenzenPart(MenzenPartThirdLine)];
 		if (thirdLine && ![thirdLine isEqualToString:activity[MenzenActivityDetailsKey]] && ![thirdLine isEqualToString:state]) activity[MenzenActivityLargeTextKey] = thirdLine;
 	}
@@ -46,13 +59,29 @@ static NSDictionary<NSString *, id> *MenzenSampleActivity(void) {
 	return activity;
 }
 
-static NSDictionary<NSString *, id> *MenzenPreviewActivity(NSDictionary *status) {
-	NSDictionary *preview = status[MenzenStatusPreviewKey];
-	return [preview isKindOfClass:NSDictionary.class] ? preview : MenzenSampleActivity();
+// A game as menzend shows it, which the card's parts don't change: its name and
+// icon, and how long it's been played.
+static NSDictionary<NSString *, id> *MenzenSampleGameActivity(NSDictionary *game) {
+	NSString *name = game[MenzenGameNameKey] ?: MenzenLocalizedString(@"appearance.game", @"Game");
+	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
+	activity[MenzenActivityKindKey] = @"playing";
+	activity[MenzenActivityStatusDisplayKey] = @"name";
+	activity[MenzenActivityNameKey] = name;
+	activity[MenzenActivityImageURLKey] = game[MenzenGameIconURLKey];
+	if (game[MenzenGameIconURLKey]) activity[MenzenActivityLargeTextKey] = name;
+	activity[MenzenActivityStartKey] = @(NSDate.date.timeIntervalSince1970 - 754);
+	return activity;
 }
+
+@interface MenzenPreviewListController () <MenzenSegmentCellTarget>
+@end
 
 @implementation MenzenPreviewListController {
 	NSDictionary<NSString *, id> *_status;
+	NSDictionary<NSString *, NSString *> *_icons;
+	NSDictionary *_game;
+	MenzenPreviewKind _kind;
+	BOOL _kindChosen;
 }
 
 - (void)viewDidLoad {
@@ -60,6 +89,29 @@ static NSDictionary<NSString *, id> *MenzenPreviewActivity(NSDictionary *status)
 	self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
 	[NSNotificationCenter.defaultCenter addObserver:self selector:@selector(refreshStatus) name:MenzenStatusDidChangeNotification object:nil];
 	[self refreshStatus];
+
+	__weak typeof(self) weakSelf = self;
+	[MenzenServiceProxy(nil) appIconsWithReply:^(NSDictionary<NSString *, NSString *> *icons) {
+		dispatch_async(dispatch_get_main_queue(), ^{
+			typeof(self) strongSelf = weakSelf;
+			if (!strongSelf) return;
+			strongSelf->_icons = icons;
+			[strongSelf reloadPreview];
+		});
+	}];
+	// The game sample is an installed game with its icon, when there's one.
+	[MenzenServiceProxy(nil) gamesWithReply:^(NSArray<NSDictionary *> *games) {
+		dispatch_async(dispatch_get_main_queue(), ^{
+			typeof(self) strongSelf = weakSelf;
+			if (!strongSelf) return;
+			for (NSDictionary *game in games) {
+				if (!game[MenzenGameIconURLKey]) continue;
+				strongSelf->_game = game;
+				break;
+			}
+			[strongSelf reloadPreview];
+		});
+	}];
 }
 
 - (void)dealloc {
@@ -77,8 +129,42 @@ static NSDictionary<NSString *, id> *MenzenPreviewActivity(NSDictionary *status)
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || !status) return;
 		strongSelf->_status = status;
+		// Opens on the kind that played last.
+		if (!strongSelf->_kindChosen && [status[MenzenStatusPreviewKey][MenzenActivityKindKey] isEqual:@"watching"]) {
+			strongSelf->_kind = MenzenPreviewKindVideo;
+			[strongSelf reloadSpecifiers];
+		}
 		[strongSelf reloadPreview];
 	});
+}
+
+// What played last when it's of the kind picked, else a sample of that kind.
+- (NSDictionary<NSString *, id> *)previewActivity {
+	if (_kind == MenzenPreviewKindGame) return MenzenSampleGameActivity(_game);
+	NSDictionary *preview = _status[MenzenStatusPreviewKey];
+	NSString *kind = _kind == MenzenPreviewKindVideo ? @"watching" : @"listening";
+	if ([preview isKindOfClass:NSDictionary.class] && [preview[MenzenActivityKindKey] isEqual:kind]) return preview;
+	return MenzenSampleActivity(_kind, _icons);
+}
+
+- (BOOL)previewingGame {
+	return _kind == MenzenPreviewKindGame;
+}
+
+- (NSArray<PSSpecifier *> *)previewSpecifiers {
+	PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
+	if (self.previewingGame) [group setProperty:MenzenLocalizedString(@"appearance.games_show_their_name_icon", @"Games show their name, icon and time played, whatever these settings are.") forKey:@"footerText"];
+	PSSpecifier *picker = [PSSpecifier preferenceSpecifierNamed:nil target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
+	[picker setProperty:MenzenSegmentCell.class forKey:@"cellClass"];
+	[picker setProperty:@[MenzenLocalizedString(@"appearance.music", @"Music"), MenzenLocalizedString(@"appearance.video", @"Video"), MenzenLocalizedString(@"appearance.game", @"Game")] forKey:@"titles"];
+	[picker setProperty:@(_kind) forKey:@"selectedIndex"];
+	return @[group, picker, self.previewSpecifier];
+}
+
+- (void)segmentCell:(PSTableCell *)cell didSelectIndex:(NSInteger)index {
+	_kind = index;
+	_kindChosen = YES;
+	[self reloadSpecifiers];
 }
 
 - (NSDictionary<NSString *, id> *)status {
@@ -176,7 +262,7 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 		BOOL bigPicture = ![MenzenPart(MenzenPartBigPicture) isEqualToString:@"none"];
 		BOOL smallPicture = bigPicture && ![MenzenPart(MenzenPartSmallPicture) isEqualToString:@"none"];
 
-		NSMutableArray *specifiers = [NSMutableArray arrayWithObjects:[PSSpecifier emptyGroupSpecifier], self.previewSpecifier, nil];
+		NSMutableArray *specifiers = [self.previewSpecifiers mutableCopy];
 		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"common.text", @"Text")]];
 		[specifiers addObject:[self partSpecifier:MenzenPartHeading named:MenzenLocalizedString(@"common.heading", @"Heading") enabled:YES]];
 		if ([MenzenPart(MenzenPartHeading) isEqualToString:@"custom"]) {
@@ -212,7 +298,7 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 	PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:nil target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
 	specifier.identifier = @"preview";
 	[specifier setProperty:MenzenCardPreviewCell.class forKey:@"cellClass"];
-	[specifier setProperty:MenzenPreviewActivity(self.status) forKey:@"activity"];
+	[specifier setProperty:self.previewActivity forKey:@"activity"];
 	return specifier;
 }
 
@@ -266,7 +352,7 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 
 - (NSArray *)specifiers {
 	if (!_specifiers) {
-		NSMutableArray *specifiers = [NSMutableArray arrayWithObjects:[PSSpecifier emptyGroupSpecifier], self.previewSpecifier, nil];
+		NSMutableArray *specifiers = [self.previewSpecifiers mutableCopy];
 		PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
 		[group setProperty:MenzenLocalizedString(@"appearance.member_lists_can_only_show_the", @"Member lists can only show the heading, first line or second line. To pick something greyed out, put it on one of those lines on the Activity page.") forKey:@"footerText"];
 		[specifiers addObject:group];
@@ -301,7 +387,7 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 	[specifier setProperty:MenzenMemberPreviewCell.class forKey:@"cellClass"];
 	NSDictionary *profile = self.status[MenzenStatusProfileKey];
 	if ([profile isKindOfClass:NSDictionary.class]) [specifier setProperty:profile forKey:@"profile"];
-	[specifier setProperty:MenzenPreviewActivity(self.status) forKey:@"activity"];
+	[specifier setProperty:self.previewActivity forKey:@"activity"];
 	return specifier;
 }
 

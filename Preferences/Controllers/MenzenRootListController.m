@@ -346,7 +346,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 }
 
 - (void)confirmSignOut {
-	UIAlertController *alert = [UIAlertController alertControllerWithTitle:MenzenLocalizedString(@"root.sign_out_of_discord", @"Sign Out of Discord?") message:MenzenLocalizedString(@"root.menzen_will_stop_showing_what_you", @"Menzen will stop showing what you're playing.") preferredStyle:UIAlertControllerStyleAlert];
+	UIAlertController *alert = [UIAlertController alertControllerWithTitle:MenzenLocalizedString(@"root.sign_out_of_discord", @"Sign Out of Discord?") message:MenzenLocalizedString(@"root.menzen_will_stop_showing_your", @"Menzen will stop showing your activity on Discord.") preferredStyle:UIAlertControllerStyleAlert];
 	[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"common.cancel", @"Cancel") style:UIAlertActionStyleCancel handler:nil]];
 	__weak typeof(self) weakSelf = self;
 	[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"root.sign_out", @"Sign Out") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {

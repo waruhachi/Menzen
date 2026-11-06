@@ -1,7 +1,7 @@
 /* Menzen, English. Keys are grouped by where the text appears. */
 
 "activity.listening_to_x" = "Listening to %@";
-"activity.nothing_is_showing_right_now_play" = "Nothing is showing right now. Play something in a supported app and it appears here and on your profile.";
+"activity.nothing_is_showing_right_now_open" = "Nothing is showing right now. Open a game or play something in a supported app, and it shows here and on your profile.";
 "activity.playing_x" = "Playing %@";
 "activity.watching_x" = "Watching %@";
 
@@ -20,18 +20,26 @@
 "apelin.state.thinking" = "Thinking";
 "apelin.state.waiting_for_approval" = "Waiting for approval";
 
+"appearance.episode_title" = "Episode Title";
+"appearance.game" = "Game";
+"appearance.games_show_their_name_icon" = "Games show their name, icon and time played, whatever these settings are.";
 "appearance.links" = "Links";
 "appearance.member_lists_can_only_show_the" = "Member lists can only show the heading, first line or second line. To pick something greyed out, put it on one of those lines on the Activity page.";
+"appearance.music" = "Music";
 "appearance.pictures" = "Pictures";
+"appearance.show" = "Show";
 "appearance.small_picture_text" = "Small Picture Text";
 "appearance.song_title" = "Song Title";
 "appearance.third_line" = "Third Line";
 "appearance.time" = "Time";
+"appearance.video" = "Video";
 
+"card.album_or_episode" = "Album or Episode";
 "card.app_logo" = "App Logo";
 "card.app_name" = "App Name";
-"card.artist_picture" = "Artist Picture";
-"card.cover_art" = "Cover Art";
+"card.artist_or_show" = "Artist or Show";
+"card.artist_or_show_picture" = "Artist or Show Picture";
+"card.artwork" = "Artwork";
 "card.custom" = "Custom";
 "card.progress_bar" = "Progress Bar";
 
@@ -135,7 +143,7 @@
 "root.keep_showing" = "Keep Showing";
 "root.member_list" = "Member List";
 "root.menzen_s_background_service_isn_t" = "Menzen's background service isn't running. Try reinstalling Menzen.";
-"root.menzen_will_stop_showing_what_you" = "Menzen will stop showing what you're playing.";
+"root.menzen_will_stop_showing_your" = "Menzen will stop showing your activity on Discord.";
 "root.priority" = "Priority";
 "root.privacy_mode" = "Privacy Mode";
 "root.pull_down_to_refresh" = "Pull down to refresh.";

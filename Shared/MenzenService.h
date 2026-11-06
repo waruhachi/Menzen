@@ -84,6 +84,8 @@ static uint64_t const MenzenApplicationId = 1564329461036617748ULL;
 #define MenzenGameNameKey @"name"
 // BOOL: Menzen's app list has the game, so Discord shows its icon.
 #define MenzenGameListedKey @"listed"
+// The icon's URL, when it's listed.
+#define MenzenGameIconURLKey @"iconURL"
 
 @protocol MenzenService
 - (void)statusWithReply:(void (^)(NSDictionary<NSString *, id> *status))reply;

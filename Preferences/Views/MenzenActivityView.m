@@ -122,7 +122,7 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 
 		_emptyLabel = MenzenLabel(UIFontTextStyleSubheadline, 0, UIColor.secondaryLabelColor);
 		_emptyLabel.numberOfLines = 0;
-		_emptyLabel.text = MenzenLocalizedString(@"activity.nothing_is_showing_right_now_play", @"Nothing is showing right now. Play something in a supported app and it appears here and on your profile.");
+		_emptyLabel.text = MenzenLocalizedString(@"activity.nothing_is_showing_right_now_open", @"Nothing is showing right now. Open a game or play something in a supported app, and it shows here and on your profile.");
 
 		UIStackView *content = [[UIStackView alloc] initWithArrangedSubviews:@[_card, _emptyLabel]];
 		content.axis = UILayoutConstraintAxisVertical;

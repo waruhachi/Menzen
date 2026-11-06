@@ -165,11 +165,13 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSMutableArray *games = [NSMutableArray array];
 		for (NSString *bundleIdentifier in self.appCatalog.installedGames) {
-			[games addObject:@{
-				MenzenGameBundleIdentifierKey: bundleIdentifier,
-				MenzenGameNameKey: MenzenAppName(bundleIdentifier),
-				MenzenGameListedKey: @([self.appCatalog iconURLForApp:bundleIdentifier] != nil),
-			}];
+			NSMutableDictionary *game = [NSMutableDictionary dictionary];
+			game[MenzenGameBundleIdentifierKey] = bundleIdentifier;
+			game[MenzenGameNameKey] = MenzenAppName(bundleIdentifier);
+			NSString *iconURL = [self.appCatalog iconURLForApp:bundleIdentifier];
+			game[MenzenGameListedKey] = @(iconURL != nil);
+			game[MenzenGameIconURLKey] = iconURL;
+			[games addObject:game];
 		}
 		[games sortUsingComparator:^NSComparisonResult(NSDictionary *a, NSDictionary *b) {
 			return [a[MenzenGameNameKey] localizedStandardCompare:b[MenzenGameNameKey]];

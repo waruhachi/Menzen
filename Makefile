@@ -15,3 +15,9 @@ INSTALL_TARGET_PROCESSES += SpringBoard Preferences
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/aggregate.mk
+
+# Crowdin exports a language with nothing translated yet as an empty file,
+# which plutil can't convert. Leave it out until it has strings.
+before-package::
+	$(ECHO_NOTHING)find "$(THEOS_STAGING_DIR)" -name '*.strings' -size 0 -delete$(ECHO_END)
+	$(ECHO_NOTHING)find "$(THEOS_STAGING_DIR)" -name '*.lproj' -type d -empty -delete$(ECHO_END)

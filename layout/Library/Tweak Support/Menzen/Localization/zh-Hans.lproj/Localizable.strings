@@ -1,0 +1,2 @@
+/* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
+"appearance.links" = "链接";

@@ -1,0 +1,96 @@
+/* Menzen, English. Keys are grouped by where the text appears. The comment
+   above each string tells translators where it shows and what any %@ or %ld
+   stands for. Keep Menzen, Discord, Nitro, HypeSquad and GitHub as they are. */
+
+/* Activity preview at the top of Settings, above the person's Discord card. %@ is an app or game name. */
+"activity.listening_to_x" = "Ascultă %@";
+/* Activity preview, shown when nothing is playing. */
+"activity.nothing_is_showing_right_now_open" = "Nimic nu este arătat in acest moment. Deschide un joc sau joacă ceva într-o aplicație suportată, și va apărea aici și pe profilul tău.";
+/* Activity preview. %@ is a game name. */
+"activity.playing_x" = "Se joacă %@";
+/* Activity preview. %@ is an app name. */
+"activity.watching_x" = "Vizionează %@";
+
+/* What the Apelin coding agent is doing, shown on Discord. Apelin is a product name; don't translate it. */
+"apelin.state.building" = "Construind";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.cloning_a_repository" = "Clonarea unui repositoriu";
+/* Apelin agent status, shown on Discord. The agent is shortening its conversation history. */
+"apelin.state.compacting" = "Compactare";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.editing_files" = "Editare fișiere";
+/* Apelin agent status, shown on Discord. A package is a jailbreak tweak or app package. */
+"apelin.state.installing_a_package" = "Instalând un pachet";
+/* Apelin agent status, shown on Discord. Building an installable package. */
+"apelin.state.packaging" = "Împachetând";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.reading_files" = "Citire fișiere";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.reconnecting" = "Reconectare";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.removing_a_package" = "Ștergerea unui pachet";
+/* Apelin agent status, shown on Discord. Restarting the iPhone's home screen (SpringBoard), jailbreak slang "respring". */
+"apelin.state.respringing" = "Se face respring";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.running_tools" = "Instrumente de rulare";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.thinking" = "Gândire";
+
+/* Sample text in the Activity settings preview: the title of a TV episode. */
+"appearance.episode_title" = "Titlu episod";
+/* Activity settings: preview picker segment, and the sample name for a game. */
+"appearance.game" = "Joc";
+/* Activity settings, footer while the Game preview is picked. */
+"appearance.games_show_their_name_icon" = "Jocurile arată numele lor, iconița și timpul jucat, nu contează ce setări sunt.";
+/* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
+"appearance.links" = "Linkuri";
+/* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
+"appearance.member_lists_can_only_show_the" = "Lista de membri pot să arate doar titlul, pe primul sau al doilea rând. Pentru a alege ceva indisponibil, puneți-l pe una dintre rândurile de pe pagina de Activitate.";
+/* Activity settings: preview picker segment. */
+"appearance.music" = "Muzică";
+/* Activity settings: section header for the big and small pictures. */
+"appearance.pictures" = "Imagini";
+/* Sample text in the Activity settings preview: the name of a TV show. */
+"appearance.show" = "Arată";
+/* Activity settings: row for the text shown when hovering the small picture on Discord. */
+"appearance.small_picture_text" = "Text Imagine Mică";
+/* Sample text in the Activity settings preview: the title of a song. */
+"appearance.song_title" = "Titlu Muzică";
+/* Activity settings: row for the third line of text on the activity card. */
+"appearance.third_line" = "Al Treilea Rând";
+/* Activity settings: row for how time is shown (progress bar or time elapsed). */
+"appearance.time" = "Timp";
+/* Activity settings: preview picker segment. */
+"appearance.video" = "Video";
+
+/* Activity settings: an option for a line of the card. The album for music, the episode for video. */
+"card.album_or_episode" = "Album sau Episod";
+/* Activity settings: an option for a picture, the playing app's icon. */
+"card.app_logo" = "Logo Aplicație";
+/* Activity settings: an option for a line, the playing app's name. */
+"card.app_name" = "Nume Aplicație";
+/* Activity settings: an option for a line. The artist for music, the show for video. */
+"card.artist_or_show" = "Artist sau Emisiune";
+/* Activity settings: an option for a picture. The artist's or show's picture. */
+"card.artist_or_show_picture" = "Artist sau Arată Imaginea";
+/* Activity settings: an option for a picture, the album art or video thumbnail. */
+"card.artwork" = "Copertă";
+/* Activity settings: an option for the heading, text the person types. */
+"card.custom" = "Personalizat";
+/* Activity settings: an option for Time, a bar showing how far into the song or video it is. */
+"card.progress_bar" = "Bară de Progres";
+
+/* App details for Apelin: row showing what the agent is doing. */
+"common.agent_status" = "Statut Agent";
+/* Sample text in the Activity settings preview: an album name. */
+"common.album" = "Album";
+/* Sample text in the Activity settings preview: an artist name. */
+"common.artist" = "Artist";
+/* Row and section header: the large picture on the left of a Discord activity. */
+"common.big_picture" = "Imagine Mică";
+/* Button on an app's details page that copies its support details for a bug report. */
+"common.copy_details" = "Copiază Detalii";
+/* Activity settings: row and field for heading text the person types. */
+"common.custom_heading" = "Titlu Personalizat";
+/* Alert button that deletes a custom activity preset. */
+"common.delete" = "Șterge";

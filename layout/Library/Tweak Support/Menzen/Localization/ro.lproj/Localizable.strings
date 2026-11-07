@@ -29,12 +29,16 @@
 "apelin.state.reconnecting" = "Reconectare";
 /* Apelin agent status, shown on Discord. */
 "apelin.state.removing_a_package" = "Ștergerea unui pachet";
+/* Apelin agent status, shown on Discord. The agent is writing its reply. */
+"apelin.state.responding" = "Răspundere";
 /* Apelin agent status, shown on Discord. Restarting the iPhone's home screen (SpringBoard), jailbreak slang "respring". */
 "apelin.state.respringing" = "Se face respring";
 /* Apelin agent status, shown on Discord. */
 "apelin.state.running_tools" = "Instrumente de rulare";
 /* Apelin agent status, shown on Discord. */
 "apelin.state.thinking" = "Gândire";
+/* Apelin agent status, shown on Discord. The agent is waiting for the person to allow an action. */
+"apelin.state.waiting_for_approval" = "Așteptând pentru acord";
 
 /* Sample text in the Activity settings preview: the title of a TV episode. */
 "appearance.episode_title" = "Titlu episod";
@@ -88,9 +92,281 @@
 "common.artist" = "Artist";
 /* Row and section header: the large picture on the left of a Discord activity. */
 "common.big_picture" = "Imagine Mică";
+/* Alert button. */
+"common.cancel" = "Anulează";
 /* Button on an app's details page that copies its support details for a bug report. */
 "common.copy_details" = "Copiază Detalii";
 /* Activity settings: row and field for heading text the person types. */
 "common.custom_heading" = "Titlu Personalizat";
 /* Alert button that deletes a custom activity preset. */
 "common.delete" = "Șterge";
+/* Row: the first line of text under the heading of a Discord activity. */
+"common.first_line" = "Primul rând";
+/* Row: the bold top line of a Discord activity. */
+"common.heading" = "Titlu";
+/* Custom activity: field for a picture's web address. */
+"common.image_link" = "Link Imagine";
+/* Activity type (as in "Listening to Spotify"), used as a section header and a picker option. */
+"common.listening" = "Ascultare";
+/* App status: Menzen supports the app, but this version of it may not work fully. Keep it short. */
+"common.may_not_work" = "S-ar putea sa Nu Meargă";
+/* Error under the sign-in button. */
+"common.menzen_couldn_t_start_the_sign" = "Menzen nu a putut porni autentificarea. Încearcă din nou.";
+/* Row and page title: supported apps that aren't installed. */
+"common.more_supported_apps" = "Mai Multe Aplicații Suportate";
+/* Field: the name shown as the activity heading. */
+"common.name" = "Nume";
+/* App status for a game Menzen has no icon for yet. Keep it short. */
+"common.no_icon" = "Fără Iconiță";
+/* Option meaning nothing is shown; also the placeholder of empty text fields. */
+"common.none" = "Niciuna";
+/* Value of a setting that's switched off. Keep it short. */
+"common.off" = "Oprit";
+/* Value of a setting that's switched on. Keep it short. */
+"common.on" = "Pornit";
+/* Activity type (as in "Playing a game"), used as a section header and a picker option. */
+"common.playing" = "Jucare";
+/* App details for Apelin: row showing the project's name. */
+"common.project_name" = "Nume Proiect";
+/* Button that opens a bug report on GitHub. */
+"common.report_on_github" = "Reportează pe GitHub";
+/* Row: the second line of text under the heading of a Discord activity. */
+"common.second_line" = "Al doilea Rând";
+/* Row and section header: the small round picture on the corner of the big picture. */
+"common.small_picture" = "Imagine Mică";
+/* App details: row showing whether Menzen works with the app. */
+"common.status" = "Statut";
+/* App details: section header about how well Menzen works with the app. */
+"common.support" = "Suport";
+/* Section header for text rows, and the field for the text shown when hovering a picture. */
+"common.text" = "Text";
+/* Alert title when a custom activity's picture link can't be used. */
+"common.this_image_won_t_work" = "Aceasta Imagine Nu Va Merge";
+/* Option and switch: show a timer counting up from when the activity started. */
+"common.time_elapsed" = "Timp Scurs";
+/* Activity settings: an option for a line, the song or video title. */
+"common.title" = "Titlu";
+/* App details: row showing the installed app's version. */
+"common.version" = "Versiune";
+/* Activity type (as in "Watching Netflix"), used as a section header and a picker option. */
+"common.watching" = "Vizionează";
+/* App status: Menzen fully works with this app. Keep it short. */
+"common.works" = "Merge";
+
+/* Connected Apps page: section header for the tweaks that asked to show activity. */
+"connected.apps" = "Aplicații";
+/* Connected Apps page, footer under the list of tweaks. */
+"connected.apps_show_here_the_first" = "Aplicații arată aici prima dată când întreabă. Ultima care a actualizată se vede.";
+/* Connected Apps page, footer when the list is empty. */
+"connected.no_apps_have_asked_yet" = "Nicio aplicație nu a întrebat încă. Aplicații se văd aici doar de prima dată când întreabă.";
+/* Connected Apps page, footer under the switch. "Tweaks" are jailbreak add-ons. */
+"connected.other_tweaks_can_show_activity" = "Alte tweak-uri pot arăta activitatea lor proprie prin Menzen, singure odată atunci când le permite dedesubt.";
+
+/* Custom Activity page: button that adds a new preset (a saved custom status). */
+"custom.add_preset" = "Șterge Presetare";
+/* Custom Activity page title and its on/off switch. */
+"custom.custom_activity" = "Activitate Personalizată";
+/* Button that deletes the preset being edited. */
+"custom.delete_preset" = "Șterge Presetare";
+/* Alert title. %@ is the preset's name. */
+"custom.delete_x" = "Șterge \"%@\"?";
+/* Shown next to the preset that's in use. Keep it short. */
+"custom.in_use" = "În uz";
+/* Section header for the list of saved custom statuses. */
+"custom.presets" = "Presetări";
+/* Problem with a picture link: it downloaded but isn't a readable image. */
+"image.the_image_couldn_t_be_read" = "Imaginea nu a putut fi citită.";
+/* Problem with a picture link. Keep https:// as it is. */
+"image.the_link_has_to_start_with" = "Linkul trebuie să înceapă cu https:// și nu poate conține un token, cheie sau parolă.";
+/* Problem with a picture link: it points to a web page, not an image file. */
+"image.the_link_isn_t_an_image" = "Linkul nu este o imagine. Utilizează linkul imaginii proprii, nu pagina pe care e.";
+/* Problem with a picture link. %ld is an HTTP status code, such as 404. */
+"image.the_server_answered_with_error_x" = "Serverul a răspuns cu eroarea %ld.";
+
+/* Name on the preview card when the person's Discord name isn't known yet. */
+"preview.you" = "Tu";
+
+/* Priority page row and Connected Apps switch: activity other tweaks send through Menzen. */
+"priority.connected_apps" = "Aplicații Conectate";
+/* Priority page row. */
+"priority.games" = "Jocuri";
+/* Priority page footer. The rows can be dragged into a different order. */
+"priority.menzen_shows_the_first_of" = "Menzen arată prima dintre cele care au ceva să arate. Trage să reordonezi.";
+/* Priority page row. */
+"priority.music_and_video" = "Muzică & Video";
+
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.active_developer" = "Dezvoltator Activ";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.bug_hunter" = "Vânător de Bug-uri";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.discord_staff" = "Staff Discord";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.early_supporter" = "Susținător Timpuriu";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.early_verified_bot_developer" = "Dezvoltator de Boți Verificat Timpuriu";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.gold_bug_hunter" = "Vânător de Bug-uri Auriu";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_balance" = "Balanță HypeSquad";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_bravery" = "HypeSquad Bravery";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_brilliance" = "HypeSquad brilliance";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_events" = "Eventuri HypeSquad";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.moderator_alumni" = "Moderator Alumni";
+/* Discord's subscription; a name, usually kept as is. */
+"profile.nitro" = "Nitro";
+/* Discord subscription tier. Nitro is a name; keep it. */
+"profile.nitro_basic" = "Nitro Basic";
+/* Discord subscription tier. Nitro is a name; keep it. */
+"profile.nitro_classic" = "Nitro Classic";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.partner" = "Partener";
+
+/* Settings row that opens the page choosing what each line and picture of the activity shows. */
+"root.activity" = "Activitate";
+/* Settings footer under the activity options. */
+"root.activity_stops_when_media_pauses" = "Activitatea se oprește când media se pune pauză sau tu ieși dintr-un joc.";
+/* Settings section header. */
+"root.appearance" = "Aspect";
+/* Settings row that opens the list of supported apps and games. */
+"root.apps" = "Aplicații";
+/* Settings section header. */
+"root.behavior" = "Comportament";
+/* Option for When Activity Stops. */
+"root.clear_after_10_seconds" = "Șterge După 10 Secunde";
+/* Option for When Activity Stops. */
+"root.clear_after_1_minute" = "Șterge După 1 Minut";
+/* Option for When Activity Stops. */
+"root.clear_after_30_seconds" = "Șterge După 30 de Secunde";
+/* Option for When Activity Stops. */
+"root.clear_immediately" = "Șterge Instant";
+/* Shown over the profile card while Menzen connects. */
+"root.connecting_to_discord" = "Conectare la Discord…";
+/* Settings row and Priority page row. */
+"root.custom_activity" = "Activitate Personalizată";
+/* Shown over the profile card when Menzen can't reach Discord. */
+"root.discord_isn_t_connecting_sign_out" = "Discord nu se conectează. Dacă este online, deconectează-te din cont și conectează-te din nou.";
+/* Main on/off switch for Menzen. */
+"root.enabled" = "Pornit";
+/* Reset Settings alert message. A preset is a saved custom status. */
+"root.every_setting_goes_back_to_its" = "Fiecare setare devine implicită. Tu rămâi autentificat.";
+/* Note under the sign-in button. */
+"root.if_the_page_doesn_t_load" = "Dacă pagina nu se încarcă, autentifică-te pe alt dispozitiv.";
+/* Option for When Activity Stops: never clear it. */
+"root.keep_showing" = "Continuă să Afișezi";
+/* Settings row that opens what shows under the person's name in Discord's member list. */
+"root.member_list" = "Listă Membri";
+/* Error at the top of Settings when Menzen's background process isn't running. */
+"root.menzen_s_background_service_isn_t" = "Serviciul de fundal lui Benzen nu rulează. Încearcă să reinstalezi Menzen.";
+/* Sign Out alert message. */
+"root.menzen_will_stop_showing_your" = "Menzen nu va mai afișa activitatea dumneavoastră pe Discord.";
+/* Settings row that opens the page ordering what shows first. */
+"root.priority" = "Prioritate";
+/* Settings switch that hides everything but the app's name and icon. */
+"root.privacy_mode" = "Mod Confidențialitate";
+/* Settings footer under the profile card. */
+"root.pull_down_to_refresh" = "Trage in jos pentru a da refresh.";
+/* Reset Settings alert button. */
+"root.reset" = "Resetare";
+/* Settings button that opens the reset alert. */
+"root.reset_settings" = "Resetare Setări";
+/* Reset Settings alert title. */
+"root.reset_settings_question" = "Resetare Setări?";
+/* Privacy Mode footer. */
+"root.shows_only_app_s_or_game" = "Arată numai numele aplicației sau jocului și iconița.";
+/* Button for signing in with a code on another phone or computer. */
+"root.sign_in_on_another_device" = "Conectează-te pe un Alt Dispozitiv";
+/* Sign-in button. */
+"root.sign_in_with_discord" = "Conectează-te cu Discord";
+/* Button and alert button. */
+"root.sign_out" = "Deconectare";
+/* Note under the sign-out button when Discord gave Menzen only part of the profile. */
+"root.sign_out_and_back_in_to" = "Deconectează-te și conectează-te pentru a-ți afișa insignele, bannerul și Nitro.";
+/* Sign Out alert title. */
+"root.sign_out_of_discord" = "Deconectare din Discord?";
+/* Sign-in button while signing in. */
+"root.signing_in" = "Conectare…";
+/* Settings section header for where activity comes from. */
+"root.sources" = "Surse";
+/* Error under the sign-in button. */
+"root.the_sign_in_page_couldn_t" = "Pagina de conectare nu a putut fi deschisă. Încearcă din nou.";
+/* Settings row: what happens when music pauses or a game closes. */
+"root.when_activity_stops" = "Când Activitatea se Oprește";
+/* Note under the sign-in button. */
+"root.you_sign_in_on_discord_s" = "Tu te conectezi pe pagina lui Discord proprie. Menzen nu Vede sau depozită parola dumneavoastră.";
+
+/* Title of the page for signing in on another device. */
+"signin.another_device" = "Alt Dispozitiv";
+/* Button title for a moment after the link is copied. */
+"signin.copied" = "Copiat";
+/* Button that copies the sign-in link. */
+"signin.copy_link" = "Copiază Linkul";
+/* Sign-in error. The Keychain is where iOS stores passwords. */
+"signin.error.couldn_t_save_the_sign_in" = "Nu s-a putut salva autentificarea în Keychain.";
+/* Sign-in error. */
+"signin.error.discord_couldn_t_complete_the_sign" = "Discord nu a putut completa autentificarea. Inecearcă din nou.";
+/* Sign-in error on the Another Device page; a new code follows it. */
+"signin.error.discord_couldn_t_complete_the_sign_2" = "Discord nu a putut completa autentificarea.";
+/* Sign-in error. */
+"signin.error.discord_couldn_t_start_the_sign" = "Discord nu a putut porni autentificarea. Încearcă din nou.";
+/* Sign-in error. */
+"signin.error.discord_didn_t_accept_the_sign" = "Discord nu a acceptat autentificarea. Încearcă din nou.";
+/* Sign-in error. */
+"signin.error.discord_didn_t_send_a_sign" = "Discord nu a trimis un cod de autentificare. Încearcă din nou.";
+/* Sign-in error when Discord signed Menzen out. */
+"signin.error.discord_ended_the_sign_in_sign" = "Discord a oprit autentificarea. Conectează-te din nou.";
+/* Sign-in error. */
+"signin.error.discord_sent_back_an_unexpected_address" = "Discord a trimis o adresă neașteptată.";
+/* Sign-in error. */
+"signin.error.the_sign_in_didn_t_match" = "Autentificarea nu s-a potrivit cu cea care Menzen a pornit. Încearcă din nou.";
+/* Sign-in error. */
+"signin.error.the_sign_in_took_too_long" = "Autentificarea a durat prea mult. Încearcă din nou.";
+/* Sign-in error on the Another Device page; a new code follows it. */
+"signin.error.the_sign_in_was_declined" = "Autentificarea a fost respinsă.";
+/* Added after a sign-in error when a new code appears, so keep the space at the start. */
+"signin.here_s_a_new_code" = " Uite un cod nou.";
+/* Above a short code. Keep discord.com/activate as it is. */
+"signin.or_go_to_discord_com_activate" = "Sau du-te la discord.com/activate pe orice dispozitiv și introduceți:";
+/* Read aloud by VoiceOver for the QR code. */
+"signin.qr_code_for_discord_s_sign" = "Codul QR pentru pagina lui Discord";
+/* Above the QR code. */
+"signin.scan_this_code_with_another_phone" = "Scanează acest cod nu camera unui alt telefon, și apoi autentificate în Discord acolo și aprobă Menzen.";
+/* Button that shares the sign-in link. */
+"signin.share" = "Distribuie";
+/* Button that gets a new code. */
+"signin.try_again" = "Încearcă din nou";
+
+/* Apelin details: section header for what the agent shows on Discord. */
+"sources.activity" = "Activitate";
+/* Page title: the list of supported apps and games. */
+"sources.apps" = "Aplicații";
+/* Section header for features that may not work well. */
+"sources.experimental" = "Experimental";
+/* App status: Menzen uses only what the app tells the system's media controls. Keep it short. */
+"sources.media_controls_only" = "Doar Controale Media";
+/* App details footer. %@ is the app's name. */
+"sources.menzen_hasn_t_checked_this_version" = "Menzen nu s-a uitat la versiunea aceasta de %@ încă. Deschiderea acestuia permite verificarea lui Menzen, apoi de aduce înapoi aici.";
+/* App details footer. %@ is the app's name. */
+"sources.menzen_shows_what_x_shares_with" = "Menzen arată ce %@ distribuie cu controalele sistemului media.";
+/* Footer on the Apps page. */
+"sources.none_of_the_apps_menzen_supports" = "Niciuna dintre aplicații Menzen suportă sunt instalate.";
+/* App status. Keep it short. */
+"sources.not_checked" = "Nu este Verificat";
+/* App status. Keep it short. */
+"sources.not_fully_checked" = "Nu este Complet Verificat";
+/* App status. Keep it short. */
+"sources.not_installed" = "Nu este Instalat";
+/* Button that opens the app. %@ is the app's name. */
+"sources.open_x_to_check" = "Deschide %@ pentru a Verifica";
+/* Switch that shows apps Menzen doesn't support. */
+"sources.other_apps" = "Alte Aplicații";
+/* Button that asks on GitHub for a game's icon to be added. */
+"sources.request_icon_on_github" = "Cere Iconiță pe GitHub";
+/* Footer under Other Apps. */
+"sources.shows_unsupported_apps_with_less_information" = "Arată aplicații nesuportate, cu mai puțină informație. Browsere, chat-uri și aplicații de internet social sunt sărite.";
+/* App details footer. %@ is the app's name. */
+"sources.some_parts_of_x_only_load" = "Unele părți din %@ se încarcă doar o singură data odată ce e deschis. Deschizând-ul lasă pe Menzen să termine verificând, apoi te aduce înapoi aici.";

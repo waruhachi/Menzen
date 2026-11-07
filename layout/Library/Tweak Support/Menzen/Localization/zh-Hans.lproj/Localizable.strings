@@ -1,2 +1,50 @@
+/* Menzen, English. Keys are grouped by where the text appears. The comment
+   above each string tells translators where it shows and what any %@ or %ld
+   stands for. Keep Menzen, Discord, Nitro, HypeSquad and GitHub as they are. */
+
+/* Activity preview at the top of Settings, above the person's Discord card. %@ is an app or game name. */
+"activity.listening_to_x" = "正在听%@";
+/* Activity preview, shown when nothing is playing. */
+"activity.nothing_is_showing_right_now_open" = "现在没有任何东西供显示。打开游戏或再支持的应用中播放一些东西，以此同步到这里以及你的个人资料。";
+/* Activity preview. %@ is a game name. */
+"activity.playing_x" = "正在游玩%@";
+/* Activity preview. %@ is an app name. */
+"activity.watching_x" = "正在观看%@";
+
+/* What the Apelin coding agent is doing, shown on Discord. Apelin is a product name; don't translate it. */
+"apelin.state.building" = "正在构建";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.cloning_a_repository" = "正在克隆仓库";
+/* Apelin agent status, shown on Discord. The agent is shortening its conversation history. */
+"apelin.state.compacting" = "正在压缩";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.editing_files" = "正在编辑文件";
+/* Apelin agent status, shown on Discord. A package is a jailbreak tweak or app package. */
+"apelin.state.installing_a_package" = "正在安装软件包";
+/* Apelin agent status, shown on Discord. Building an installable package. */
+"apelin.state.packaging" = "正在打包";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.reading_files" = "正在读取文件";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.reconnecting" = "正在重新连接";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.removing_a_package" = "正在卸载软件包";
+/* Apelin agent status, shown on Discord. The agent is writing its reply. */
+"apelin.state.responding" = "正在回复";
+/* Apelin agent status, shown on Discord. Restarting the iPhone's home screen (SpringBoard), jailbreak slang "respring". */
+"apelin.state.respringing" = "正在重启 SpringBoard";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.running_tools" = "正在运行工具";
+/* Apelin agent status, shown on Discord. */
+"apelin.state.thinking" = "正在思考";
+/* Apelin agent status, shown on Discord. The agent is waiting for the person to allow an action. */
+"apelin.state.waiting_for_approval" = "正在等待批准";
+
+/* Sample text in the Activity settings preview: the title of a TV episode. */
+"appearance.episode_title" = "剧集标题";
+/* Activity settings: preview picker segment, and the sample name for a game. */
+"appearance.game" = "游戏";
+/* Activity settings, footer while the Game preview is picked. */
+"appearance.games_show_their_name_icon" = "无论这些设置如何，游戏都会显示他们的名字、图标和时间。";
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "链接";

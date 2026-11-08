@@ -48,3 +48,129 @@
 "appearance.games_show_their_name_icon" = "无论这些设置如何，游戏都会显示他们的名字、图标和时间。";
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "链接";
+/* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
+"appearance.member_lists_can_only_show_the" = "成员列表只能显示标题、第一行或第二行的内容。如果某个选项显示为灰色，请先在“活动”页面中将其设置为上述任意一行的内容。";
+/* Activity settings: preview picker segment. */
+"appearance.music" = "音乐";
+/* Activity settings: section header for the big and small pictures. */
+"appearance.pictures" = "图片";
+/* Sample text in the Activity settings preview: the name of a TV show. */
+"appearance.show" = "显示";
+/* Activity settings: row for the text shown when hovering the small picture on Discord. */
+"appearance.small_picture_text" = "小图像文本";
+/* Sample text in the Activity settings preview: the title of a song. */
+"appearance.song_title" = "歌曲标题";
+/* Activity settings: row for the third line of text on the activity card. */
+"appearance.third_line" = "第三行";
+/* Activity settings: row for how time is shown (progress bar or time elapsed). */
+"appearance.time" = "时间";
+/* Activity settings: preview picker segment. */
+"appearance.video" = "视频";
+
+/* Activity settings: an option for a line of the card. The album for music, the episode for video. */
+"card.album_or_episode" = "专辑或剧集";
+/* Activity settings: an option for a picture, the playing app's icon. */
+"card.app_logo" = "程序图标";
+/* Activity settings: an option for a line, the playing app's name. */
+"card.app_name" = "程序名称";
+/* Activity settings: an option for a line. The artist for music, the show for video. */
+"card.artist_or_show" = "艺术家或节目";
+/* Activity settings: an option for a picture. The artist's or show's picture. */
+"card.artist_or_show_picture" = "艺术家或节目图片";
+/* Activity settings: an option for a picture, the album art or video thumbnail. */
+"card.artwork" = "作品";
+/* Activity settings: an option for the heading, text the person types. */
+"card.custom" = "自定义";
+/* Activity settings: an option for Time, a bar showing how far into the song or video it is. */
+"card.progress_bar" = "进度条";
+
+/* App details for Apelin: row showing what the agent is doing. */
+"common.agent_status" = "Agent 状态";
+/* Sample text in the Activity settings preview: an album name. */
+"common.album" = "专辑";
+/* Sample text in the Activity settings preview: an artist name. */
+"common.artist" = "艺人";
+/* Row and section header: the large picture on the left of a Discord activity. */
+"common.big_picture" = "大图像";
+/* Alert button. */
+"common.cancel" = "取消";
+/* Button on an app's details page that copies its support details for a bug report. */
+"common.copy_details" = "拷贝详细信息";
+/* Activity settings: row and field for heading text the person types. */
+"common.custom_heading" = "自定义标题";
+/* Alert button that deletes a custom activity preset. */
+"common.delete" = "删除";
+/* Row: the first line of text under the heading of a Discord activity. */
+"common.first_line" = "第一行";
+/* Row: the bold top line of a Discord activity. */
+"common.heading" = "标题";
+/* Custom activity: field for a picture's web address. */
+"common.image_link" = "图片链接";
+/* Activity type (as in "Listening to Spotify"), used as a section header and a picker option. */
+"common.listening" = "正在听";
+/* App status: Menzen supports the app, but this version of it may not work fully. Keep it short. */
+"common.may_not_work" = "可能无法工作";
+/* Error under the sign-in button. */
+"common.menzen_couldn_t_start_the_sign" = "Menzen无法启动登录进程。请重试。";
+/* Row and page title: supported apps that aren't installed. */
+"common.more_supported_apps" = "更多支持的应用程序";
+/* Field: the name shown as the activity heading. */
+"common.name" = "名称";
+/* App status for a game Menzen has no icon for yet. Keep it short. */
+"common.no_icon" = "无图标";
+/* Option meaning nothing is shown; also the placeholder of empty text fields. */
+"common.none" = "无";
+/* Value of a setting that's switched off. Keep it short. */
+"common.off" = "关闭";
+/* Value of a setting that's switched on. Keep it short. */
+"common.on" = "开启";
+/* Activity type (as in "Playing a game"), used as a section header and a picker option. */
+"common.playing" = "播放中";
+/* App details for Apelin: row showing the project's name. */
+"common.project_name" = "项目名称";
+/* Button that opens a bug report on GitHub. */
+"common.report_on_github" = "去 GitHub 反馈";
+/* Row: the second line of text under the heading of a Discord activity. */
+"common.second_line" = "第二行";
+/* Row and section header: the small round picture on the corner of the big picture. */
+"common.small_picture" = "小图片";
+/* App details: row showing whether Menzen works with the app. */
+"common.status" = "状态";
+/* App details: section header about how well Menzen works with the app. */
+"common.support" = "支持";
+/* Section header for text rows, and the field for the text shown when hovering a picture. */
+"common.text" = "文本";
+/* Alert title when a custom activity's picture link can't be used. */
+"common.this_image_won_t_work" = "此图像无法正常工作";
+/* Option and switch: show a timer counting up from when the activity started. */
+"common.time_elapsed" = "用时";
+/* Activity settings: an option for a line, the song or video title. */
+"common.title" = "标题";
+/* App details: row showing the installed app's version. */
+"common.version" = "版本";
+/* Activity type (as in "Watching Netflix"), used as a section header and a picker option. */
+"common.watching" = "观看中";
+/* App status: Menzen fully works with this app. Keep it short. */
+"common.works" = "作品";
+
+/* Connected Apps page: section header for the tweaks that asked to show activity. */
+"connected.apps" = "应用";
+/* Connected Apps page, footer under the list of tweaks. */
+"connected.apps_show_here_the_first" = "应用首次请求访问时会显示在这里。最近更新的应用会优先显示。";
+/* Connected Apps page, footer when the list is empty. */
+"connected.no_apps_have_asked_yet" = "暂无应用请求访问。应用首次发起请求时会显示在这里。";
+/* Connected Apps page, footer under the switch. "Tweaks" are jailbreak add-ons. */
+"connected.other_tweaks_can_show_activity" = "其他插件可以通过 Menzen 显示各自的活动状态，但需要先在下方逐一授权。";
+
+/* Custom Activity page: button that adds a new preset (a saved custom status). */
+"custom.add_preset" = "添加预设";
+/* Custom Activity page title and its on/off switch. */
+"custom.custom_activity" = "自定义活动状态";
+/* Button that deletes the preset being edited. */
+"custom.delete_preset" = "删除预设";
+/* Alert title. %@ is the preset's name. */
+"custom.delete_x" = "删除“%@”？";
+/* Shown next to the preset that's in use. Keep it short. */
+"custom.in_use" = "使用中";
+/* Section header for the list of saved custom statuses. */
+"custom.presets" = "预设";

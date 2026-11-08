@@ -3,13 +3,13 @@
    stands for. Keep Menzen, Discord, Nitro, HypeSquad and GitHub as they are. */
 
 /* Activity preview at the top of Settings, above the person's Discord card. %@ is an app or game name. */
-"activity.listening_to_x" = "正在听%@";
+"activity.listening_to_x" = "正在收听 %@";
 /* Activity preview, shown when nothing is playing. */
-"activity.nothing_is_showing_right_now_open" = "现在没有任何东西供显示。打开游戏或再支持的应用中播放一些东西，以此同步到这里以及你的个人资料。";
+"activity.nothing_is_showing_right_now_open" = "当前没有显示任何活动状态。启动游戏或在受支持的应用中播放媒体后，活动状态将显示在这里和你的个人资料中。";
 /* Activity preview. %@ is a game name. */
-"activity.playing_x" = "正在游玩%@";
+"activity.playing_x" = "正在游玩 %@";
 /* Activity preview. %@ is an app name. */
-"activity.watching_x" = "正在观看%@";
+"activity.watching_x" = "正在观看 %@";
 
 /* What the Apelin coding agent is doing, shown on Discord. Apelin is a product name; don't translate it. */
 "apelin.state.building" = "正在构建";
@@ -45,6 +45,354 @@
 /* Activity settings: preview picker segment, and the sample name for a game. */
 "appearance.game" = "游戏";
 /* Activity settings, footer while the Game preview is picked. */
-"appearance.games_show_their_name_icon" = "无论这些设置如何，游戏都会显示他们的名字、图标和时间。";
+"appearance.games_show_their_name_icon" = "无论如何设置，游戏都会显示名称、图标和游玩时长。";
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "链接";
+/* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
+"appearance.member_lists_can_only_show_the" = "成员列表只能显示标题、第一行或第二行的内容。如果某个选项显示为灰色，请先在“活动状态”页面中将其设置为上述任意一行的内容。";
+/* Activity settings: preview picker segment. */
+"appearance.music" = "音乐";
+/* Activity settings: section header for the big and small pictures. */
+"appearance.pictures" = "图片";
+/* Sample text in the Activity settings preview: the name of a TV show. */
+"appearance.show" = "节目";
+/* Activity settings: row for the text shown when hovering the small picture on Discord. */
+"appearance.small_picture_text" = "小图文本";
+/* Sample text in the Activity settings preview: the title of a song. */
+"appearance.song_title" = "歌曲标题";
+/* Activity settings: row for the third line of text on the activity card. */
+"appearance.third_line" = "第三行";
+/* Activity settings: row for how time is shown (progress bar or time elapsed). */
+"appearance.time" = "时间";
+/* Activity settings: preview picker segment. */
+"appearance.video" = "视频";
+
+/* Activity settings: an option for a line of the card. The album for music, the episode for video. */
+"card.album_or_episode" = "专辑或剧集";
+/* Activity settings: an option for a picture, the playing app's icon. */
+"card.app_logo" = "应用图标";
+/* Activity settings: an option for a line, the playing app's name. */
+"card.app_name" = "应用名称";
+/* Activity settings: an option for a line. The artist for music, the show for video. */
+"card.artist_or_show" = "艺人或节目";
+/* Activity settings: an option for a picture. The artist's or show's picture. */
+"card.artist_or_show_picture" = "艺人或节目图片";
+/* Activity settings: an option for a picture, the album art or video thumbnail. */
+"card.artwork" = "封面图片";
+/* Activity settings: an option for the heading, text the person types. */
+"card.custom" = "自定义";
+/* Activity settings: an option for Time, a bar showing how far into the song or video it is. */
+"card.progress_bar" = "进度条";
+
+/* App details for Apelin: row showing what the agent is doing. */
+"common.agent_status" = "智能体状态";
+/* Sample text in the Activity settings preview: an album name. */
+"common.album" = "专辑";
+/* Sample text in the Activity settings preview: an artist name. */
+"common.artist" = "艺人";
+/* Row and section header: the large picture on the left of a Discord activity. */
+"common.big_picture" = "大图";
+/* Alert button. */
+"common.cancel" = "取消";
+/* Button on an app's details page that copies its support details for a bug report. */
+"common.copy_details" = "复制详细信息";
+/* Activity settings: row and field for heading text the person types. */
+"common.custom_heading" = "自定义标题";
+/* Alert button that deletes a custom activity preset. */
+"common.delete" = "删除";
+/* Row: the first line of text under the heading of a Discord activity. */
+"common.first_line" = "第一行";
+/* Row: the bold top line of a Discord activity. */
+"common.heading" = "标题";
+/* Custom activity: field for a picture's web address. */
+"common.image_link" = "图片链接";
+/* Activity type (as in "Listening to Spotify"), used as a section header and a picker option. */
+"common.listening" = "正在收听";
+/* App status: Menzen supports the app, but this version of it may not work fully. Keep it short. */
+"common.may_not_work" = "可能无法正常使用";
+/* Error under the sign-in button. */
+"common.menzen_couldn_t_start_the_sign" = "Menzen 无法启动登录流程，请重试。";
+/* Row and page title: supported apps that aren't installed. */
+"common.more_supported_apps" = "更多受支持的应用";
+/* Field: the name shown as the activity heading. */
+"common.name" = "名称";
+/* App status for a game Menzen has no icon for yet. Keep it short. */
+"common.no_icon" = "无图标";
+/* Option meaning nothing is shown; also the placeholder of empty text fields. */
+"common.none" = "无";
+/* Value of a setting that's switched off. Keep it short. */
+"common.off" = "关闭";
+/* Value of a setting that's switched on. Keep it short. */
+"common.on" = "开启";
+/* Activity type (as in "Playing a game"), used as a section header and a picker option. */
+"common.playing" = "正在游玩";
+/* App details for Apelin: row showing the project's name. */
+"common.project_name" = "项目名称";
+/* Button that opens a bug report on GitHub. */
+"common.report_on_github" = "去 GitHub 反馈";
+/* Row: the second line of text under the heading of a Discord activity. */
+"common.second_line" = "第二行";
+/* Row and section header: the small round picture on the corner of the big picture. */
+"common.small_picture" = "小图";
+/* App details: row showing whether Menzen works with the app. */
+"common.status" = "状态";
+/* App details: section header about how well Menzen works with the app. */
+"common.support" = "支持情况";
+/* Section header for text rows, and the field for the text shown when hovering a picture. */
+"common.text" = "文本";
+/* Alert title when a custom activity's picture link can't be used. */
+"common.this_image_won_t_work" = "此图片无法使用";
+/* Option and switch: show a timer counting up from when the activity started. */
+"common.time_elapsed" = "用时";
+/* Activity settings: an option for a line, the song or video title. */
+"common.title" = "标题";
+/* App details: row showing the installed app's version. */
+"common.version" = "版本";
+/* Activity type (as in "Watching Netflix"), used as a section header and a picker option. */
+"common.watching" = "正在观看";
+/* App status: Menzen fully works with this app. Keep it short. */
+"common.works" = "正常工作";
+
+/* Connected Apps page: section header for the tweaks that asked to show activity. */
+"connected.apps" = "应用";
+/* Connected Apps page, footer under the list of tweaks. */
+"connected.apps_show_here_the_first" = "应用首次请求访问时会显示在这里。仅显示最近更新的应用。";
+/* Connected Apps page, footer when the list is empty. */
+"connected.no_apps_have_asked_yet" = "暂无应用请求访问。应用首次发起请求时会显示在这里。";
+/* Connected Apps page, footer under the switch. "Tweaks" are jailbreak add-ons. */
+"connected.other_tweaks_can_show_activity" = "其他插件可以通过 Menzen 显示各自的活动状态，但需要先在下方逐一授权。";
+
+/* Custom Activity page: button that adds a new preset (a saved custom status). */
+"custom.add_preset" = "添加预设";
+/* Custom Activity page title and its on/off switch. */
+"custom.custom_activity" = "自定义活动状态";
+/* Button that deletes the preset being edited. */
+"custom.delete_preset" = "删除预设";
+/* Alert title. %@ is the preset's name. */
+"custom.delete_x" = "删除“%@”？";
+/* Shown next to the preset that's in use. Keep it short. */
+"custom.in_use" = "使用中";
+/* Section header for the list of saved custom statuses. */
+"custom.presets" = "预设";
+/* Alert title when more than one picture link can't be used. */
+"custom.these_images_won_t_work" = "无法使用这些图片";
+/* Row picking Playing, Listening or Watching. */
+"custom.type" = "类型";
+/* Name of a preset that has no name yet. */
+"custom.untitled" = "未命名";
+/* Alert button: use the preset even though a picture won't show. */
+"custom.use_anyway" = "仍然使用";
+/* Button that makes this preset the one shown on Discord. */
+"custom.use_this_preset" = "使用此预设";
+
+/* Shown on Discord under a show's name. %ld is the episode number. */
+"episode.episode_x" = "第 %ld 集";
+/* Shown on Discord under a show's name. %ld is the season number. */
+"episode.season_x" = "第 %ld 季";
+/* Shown on Discord under a show's name. %1$ld is the season number, %2$ld the episode number; you can swap their order. */
+"episode.season_x_episode_x" = "第 %1$ld 季，第 %2$ld 集";
+
+/* Starts a line naming which picture has a problem, before a colon and the problem. */
+"image.big_picture" = "大图";
+/* Problem with a picture link: Discord can't show this file type. */
+"image.discord_only_shows_png_jpeg_gif" = "Discord 仅支持显示 PNG、JPEG、GIF 和 WebP 格式的图片。";
+/* Problem with a picture link. %@ is the system's error message. */
+"image.it_couldn_t_be_loaded_x" = "加载失败：%@";
+/* Starts a line naming which picture has a problem, before a colon and the problem. */
+"image.small_picture" = "小图";
+/* Problem with a picture link: it downloaded but isn't a readable image. */
+"image.the_image_couldn_t_be_read" = "无法读取图片。";
+/* Problem with a picture link. Keep https:// as it is. */
+"image.the_link_has_to_start_with" = "链接必须以 https:// 开头，且不能包含令牌、密钥或密码。";
+/* Problem with a picture link: it points to a web page, not an image file. */
+"image.the_link_isn_t_an_image" = "该链接并非图片链接。请使用图片本身的链接，而非图片所在网页的链接。";
+/* Problem with a picture link. %ld is an HTTP status code, such as 404. */
+"image.the_server_answered_with_error_x" = "服务器返回错误代码 %ld。";
+
+/* Name on the preview card when the person's Discord name isn't known yet. */
+"preview.you" = "你";
+
+/* Priority page row and Connected Apps switch: activity other tweaks send through Menzen. */
+"priority.connected_apps" = "已连接的应用";
+/* Priority page row. */
+"priority.games" = "游戏";
+/* Priority page footer. The rows can be dragged into a different order. */
+"priority.menzen_shows_the_first_of" = "Menzen 会按照以下顺序，显示第一个有可用内容的项目。拖动可调整顺序。";
+/* Priority page row. */
+"priority.music_and_video" = "音乐与视频";
+
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.active_developer" = "活跃开发者";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.bug_hunter" = "漏洞猎人";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.discord_staff" = "Discord 员工";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.early_supporter" = "早期支持者";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.early_verified_bot_developer" = "早期认证机器人开发者";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.gold_bug_hunter" = "金牌漏洞猎人";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_balance" = "HypeSquad 平衡";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_bravery" = "HypeSquad 勇敢之家";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_brilliance" = "HypeSquad 光辉之家";
+/* Discord profile badge name. HypeSquad is a name; keep it. */
+"profile.hypesquad_events" = "HypeSquad 活动";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.moderator_alumni" = "前版主计划成员";
+/* Discord's subscription; a name, usually kept as is. */
+"profile.nitro" = "Nitro";
+/* Discord subscription tier. Nitro is a name; keep it. */
+"profile.nitro_basic" = "Nitro Basic";
+/* Discord subscription tier. Nitro is a name; keep it. */
+"profile.nitro_classic" = "Nitro Classic";
+/* Discord profile badge name. Use Discord's own name for it in your language. */
+"profile.partner" = "合作伙伴";
+
+/* Settings row that opens the page choosing what each line and picture of the activity shows. */
+"root.activity" = "活动状态";
+/* Settings footer under the activity options. */
+"root.activity_stops_when_media_pauses" = "媒体暂停播放或退出游戏时，活动状态将自动结束。";
+/* Settings section header. */
+"root.appearance" = "外观";
+/* Settings row that opens the list of supported apps and games. */
+"root.apps" = "应用";
+/* Settings section header. */
+"root.behavior" = "行为";
+/* Option for When Activity Stops. */
+"root.clear_after_10_seconds" = "10 秒后清除";
+/* Option for When Activity Stops. */
+"root.clear_after_1_minute" = "1 分钟后清除";
+/* Option for When Activity Stops. */
+"root.clear_after_30_seconds" = "30 秒后清除";
+/* Option for When Activity Stops. */
+"root.clear_immediately" = "立即清除";
+/* Shown over the profile card while Menzen connects. */
+"root.connecting_to_discord" = "正在连接到 Discord...";
+/* Settings row and Priority page row. */
+"root.custom_activity" = "自定义活动状态";
+/* Shown over the profile card when Menzen can't reach Discord. */
+"root.discord_isn_t_connecting_sign_out" = "无法连接到 Discord。如果网络连接正常，请尝试退出登录后重新登录。";
+/* Main on/off switch for Menzen. */
+"root.enabled" = "已启用";
+/* Reset Settings alert message. A preset is a saved custom status. */
+"root.every_setting_goes_back_to_its" = "所有设置都将恢复默认值。你仍会保持登录状态，自定义活动状态预设也会保留。";
+/* Note under the sign-in button. */
+"root.if_the_page_doesn_t_load" = "如果页面无法加载，请尝试在其他设备上登录。";
+/* Option for When Activity Stops: never clear it. */
+"root.keep_showing" = "继续显示";
+/* Settings row that opens what shows under the person's name in Discord's member list. */
+"root.member_list" = "成员列表";
+/* Error at the top of Settings when Menzen's background process isn't running. */
+"root.menzen_s_background_service_isn_t" = "Menzen 后台服务未运行，请尝试重新安装 Menzen。";
+/* Sign Out alert message. */
+"root.menzen_will_stop_showing_your" = "Menzen 将停止在 Discord 上显示你的活动状态。";
+/* Settings row that opens the page ordering what shows first. */
+"root.priority" = "优先级";
+/* Settings switch that hides everything but the app's name and icon. */
+"root.privacy_mode" = "隐私模式";
+/* Settings footer under the profile card. */
+"root.pull_down_to_refresh" = "下拉刷新。";
+/* Reset Settings alert button. */
+"root.reset" = "重置";
+/* Settings button that opens the reset alert. */
+"root.reset_settings" = "重置设置";
+/* Reset Settings alert title. */
+"root.reset_settings_question" = "确定要重置设置吗？";
+/* Privacy Mode footer. */
+"root.shows_only_app_s_or_game" = "仅显示应用或游戏的名称和图标。";
+/* Button for signing in with a code on another phone or computer. */
+"root.sign_in_on_another_device" = "在其他设备上登录";
+/* Sign-in button. */
+"root.sign_in_with_discord" = "使用 Discord 登录";
+/* Button and alert button. */
+"root.sign_out" = "退出登录";
+/* Note under the sign-out button when Discord gave Menzen only part of the profile. */
+"root.sign_out_and_back_in_to" = "退出登录并重新登录以显示你的徽章、横幅和 Nitro 状态。";
+/* Sign Out alert title. */
+"root.sign_out_of_discord" = "确定要退出 Discord 登录吗？";
+/* Sign-in button while signing in. */
+"root.signing_in" = "正在登录...";
+/* Settings section header for where activity comes from. */
+"root.sources" = "状态来源";
+/* Error under the sign-in button. */
+"root.the_sign_in_page_couldn_t" = "无法打开登录页面，请重试。";
+/* Settings row: what happens when music pauses or a game closes. */
+"root.when_activity_stops" = "活动状态结束时";
+/* Note under the sign-in button. */
+"root.you_sign_in_on_discord_s" = "你将在 Discord 官方页面上登录。Menzen 不会获取或保存你的密码。";
+
+/* Title of the page for signing in on another device. */
+"signin.another_device" = "其他设备";
+/* Button title for a moment after the link is copied. */
+"signin.copied" = "已复制";
+/* Button that copies the sign-in link. */
+"signin.copy_link" = "复制链接";
+/* Sign-in error. The Keychain is where iOS stores passwords. */
+"signin.error.couldn_t_save_the_sign_in" = "无法将登录信息保存至钥匙串。";
+/* Sign-in error. */
+"signin.error.discord_couldn_t_complete_the_sign" = "Discord 无法完成登录，请重试。";
+/* Sign-in error on the Another Device page; a new code follows it. */
+"signin.error.discord_couldn_t_complete_the_sign_2" = "Discord 无法完成登录。";
+/* Sign-in error. */
+"signin.error.discord_couldn_t_start_the_sign" = "Discord 无法启动登录流程，请重试。";
+/* Sign-in error. */
+"signin.error.discord_didn_t_accept_the_sign" = "Discord 未接受此次登录请求，请重试。";
+/* Sign-in error. */
+"signin.error.discord_didn_t_send_a_sign" = "Discord 未发送登录验证码，请重试。";
+/* Sign-in error when Discord signed Menzen out. */
+"signin.error.discord_ended_the_sign_in_sign" = "Discord 已终止登录流程，请重新登录。";
+/* Sign-in error. */
+"signin.error.discord_sent_back_an_unexpected_address" = "Discord 返回了异常地址，请重试。";
+/* Sign-in error. */
+"signin.error.the_sign_in_didn_t_match" = "登录请求与 Menzen 发起的请求不匹配，请重试。";
+/* Sign-in error. */
+"signin.error.the_sign_in_took_too_long" = "登录超时，请重试。";
+/* Sign-in error on the Another Device page; a new code follows it. */
+"signin.error.the_sign_in_was_declined" = "登录请求已被拒绝。";
+/* Added after a sign-in error when a new code appears, so keep the space at the start. */
+"signin.here_s_a_new_code" = " 这是新的验证码。";
+/* Above a short code. Keep discord.com/activate as it is. */
+"signin.or_go_to_discord_com_activate" = "或者在任意设备上访问 discord.com/activate，并输入以下代码：";
+/* Read aloud by VoiceOver for the QR code. */
+"signin.qr_code_for_discord_s_sign" = "Discord 登录页面二维码";
+/* Above the QR code. */
+"signin.scan_this_code_with_another_phone" = "使用另一部手机的相机扫描此二维码，然后登录 Discord 并授权 Menzen。";
+/* Button that shares the sign-in link. */
+"signin.share" = "分享";
+/* Button that gets a new code. */
+"signin.try_again" = "重试";
+
+/* Apelin details: section header for what the agent shows on Discord. */
+"sources.activity" = "活动状态";
+/* Page title: the list of supported apps and games. */
+"sources.apps" = "应用";
+/* Section header for features that may not work well. */
+"sources.experimental" = "实验性功能";
+/* App status: Menzen uses only what the app tells the system's media controls. Keep it short. */
+"sources.media_controls_only" = "仅使用媒体控制信息";
+/* App details footer. %@ is the app's name. */
+"sources.menzen_hasn_t_checked_this_version" = "Menzen 尚未检测过此版本的 %@。打开该应用后，Menzen 将进行检测，并将你自动带回此页面。";
+/* App details footer. %@ is the app's name. */
+"sources.menzen_shows_what_x_shares_with" = "Menzen 会显示 %@ 向系统媒体控制功能提供的信息。";
+/* Footer on the Apps page. */
+"sources.none_of_the_apps_menzen_supports" = "尚未安装任何 Menzen 支持的应用。";
+/* App status. Keep it short. */
+"sources.not_checked" = "尚未检测";
+/* App status. Keep it short. */
+"sources.not_fully_checked" = "尚未完成检测";
+/* App status. Keep it short. */
+"sources.not_installed" = "未安装";
+/* Button that opens the app. %@ is the app's name. */
+"sources.open_x_to_check" = "打开 %@ 进行检测";
+/* Switch that shows apps Menzen doesn't support. */
+"sources.other_apps" = "其他应用";
+/* Button that asks on GitHub for a game's icon to be added. */
+"sources.request_icon_on_github" = "在 GitHub 上请求添加图标";
+/* Footer under Other Apps. */
+"sources.shows_unsupported_apps_with_less_information" = "显示尚未适配的应用，但可获取的信息较少。浏览器、聊天和社交应用将被跳过。";
+/* App details footer. %@ is the app's name. */
+"sources.some_parts_of_x_only_load" = "%@ 的部分内容仅在打开应用后才会加载。打开该应用后，Menzen 将完成检测并返回此页面。";

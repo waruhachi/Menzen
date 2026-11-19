@@ -54,11 +54,9 @@ Thanks to everyone who translates Menzen:
         <br /><sub><b><code title="Chinese Simplified">zh-CN</code></b></sub>
       </td>
       <td align="center" valign="top">
-        <a href="https://crowdin.com/profile/gabiebun"><img alt="logo" style="width: 64px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17969167/medium/5456e77e6cf22463b64b1ea3ad0060c1.png" />
+        <a href="https://crowdin.com/profile/TheMightyOfTrains"><img alt="logo" style="width: 64px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17969167/medium/cb3366e5d6fc15f8a9930668d4f923e6.jpeg" />
           <br />
-          <sub><b>Gabi gabi</b></sub>
-          <br />
-          <sub><b>(gabiebun)</b></sub></a>
+          <sub><b>TheMightyOfTrains</b></sub></a>
         <br />
         <sub><b>748 words</b></sub>
         <br /><sub><b><code title="Romanian">ro</code></b></sub>

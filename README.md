@@ -22,7 +22,6 @@ It runs on iOS 14 through 26, on rootful, rootless and RootHide jailbreaks.
 - Podcasts from Apple Podcasts, Castro, Overcast, Pocket Casts and Spotify, with the episode and the show. Apple Podcasts and Spotify also add the artwork and links to the episode.
 - With Other Apps turned on, anything in the Now Playing controls can show up too, with less detail. Browsers, chat apps and social networking apps are always left out.
 - Shows the game on screen with its App Store icon, without touching the game itself.
-- Shows what the Apelin agent is working on.
 - You pick what each line and picture of your activity shows, and what shows in member lists.
 - Custom statuses with your own text, pictures and a timer.
 - Privacy Mode shows only the app's name and icon. You can turn it on from Settings or from Control Center, which also has a toggle to turn Menzen on and off.

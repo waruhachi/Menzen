@@ -13,11 +13,11 @@ NS_ASSUME_NONNULL_BEGIN
 // Checks now unless it checked in the last few minutes: the settings pane
 // shows the games, and may be back from requesting an icon.
 - (void)checkIfStale;
-// The app's default icon, 512 px on Apple's servers, or for a built-in game
-// the key of its art asset; nil when the lists don't have it.
+// The app's default icon, 512 px on Apple's servers; nil when the lists
+// don't have it.
 - (nullable NSString *)iconURLForApp:(NSString *)bundleIdentifier;
 - (nullable NSString *)storeURLForApp:(NSString *)bundleIdentifier;
-// In games.json, built in, or a game by its App Store category.
+// In games.json, or a game by its App Store category.
 - (BOOL)isGame:(NSString *)bundleIdentifier;
 - (NSArray<NSString *> *)installedGames;
 // Each supported app's icon, installed or not.

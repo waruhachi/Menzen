@@ -4,8 +4,8 @@
 #import "../../Shared/MenzenService.h"
 #import "MenzenImageLoader.h"
 
-// The CDN URL of the Discord application's art asset named key (Apelin's
-// logo), from the application's public asset list. Main thread only.
+// The CDN URL of the Discord application's art asset named key, from the
+// application's public asset list. Main thread only.
 static void MenzenLoadAssetURL(NSString *key, void (^completion)(NSString *urlString)) {
 	static NSDictionary<NSString *, NSString *> *assets;
 	if (assets) {

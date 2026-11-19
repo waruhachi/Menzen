@@ -34,8 +34,7 @@ static uint64_t const MenzenApplicationId = 1564329461036617748ULL;
 #define MenzenActivityDetailsKey @"details"
 #define MenzenActivityStateKey @"state"
 #define MenzenActivityLargeTextKey @"largeText"
-// Image URLs, or the key of an art asset on the Discord application
-// (Apelin's logo).
+// Image URLs, or the key of an art asset on the Discord application.
 #define MenzenActivityImageURLKey @"imageURL"
 // The artist's picture and name, only with an image.
 #define MenzenActivitySmallImageURLKey @"smallImageURL"

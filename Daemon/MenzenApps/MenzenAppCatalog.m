@@ -1,4 +1,3 @@
-#import "../../Shared/MenzenApelin.h"
 #import "../../Shared/MenzenApps.h"
 #import "../../Shared/MenzenProviders.h"
 #import "MenzenAppCatalog.h"
@@ -27,22 +26,6 @@ static BOOL MenzenIsIconURL(id value) {
 	NSURL *url = [NSURL URLWithString:value];
 	NSString *host = url.host.lowercaseString;
 	return [url.scheme isEqualToString:@"https"] && [host hasPrefix:@"is"] && [host hasSuffix:@"-ssl.mzstatic.com"] && [url.path hasPrefix:@"/image/thumb/"];
-}
-
-// Apps Menzen knows itself, bundle ID to the key of their art asset on the
-// Discord application. They're installed by jailbreak packages, so they're
-// System apps that aren't in the list or the home screen scan.
-static NSDictionary<NSString *, NSString *> *MenzenBuiltInGames(void) {
-	return @{MenzenApelinBundleIdentifier: MenzenApelinAsset};
-}
-
-static NSSet<NSString *> *MenzenInstalledBuiltInGames(void) {
-	NSMutableSet *games = [NSMutableSet set];
-	for (NSString *bundleIdentifier in MenzenBuiltInGames()) {
-		if (MenzenInstalledAppVersion(bundleIdentifier)) [games addObject:bundleIdentifier];
-	}
-
-	return games;
 }
 
 static NSArray<NSString *> *MenzenCatalogFiles(void) {
@@ -111,7 +94,6 @@ static NSDictionary<NSString *, NSDictionary *> *MenzenReadCatalog(NSString *pat
 	// thousands.
 	NSDictionary<NSString *, NSDictionary *> *_games;
 	NSDictionary<NSString *, NSDictionary *> *_apps;
-	NSSet<NSString *> *_builtIn;
 	NSSet<NSString *> *_installed;
 	NSURLSession *_session;
 	NSUInteger _checkGeneration;
@@ -131,7 +113,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 		_games = @{};
 		_apps = @{};
 		_installed = [NSSet set];
-		_builtIn = [NSSet set];
 		NSURLSessionConfiguration *configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
 		// The ETag decides; a cached answer would hide a newer list.
 		configuration.requestCachePolicy = NSURLRequestReloadIgnoringLocalCacheData;
@@ -152,7 +133,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	NSUInteger generation = ++_readGeneration;
 	dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
 		NSSet *installed = MenzenInstalledApps();
-		NSSet *builtIn = MenzenInstalledBuiltInGames();
 		// The supported apps too, for the pane's list of the ones that
 		// aren't installed.
 		NSMutableSet *wanted = [installed mutableCopy];
@@ -169,7 +149,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 		dispatch_async(dispatch_get_main_queue(), ^{
 			if (generation != self->_readGeneration) return;
 			self->_installed = installed;
-			self->_builtIn = builtIn;
 			self->_games = games;
 			self->_apps = apps;
 			if (self.changedHandler) self.changedHandler();
@@ -243,7 +222,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 }
 
 - (NSString *)iconURLForApp:(NSString *)bundleIdentifier {
-	if ([_builtIn containsObject:bundleIdentifier]) return MenzenBuiltInGames()[bundleIdentifier];
 	return _apps[bundleIdentifier][@"icon"];
 }
 
@@ -253,7 +231,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 }
 
 - (BOOL)isGame:(NSString *)bundleIdentifier {
-	return _games[bundleIdentifier] != nil || [_builtIn containsObject:bundleIdentifier] || MenzenIsGameApp(bundleIdentifier);
+	return _games[bundleIdentifier] != nil || MenzenIsGameApp(bundleIdentifier);
 }
 
 - (NSArray<NSString *> *)installedGames {
@@ -264,7 +242,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 		}
 	}
 
-	[games addObjectsFromArray:_builtIn.allObjects];
 	return games;
 }
 

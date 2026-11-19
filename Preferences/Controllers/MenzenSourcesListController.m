@@ -1,7 +1,6 @@
 #import <Preferences/PSSpecifier.h>
 #import <Preferences/PSTableCell.h>
 
-#import "../../Shared/MenzenApelin.h"
 #import "../../Shared/MenzenApps.h"
 #import "../../Shared/MenzenLocalization/MenzenLocalization.h"
 #import "../../Shared/MenzenProviders.h"
@@ -334,7 +333,6 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:name target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 		MenzenSetSetting(toggle, MenzenGameKey(game), @YES);
 		[specifiers addObject:toggle];
-		if ([game[MenzenGameBundleIdentifierKey] isEqualToString:MenzenApelinBundleIdentifier]) [specifiers addObjectsFromArray:[self apelinSpecifiers]];
 
 		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"common.support", @"Support")]];
 		PSSpecifier *status = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"common.status", @"Status") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
@@ -357,19 +355,6 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 
 - (NSString *)supportValue:(PSSpecifier *)specifier {
 	return [specifier propertyForKey:@"supportValue"];
-}
-
-// What the agent's session adds below the name.
-- (NSArray<PSSpecifier *> *)apelinSpecifiers {
-	NSMutableArray *specifiers = [NSMutableArray arrayWithObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"sources.activity", @"Activity")]];
-	NSDictionary *rows = @{MenzenLocalizedString(@"common.project_name", @"Project Name"): MenzenSettingApelinProject, MenzenLocalizedString(@"common.agent_status", @"Agent Status"): MenzenSettingApelinAgent};
-	for (NSString *name in @[MenzenLocalizedString(@"common.project_name", @"Project Name"), MenzenLocalizedString(@"common.agent_status", @"Agent Status")]) {
-		PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:name target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
-		MenzenSetSetting(row, rows[name], @YES);
-		[specifiers addObject:row];
-	}
-
-	return specifiers;
 }
 
 - (void)requestIcon:(PSSpecifier *)specifier {

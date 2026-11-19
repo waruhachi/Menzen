@@ -1,8 +1,6 @@
-#import "../../Shared/MenzenApelin.h"
 #import "../../Shared/MenzenCustomActivity.h"
 #import "../../Shared/MenzenProviders.h"
 #import "../../Shared/MenzenSettings.h"
-#import "../MenzenApelin/MenzenApelin.h"
 #import "../MenzenApps/MenzenAppCatalog.h"
 #import "../MenzenApps/MenzenAppInfo.h"
 #import "../MenzenDiscord/MenzenDiscord.h"
@@ -12,9 +10,6 @@
 // Pausing briefly, skipping around, a look at the app switcher or a quick
 // reply in another app shouldn't flicker the status.
 static NSTimeInterval const MenzenDefaultStopGrace = 10;
-// Apelin's agent moves on while the app stays on screen. Discord takes five
-// updates in 20 s.
-static NSTimeInterval const MenzenApelinRefresh = 5;
 
 static NSTimeInterval MenzenStopGrace(void) {
 	return MenzenSettingDouble(MenzenSettingPauseGrace, MenzenDefaultStopGrace);
@@ -44,7 +39,6 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	NSDate *_gameStart;
 	BOOL _gameLeft;
 	NSUInteger _gameEndGeneration;
-	NSTimer *_gameRefresh;
 	MenzenTrack *_lastTrack;
 	// Kept after playback stops, for the preview.
 	MenzenTrack *_lastPlayed;
@@ -225,7 +219,6 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 			_gameStart = NSDate.date;
 		}
 		[self publish];
-		[self updateGameRefresh];
 		return;
 	}
 
@@ -264,30 +257,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 		if (MenzenSettingBool(MenzenSettingLinks, YES)) activity.largeURL = [_appCatalog storeURLForApp:bundleIdentifier];
 	}
 
-	if ([bundleIdentifier isEqualToString:MenzenApelinBundleIdentifier]) {
-		MenzenApelinSession *session = MenzenReadApelinSession();
-		NSString *project = MenzenSettingBool(MenzenSettingApelinProject, YES) ? session.project : nil;
-		NSString *agent = MenzenSettingBool(MenzenSettingApelinAgent, YES) ? session.agent : nil;
-		activity.details = project ?: agent;
-		activity.state = project ? agent : nil;
-	}
-
 	return activity;
-}
-
-- (void)updateGameRefresh {
-	if (![_game isEqualToString:MenzenApelinBundleIdentifier]) {
-		[_gameRefresh invalidate];
-		_gameRefresh = nil;
-		return;
-	}
-
-	if (_gameRefresh) return;
-	__weak typeof(self) weakSelf = self;
-	_gameRefresh = [NSTimer scheduledTimerWithTimeInterval:MenzenApelinRefresh repeats:YES block:^(NSTimer *timer) {
-		typeof(self) strongSelf = weakSelf;
-		if (strongSelf && strongSelf->_game) [strongSelf publish];
-	}];
 }
 
 - (void)endGame {
@@ -295,7 +265,6 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	_gameStart = nil;
 	_gameLeft = NO;
 	_gameEndGeneration++;
-	[self updateGameRefresh];
 	[self publish];
 }
 

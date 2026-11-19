@@ -11,35 +11,6 @@
 /* Activity preview. %@ is an app name. */
 "activity.watching_x" = "Watching %@";
 
-/* What the Apelin coding agent is doing, shown on Discord. Apelin is a product name; don't translate it. */
-"apelin.state.building" = "Building";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.cloning_a_repository" = "Cloning a repository";
-/* Apelin agent status, shown on Discord. The agent is shortening its conversation history. */
-"apelin.state.compacting" = "Compacting";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.editing_files" = "Editing files";
-/* Apelin agent status, shown on Discord. A package is a jailbreak tweak or app package. */
-"apelin.state.installing_a_package" = "Installing a package";
-/* Apelin agent status, shown on Discord. Building an installable package. */
-"apelin.state.packaging" = "Packaging";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.reading_files" = "Reading files";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.reconnecting" = "Reconnecting";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.removing_a_package" = "Removing a package";
-/* Apelin agent status, shown on Discord. The agent is writing its reply. */
-"apelin.state.responding" = "Responding";
-/* Apelin agent status, shown on Discord. Restarting the iPhone's home screen (SpringBoard), jailbreak slang "respring". */
-"apelin.state.respringing" = "Respringing";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.running_tools" = "Running tools";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.thinking" = "Thinking";
-/* Apelin agent status, shown on Discord. The agent is waiting for the person to allow an action. */
-"apelin.state.waiting_for_approval" = "Waiting for approval";
-
 /* Sample text in the Activity settings preview: the title of a TV episode. */
 "appearance.episode_title" = "Episode Title";
 /* Activity settings: preview picker segment, and the sample name for a game. */
@@ -84,8 +55,6 @@
 /* Activity settings: an option for Time, a bar showing how far into the song or video it is. */
 "card.progress_bar" = "Progress Bar";
 
-/* App details for Apelin: row showing what the agent is doing. */
-"common.agent_status" = "Agent Status";
 /* Sample text in the Activity settings preview: an album name. */
 "common.album" = "Album";
 /* Sample text in the Activity settings preview: an artist name. */
@@ -126,8 +95,6 @@
 "common.on" = "On";
 /* Activity type (as in "Playing a game"), used as a section header and a picker option. */
 "common.playing" = "Playing";
-/* App details for Apelin: row showing the project's name. */
-"common.project_name" = "Project Name";
 /* Button that opens a bug report on GitHub. */
 "common.report_on_github" = "Report on GitHub";
 /* Row: the second line of text under the heading of a Discord activity. */
@@ -366,8 +333,6 @@
 /* Button that gets a new code. */
 "signin.try_again" = "Try Again";
 
-/* Apelin details: section header for what the agent shows on Discord. */
-"sources.activity" = "Activity";
 /* Page title: the list of supported apps and games. */
 "sources.apps" = "Apps";
 /* Section header for features that may not work well. */

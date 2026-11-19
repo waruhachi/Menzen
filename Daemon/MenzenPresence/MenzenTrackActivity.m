@@ -161,7 +161,7 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 	if (!MenzenTrackIsShowable(track)) return nil;
 
 	NSDictionary *provider = MenzenProviderForBundleIdentifier(track.bundleIdentifier);
-	if (MenzenSettingBool(MenzenSettingPrivacy, NO)) {
+	if (MenzenAppIsPrivate(track.bundleIdentifier)) {
 		MenzenActivity *activity = [MenzenActivity new];
 		activity.kind = MenzenActivityKindForTrack(track, provider);
 		activity.statusDisplay = MenzenStatusDisplayName;
@@ -257,7 +257,7 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 MenzenActivity *MenzenPreviewForTrack(MenzenTrack *track, NSString *logo, NSDate *stoppedDate, NSDate **pausedDate) {
 	MenzenActivity *activity = MenzenActivityForTrack(track, logo);
 	*pausedDate = nil;
-	if (!activity || (track.playing && !stoppedDate) || MenzenSettingBool(MenzenSettingPrivacy, NO)) return activity;
+	if (!activity || (track.playing && !stoppedDate) || MenzenAppIsPrivate(track.bundleIdentifier)) return activity;
 	NSDate *now = NSDate.date;
 	NSTimeInterval elapsed = MAX([track elapsedAtDate:stoppedDate ?: now], 0);
 	if (track.duration > 0) elapsed = MIN(elapsed, track.duration);

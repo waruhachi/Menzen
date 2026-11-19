@@ -34,6 +34,9 @@
 // BOOL, default NO: only the app's (or game's) name and icon, with no
 // titles, pictures, links or time.
 #define MenzenSettingPrivacy @"privacy"
+// BOOL per app, "private.<bundle identifier>", default NO: Privacy Mode for
+// just that app.
+#define MenzenSettingPrivatePrefix @"private."
 
 static inline id MenzenSettingValue(NSString *key) {
 	return CFBridgingRelease(CFPreferencesCopyAppValue((__bridge CFStringRef)key, (__bridge CFStringRef)MenzenSettingsDomain));
@@ -52,6 +55,12 @@ static inline NSString *MenzenSettingString(NSString *key, NSString *fallback) {
 static inline double MenzenSettingDouble(NSString *key, double fallback) {
 	id value = MenzenSettingValue(key);
 	return [value respondsToSelector:@selector(doubleValue)] ? [value doubleValue] : fallback;
+}
+
+// Privacy Mode, for everything or for just this app.
+static inline BOOL MenzenAppIsPrivate(NSString *bundleIdentifier) {
+	if (MenzenSettingBool(MenzenSettingPrivacy, NO)) return YES;
+	return bundleIdentifier.length && MenzenSettingBool([MenzenSettingPrivatePrefix stringByAppendingString:bundleIdentifier], NO);
 }
 
 // What Menzen can show, for MenzenSettingPriority.

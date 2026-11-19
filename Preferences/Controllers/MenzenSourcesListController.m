@@ -44,6 +44,16 @@ static PSSpecifier *MenzenSourceSwitch(id target, NSDictionary *provider, NSStri
 	return specifier;
 }
 
+// Privacy Mode for just this app, on its page under its switch.
+static NSArray<PSSpecifier *> *MenzenPrivacySpecifiers(id target, NSString *bundleIdentifier) {
+	PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
+	BOOL everything = MenzenSettingBool(MenzenSettingPrivacy, NO);
+	[group setProperty:everything ? MenzenLocalizedString(@"sources.privacy_mode_is_on_for_every_app", @"Privacy Mode is on for every app right now.") : MenzenLocalizedString(@"sources.shows_only_the_name_and_icon", @"Shows only the name and icon.") forKey:@"footerText"];
+	PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"sources.privacy_mode", @"Privacy Mode") target:target set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
+	MenzenSetSetting(toggle, [MenzenSettingPrivatePrefix stringByAppendingString:bundleIdentifier], @NO);
+	return @[group, toggle];
+}
+
 static void MenzenSetAppIcon(PSSpecifier *specifier, NSString *bundleIdentifier) {
 	UIImage *icon = [UIImage _applicationIconImageForBundleIdentifier:bundleIdentifier format:0 scale:UIScreen.mainScreen.scale];
 	if (icon) [specifier setProperty:icon forKey:@"iconImage"];
@@ -208,7 +218,10 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		NSMutableArray *specifiers = [NSMutableArray array];
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		[specifiers addObject:MenzenSourceSwitch(self, provider, provider[MenzenProviderNameKey])];
-		if (MenzenInstalled(provider)) [specifiers addObjectsFromArray:[self supportSpecifiers]];
+		if (MenzenInstalled(provider)) {
+			[specifiers addObjectsFromArray:MenzenPrivacySpecifiers(self, provider[MenzenProviderBundleIdentifierKey])];
+			[specifiers addObjectsFromArray:[self supportSpecifiers]];
+		}
 		_specifiers = specifiers;
 	}
 
@@ -333,6 +346,7 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:name target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 		MenzenSetSetting(toggle, MenzenGameKey(game), @YES);
 		[specifiers addObject:toggle];
+		[specifiers addObjectsFromArray:MenzenPrivacySpecifiers(self, game[MenzenGameBundleIdentifierKey])];
 
 		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"common.support", @"Support")]];
 		PSSpecifier *status = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"common.status", @"Status") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];

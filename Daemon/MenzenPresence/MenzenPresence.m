@@ -250,7 +250,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	activity.name = MenzenAppName(bundleIdentifier);
 	// Without one, Discord shows Menzen's icon.
 	activity.largeImageURL = [_appCatalog iconURLForApp:bundleIdentifier];
-	if (MenzenSettingBool(MenzenSettingPrivacy, NO)) return activity;
+	if (MenzenAppIsPrivate(bundleIdentifier)) return activity;
 	activity.startDate = _gameStart;
 	if (activity.largeImageURL) {
 		activity.largeText = activity.name;

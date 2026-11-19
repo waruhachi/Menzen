@@ -343,8 +343,14 @@
 "sources.open_x_to_check" = "Open %@ to Check";
 /* Switch that shows apps Menzen doesn't support. */
 "sources.other_apps" = "Other Apps";
+/* Switch on an app's or game's page in Sources: Privacy Mode for just that app. */
+"sources.privacy_mode" = "Privacy Mode";
+/* Footer under an app's Privacy Mode switch while Privacy Mode is on for everything in Menzen's main settings. */
+"sources.privacy_mode_is_on_for_every_app" = "Privacy Mode is on for every app right now.";
 /* Button that asks on GitHub for a game's icon to be added. */
 "sources.request_icon_on_github" = "Request Icon on GitHub";
+/* Footer under an app's Privacy Mode switch: with it on, Menzen shows only the app's or game's name and icon. */
+"sources.shows_only_the_name_and_icon" = "Shows only the name and icon.";
 /* Footer under Other Apps. */
 "sources.shows_unsupported_apps_with_less_information" = "Shows unsupported apps, with less information. Browsers, chat and social networking apps are skipped.";
 /* App details footer. %@ is the app's name. */

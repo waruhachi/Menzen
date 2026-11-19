@@ -107,6 +107,7 @@
 "common.watching" = "正在观看";
 /* App status: Menzen fully works with this app. Keep it short. */
 "common.works" = "正常工作";
+
 /* Connected Apps page: section header for the tweaks that asked to show activity. */
 "connected.apps" = "应用";
 

@@ -57,12 +57,7 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 }
 
 - (void)setAllowed:(NSNumber *)allowed specifier:(PSSpecifier *)specifier {
-	NSMutableArray<NSString *> *identifiers = [MenzenConnectedAllowed() mutableCopy];
-	[identifiers removeObject:specifier.identifier];
-	if (allowed.boolValue) [identifiers addObject:specifier.identifier];
-	CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingConnectedAllowed, (__bridge CFArrayRef)identifiers, (__bridge CFStringRef)MenzenSettingsDomain);
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
+	MenzenConnectedSetAllowed(specifier.identifier, allowed.boolValue);
 }
 
 @end

@@ -7,8 +7,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Serves MenzenConnectedService (Shared/MenzenConnectedApps.h) to any process:
 // libmenzen clients register, which lists them in the settings, and send
 // activities, which reach MenzenPresence only while Connected Apps is on and
-// the user allows them. Of those, the one that sent last shows. Main queue
-// only.
+// the user allows them. Of those, the one that sent last shows. A new app
+// asking while Connected Apps is on is passed to SpringBoard to ask the
+// user. Main queue only.
 @interface MenzenConnectedListener : NSObject
 - (instancetype)initWithPresence:(MenzenPresence *)presence;
 - (void)start;

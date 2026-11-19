@@ -12,6 +12,7 @@
 #import "../Views/MenzenChoiceCells.h"
 #import "../Views/MenzenDestructiveButtonCell.h"
 #import "../Views/MenzenProfileCell.h"
+#import "MenzenConnectedListController.h"
 #import "MenzenOtherDeviceSignIn.h"
 
 // The pane never sees a token: menzend hands it an authorize URL, the web
@@ -21,6 +22,10 @@
 // sign-in stopped working without Discord saying so, and signing in again
 // fixes it.
 static NSTimeInterval const MenzenConnectTimeout = 30;
+
+@interface PSListController (MenzenURL)
+- (void)handleURL:(NSDictionary *)url withCompletion:(void (^)(void))completion;
+@end
 
 @interface MenzenRootListController : PSListController <ASWebAuthenticationPresentationContextProviding>
 - (void)settingsChanged;
@@ -52,6 +57,9 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	// since when (it only does once it has started connecting).
 	NSDate *_connectingSeen;
 	NSTimer *_connectTimer;
+	// From menzend's connection request notification, opened once the rows
+	// are known.
+	BOOL _opensConnected;
 }
 
 - (NSArray *)specifiers {
@@ -140,8 +148,34 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 			strongSelf->_unreachable = NO;
 			[strongSelf scheduleConnectTimeout];
 			[strongSelf reloadSpecifiers];
+			[strongSelf openConnectedIfRequested];
 		});
 	}];
+}
+
+- (void)handleURL:(NSDictionary *)url withCompletion:(void (^)(void))completion {
+	NSString *path = [url[@"path"] isKindOfClass:NSString.class] ? url[@"path"] : nil;
+	if (![path.pathComponents.firstObject isEqualToString:@"connected"]) {
+		[super handleURL:url withCompletion:completion];
+		return;
+	}
+
+	_opensConnected = YES;
+	[self openConnectedIfRequested];
+	if (completion) completion();
+}
+
+// Signed out, there's no Connected Apps row to open.
+- (void)openConnectedIfRequested {
+	if (!_opensConnected || (!_status && !_unreachable)) return;
+	_opensConnected = NO;
+	PSSpecifier *specifier = [self specifierForID:@"connected"];
+	if (!specifier) return;
+	MenzenConnectedListController *controller = [MenzenConnectedListController new];
+	controller.specifier = specifier;
+	controller.rootController = self.rootController;
+	controller.parentController = self;
+	[self showController:controller animate:NO];
 }
 
 - (BOOL)signedIn {

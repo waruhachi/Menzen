@@ -19,6 +19,8 @@ extern CFStringRef SecTaskCopySigningIdentifier(SecTaskRef task, CFErrorRef *err
 static NSUInteger const MenzenConnectedConnectionLimit = 64;
 static NSUInteger const MenzenConnectedTextLimit = 128;
 static NSUInteger const MenzenConnectedURLLimit = 512;
+// Requests SpringBoard hasn't shown by then never will be (it restarted).
+static NSTimeInterval const MenzenConnectedRequestAge = 60;
 
 static NSString *MenzenConnectedProcess(NSXPCConnection *connection) {
 	SecTaskRef task = SecTaskCreateWithAuditToken(kCFAllocatorDefault, connection.auditToken);
@@ -177,11 +179,30 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	if (!MenzenConnectedIdentifierIsValid(identifier) || !name) return;
 	// One app per connection, for as long as it lasts.
 	if (session.identifier && ![session.identifier isEqualToString:identifier]) return;
+	BOOL isNew = !MenzenConnectedApps()[identifier];
 	if (![self rememberApp:identifier name:name process:session.process]) return;
 	session.identifier = identifier;
 	session.name = name;
 	[self updateSession:session];
+	if (isNew && session.state == MenzenClientStateNotAllowed) [self askToAllow:identifier name:name];
 	[self showLatest];
+}
+
+// Once, when a new app asks while Connected Apps is on: SpringBoard shows it
+// as a notification (MenzenSettingConnectedRequests).
+- (void)askToAllow:(NSString *)identifier name:(NSString *)name {
+	NSDate *now = NSDate.date;
+	NSMutableArray *requests = [NSMutableArray array];
+	NSArray *saved = MenzenSettingValue(MenzenSettingConnectedRequests);
+	for (NSDictionary *request in [saved isKindOfClass:NSArray.class] ? saved : @[]) {
+		NSDate *date = [request isKindOfClass:NSDictionary.class] ? request[MenzenConnectedRequestDateKey] : nil;
+		if ([date isKindOfClass:NSDate.class] && -date.timeIntervalSinceNow < MenzenConnectedRequestAge) [requests addObject:request];
+	}
+
+	[requests addObject:@{MenzenConnectedRequestIdentifierKey: identifier, MenzenConnectedRequestNameKey: name, MenzenConnectedRequestDateKey: now}];
+	CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingConnectedRequests, (__bridge CFArrayRef)requests, (__bridge CFStringRef)MenzenSettingsDomain);
+	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenConnectedRequestNotification), NULL, NULL, YES);
 }
 
 // Lists the app in the settings. NO when there's no room for another.

@@ -18,8 +18,18 @@ NS_ASSUME_NONNULL_BEGIN
 // Dictionary: identifier to MenzenConnectedApp*Key, every app that has
 // registered. Written by menzend only.
 #define MenzenSettingConnectedApps @"connectedApps"
-// Array of the identifiers the user allows. Written by the pane only.
+// Array of the identifiers the user allows. Written by the pane and by
+// SpringBoard (MenzenSpringBoard), when a request is allowed.
 #define MenzenSettingConnectedAllowed @"connectedAllowed"
+// Array of MenzenConnectedRequest*Key dictionaries, oldest first: apps that
+// asked for the first time while Connected Apps was on. Written by menzend
+// only, which posts MenzenConnectedRequestNotification after; SpringBoard
+// shows each one as a notification.
+#define MenzenSettingConnectedRequests @"connectedRequests"
+#define MenzenConnectedRequestNotification "moe.waru.menzen.connected.request"
+#define MenzenConnectedRequestIdentifierKey @"identifier"
+#define MenzenConnectedRequestNameKey @"name"
+#define MenzenConnectedRequestDateKey @"date"
 
 #define MenzenConnectedAppNameKey @"name"
 // The signing identifier of the process it last registered from.
@@ -80,6 +90,15 @@ static inline NSArray<NSString *> *MenzenConnectedAllowed(void) {
 	return [allowed filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id identifier, NSDictionary *bindings) {
 		return MenzenConnectedIdentifierIsValid(identifier);
 	}]];
+}
+
+static inline void MenzenConnectedSetAllowed(NSString *identifier, BOOL allowed) {
+	NSMutableArray<NSString *> *identifiers = [MenzenConnectedAllowed() mutableCopy];
+	[identifiers removeObject:identifier];
+	if (allowed) [identifiers addObject:identifier];
+	CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingConnectedAllowed, (__bridge CFArrayRef)identifiers, (__bridge CFStringRef)MenzenSettingsDomain);
+	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
 }
 
 NS_ASSUME_NONNULL_END

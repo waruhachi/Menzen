@@ -37,6 +37,11 @@ Menzen has no servers and no analytics. It only talks to Discord, to GitHub for 
 
 Menzen includes English. You can help translate it into your language on [Crowdin](https://crowdin.com/project/menzen). You don't need to know how to code, and translations come with Menzen's next update. If your language isn't listed, [open an issue](https://github.com/waruhachi/Menzen/issues) and it'll be added.
 
+Thanks to everyone who translates Menzen:
+
+<!-- CROWDIN-CONTRIBUTORS-START -->
+<!-- CROWDIN-CONTRIBUTORS-END -->
+
 Menzen is open source under the [GNU GPLv3 license](LICENSE). You can explore the code, contribute improvements, or [report an issue](https://github.com/waruhachi/Menzen/issues).
 
 ## Support development

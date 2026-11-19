@@ -107,6 +107,7 @@
 "common.watching" = "Vizionează";
 /* App status: Menzen fully works with this app. Keep it short. */
 "common.works" = "Merge";
+
 /* Connected Apps page: section header for the tweaks that asked to show activity. */
 "connected.apps" = "Aplicații";
 

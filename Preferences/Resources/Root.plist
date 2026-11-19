@@ -70,7 +70,23 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>id</key>
-			<string>customGroup</string>
+			<string>sourcesGroup</string>
+			<key>label</key>
+			<string>Sources</string>
+			<key>labelKey</key>
+			<string>root.sources</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>MenzenSourcesListController</string>
+			<key>id</key>
+			<string>sources</string>
+			<key>label</key>
+			<string>Apps</string>
+			<key>labelKey</key>
+			<string>root.apps</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -191,28 +207,6 @@
 			<string>Privacy Mode</string>
 			<key>labelKey</key>
 			<string>root.privacy_mode</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>id</key>
-			<string>sourcesGroup</string>
-			<key>label</key>
-			<string>Sources</string>
-			<key>labelKey</key>
-			<string>root.sources</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkCell</string>
-			<key>detail</key>
-			<string>MenzenSourcesListController</string>
-			<key>id</key>
-			<string>sources</string>
-			<key>label</key>
-			<string>Apps</string>
-			<key>labelKey</key>
-			<string>root.apps</string>
 		</dict>
 		<dict>
 			<key>cell</key>

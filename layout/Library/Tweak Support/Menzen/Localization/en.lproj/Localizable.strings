@@ -110,12 +110,6 @@
 
 /* Connected Apps page: section header for the tweaks that asked to show activity. */
 "connected.apps" = "Apps";
-/* Connected Apps page, footer under the list of tweaks. */
-"connected.apps_show_here_the_first" = "Apps show here the first time they ask. The one that updated last shows.";
-/* Connected Apps page, footer when the list is empty. */
-"connected.no_apps_have_asked_yet" = "No apps have asked yet. Apps show here the first time they ask.";
-/* Connected Apps page, footer under the switch. "Tweaks" are jailbreak add-ons. */
-"connected.other_tweaks_can_show_activity" = "Other tweaks can show their own activity through Menzen, each only once you allow it below.";
 
 /* Custom Activity page: button that adds a new preset (a saved custom status). */
 "custom.add_preset" = "Add Preset";
@@ -171,8 +165,8 @@
 "priority.connected_apps" = "Connected Apps";
 /* Priority page row. */
 "priority.games" = "Games";
-/* Priority page footer. The rows can be dragged into a different order. */
-"priority.menzen_shows_the_first_of" = "Menzen shows the first of these that has something to show. Drag to reorder.";
+/* Priority page footer. Menzen checks the rows in order, top row first. */
+"priority.menzen_shows_the_first_of" = "Menzen checks these from top to bottom and shows the first one with activity.";
 /* Priority page row. */
 "priority.music_and_video" = "Music & Video";
 

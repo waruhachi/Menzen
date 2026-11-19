@@ -26,9 +26,7 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 - (NSArray *)specifiers {
 	if (!_specifiers) {
 		NSMutableArray *specifiers = [NSMutableArray array];
-		PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
-		[group setProperty:MenzenLocalizedString(@"connected.other_tweaks_can_show_activity", @"Other tweaks can show their own activity through Menzen, each only once you allow it below.") forKey:@"footerText"];
-		[specifiers addObject:group];
+		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		PSSpecifier *enabled = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"priority.connected_apps", @"Connected Apps") target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 		enabled.identifier = MenzenSettingConnected;
 		[enabled setProperty:MenzenSettingConnected forKey:@"key"];
@@ -38,9 +36,7 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 		[specifiers addObject:enabled];
 
 		NSDictionary<NSString *, NSDictionary *> *apps = MenzenConnectedApps();
-		PSSpecifier *appsGroup = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"connected.apps", @"Apps")];
-		[appsGroup setProperty:apps.count ? MenzenLocalizedString(@"connected.apps_show_here_the_first", @"Apps show here the first time they ask. The one that updated last shows.") : MenzenLocalizedString(@"connected.no_apps_have_asked_yet", @"No apps have asked yet. Apps show here the first time they ask.") forKey:@"footerText"];
-		[specifiers addObject:appsGroup];
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"connected.apps", @"Apps")]];
 		NSArray<NSString *> *identifiers = [apps.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSString *a, NSString *b) {
 			return [apps[a][MenzenConnectedAppNameKey] localizedCaseInsensitiveCompare:apps[b][MenzenConnectedAppNameKey]];
 		}];

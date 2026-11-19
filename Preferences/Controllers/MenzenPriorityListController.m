@@ -25,7 +25,7 @@ static NSString *MenzenSourceSymbol(NSString *source) {
 	if (!_specifiers) {
 		NSMutableArray *specifiers = [NSMutableArray array];
 		PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
-		[group setProperty:MenzenLocalizedString(@"priority.menzen_shows_the_first_of", @"Menzen shows the first of these that has something to show. Drag to reorder.") forKey:@"footerText"];
+		[group setProperty:MenzenLocalizedString(@"priority.menzen_shows_the_first_of", @"Menzen checks these from top to bottom and shows the first one with activity.") forKey:@"footerText"];
 		[specifiers addObject:group];
 		for (NSString *source in MenzenPriority()) {
 			PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:MenzenSourceTitle(source) target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];

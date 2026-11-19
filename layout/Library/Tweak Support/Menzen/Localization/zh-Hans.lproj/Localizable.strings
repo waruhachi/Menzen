@@ -11,51 +11,12 @@
 /* Activity preview. %@ is an app name. */
 "activity.watching_x" = "正在观看 %@";
 
-/* What the Apelin coding agent is doing, shown on Discord. Apelin is a product name; don't translate it. */
-"apelin.state.building" = "正在构建";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.cloning_a_repository" = "正在克隆仓库";
-/* Apelin agent status, shown on Discord. The agent is shortening its conversation history. */
-"apelin.state.compacting" = "正在压缩";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.editing_files" = "正在编辑文件";
-/* Apelin agent status, shown on Discord. A package is a jailbreak tweak or app package. */
-"apelin.state.installing_a_package" = "正在安装软件包";
-/* Apelin agent status, shown on Discord. Building an installable package. */
-"apelin.state.packaging" = "正在打包";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.reading_files" = "正在读取文件";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.reconnecting" = "正在重新连接";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.removing_a_package" = "正在卸载软件包";
-/* Apelin agent status, shown on Discord. The agent is writing its reply. */
-"apelin.state.responding" = "正在回复";
-/* Apelin agent status, shown on Discord. Restarting the iPhone's home screen (SpringBoard), jailbreak slang "respring". */
-"apelin.state.respringing" = "正在重启 SpringBoard";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.running_tools" = "正在运行工具";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.thinking" = "正在思考";
-/* Apelin agent status, shown on Discord. The agent is waiting for the person to allow an action. */
-"apelin.state.waiting_for_approval" = "正在等待批准";
-
-/* Sample text in the Activity settings preview: the title of a TV episode. */
-"appearance.episode_title" = "剧集标题";
-/* Activity settings: preview picker segment, and the sample name for a game. */
-"appearance.game" = "游戏";
-/* Activity settings, footer while the Game preview is picked. */
-"appearance.games_show_their_name_icon" = "无论如何设置，游戏都会显示名称、图标和游玩时长。";
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "链接";
 /* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
 "appearance.member_lists_can_only_show_the" = "成员列表只能显示标题、第一行或第二行的内容。如果某个选项显示为灰色，请先在“活动状态”页面中将其设置为上述任意一行的内容。";
-/* Activity settings: preview picker segment. */
-"appearance.music" = "音乐";
 /* Activity settings: section header for the big and small pictures. */
 "appearance.pictures" = "图片";
-/* Sample text in the Activity settings preview: the name of a TV show. */
-"appearance.show" = "节目";
 /* Activity settings: row for the text shown when hovering the small picture on Discord. */
 "appearance.small_picture_text" = "小图文本";
 /* Sample text in the Activity settings preview: the title of a song. */
@@ -64,8 +25,6 @@
 "appearance.third_line" = "第三行";
 /* Activity settings: row for how time is shown (progress bar or time elapsed). */
 "appearance.time" = "时间";
-/* Activity settings: preview picker segment. */
-"appearance.video" = "视频";
 
 /* Activity settings: an option for a line of the card. The album for music, the episode for video. */
 "card.album_or_episode" = "专辑或剧集";
@@ -84,8 +43,6 @@
 /* Activity settings: an option for Time, a bar showing how far into the song or video it is. */
 "card.progress_bar" = "进度条";
 
-/* App details for Apelin: row showing what the agent is doing. */
-"common.agent_status" = "智能体状态";
 /* Sample text in the Activity settings preview: an album name. */
 "common.album" = "专辑";
 /* Sample text in the Activity settings preview: an artist name. */
@@ -126,8 +83,6 @@
 "common.on" = "开启";
 /* Activity type (as in "Playing a game"), used as a section header and a picker option. */
 "common.playing" = "正在游玩";
-/* App details for Apelin: row showing the project's name. */
-"common.project_name" = "项目名称";
 /* Button that opens a bug report on GitHub. */
 "common.report_on_github" = "去 GitHub 反馈";
 /* Row: the second line of text under the heading of a Discord activity. */
@@ -152,15 +107,8 @@
 "common.watching" = "正在观看";
 /* App status: Menzen fully works with this app. Keep it short. */
 "common.works" = "正常工作";
-
 /* Connected Apps page: section header for the tweaks that asked to show activity. */
 "connected.apps" = "应用";
-/* Connected Apps page, footer under the list of tweaks. */
-"connected.apps_show_here_the_first" = "应用首次请求访问时会显示在这里。仅显示最近更新的应用。";
-/* Connected Apps page, footer when the list is empty. */
-"connected.no_apps_have_asked_yet" = "暂无应用请求访问。应用首次发起请求时会显示在这里。";
-/* Connected Apps page, footer under the switch. "Tweaks" are jailbreak add-ons. */
-"connected.other_tweaks_can_show_activity" = "其他插件可以通过 Menzen 显示各自的活动状态，但需要先在下方逐一授权。";
 
 /* Custom Activity page: button that adds a new preset (a saved custom status). */
 "custom.add_preset" = "添加预设";
@@ -216,8 +164,6 @@
 "priority.connected_apps" = "已连接的应用";
 /* Priority page row. */
 "priority.games" = "游戏";
-/* Priority page footer. The rows can be dragged into a different order. */
-"priority.menzen_shows_the_first_of" = "Menzen 会按照以下顺序，显示第一个有可用内容的项目。拖动可调整顺序。";
 /* Priority page row. */
 "priority.music_and_video" = "音乐与视频";
 
@@ -254,24 +200,14 @@
 
 /* Settings row that opens the page choosing what each line and picture of the activity shows. */
 "root.activity" = "活动状态";
-/* Settings footer under the activity options. */
-"root.activity_stops_when_media_pauses" = "媒体暂停播放或退出游戏时，活动状态将自动结束。";
 /* Settings section header. */
 "root.appearance" = "外观";
 /* Settings row that opens the list of supported apps and games. */
 "root.apps" = "应用";
 /* Settings section header. */
 "root.behavior" = "行为";
-/* Option for When Activity Stops. */
-"root.clear_after_10_seconds" = "10 秒后清除";
-/* Option for When Activity Stops. */
-"root.clear_after_1_minute" = "1 分钟后清除";
-/* Option for When Activity Stops. */
-"root.clear_after_30_seconds" = "30 秒后清除";
-/* Option for When Activity Stops. */
-"root.clear_immediately" = "立即清除";
 /* Shown over the profile card while Menzen connects. */
-"root.connecting_to_discord" = "正在连接到 Discord...";
+"root.connecting_to_discord" = "正在连接到 Discord……";
 /* Settings row and Priority page row. */
 "root.custom_activity" = "自定义活动状态";
 /* Shown over the profile card when Menzen can't reach Discord. */
@@ -282,7 +218,7 @@
 "root.every_setting_goes_back_to_its" = "所有设置都将恢复默认值。你仍会保持登录状态，自定义活动状态预设也会保留。";
 /* Note under the sign-in button. */
 "root.if_the_page_doesn_t_load" = "如果页面无法加载，请尝试在其他设备上登录。";
-/* Option for When Activity Stops: never clear it. */
+/* Option for Clear Activity: never clear it. */
 "root.keep_showing" = "继续显示";
 /* Settings row that opens what shows under the person's name in Discord's member list. */
 "root.member_list" = "成员列表";
@@ -315,13 +251,11 @@
 /* Sign Out alert title. */
 "root.sign_out_of_discord" = "确定要退出 Discord 登录吗？";
 /* Sign-in button while signing in. */
-"root.signing_in" = "正在登录...";
+"root.signing_in" = "正在登录……";
 /* Settings section header for where activity comes from. */
 "root.sources" = "状态来源";
 /* Error under the sign-in button. */
 "root.the_sign_in_page_couldn_t" = "无法打开登录页面，请重试。";
-/* Settings row: what happens when music pauses or a game closes. */
-"root.when_activity_stops" = "活动状态结束时";
 /* Note under the sign-in button. */
 "root.you_sign_in_on_discord_s" = "你将在 Discord 官方页面上登录。Menzen 不会获取或保存你的密码。";
 
@@ -366,8 +300,6 @@
 /* Button that gets a new code. */
 "signin.try_again" = "重试";
 
-/* Apelin details: section header for what the agent shows on Discord. */
-"sources.activity" = "活动状态";
 /* Page title: the list of supported apps and games. */
 "sources.apps" = "应用";
 /* Section header for features that may not work well. */

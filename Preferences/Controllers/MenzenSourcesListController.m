@@ -44,8 +44,6 @@ static PSSpecifier *MenzenSourceSwitch(id target, NSDictionary *provider, NSStri
 // Privacy Mode for just this app, on its page under its switch.
 static NSArray<PSSpecifier *> *MenzenPrivacySpecifiers(id target, NSString *bundleIdentifier) {
 	PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
-	BOOL everything = MenzenSettingBool(MenzenSettingPrivacy, NO);
-	[group setProperty:everything ? MenzenLocalizedString(@"sources.privacy_mode_is_on_for_every_app", @"Privacy Mode is on for every app right now.") : MenzenLocalizedString(@"sources.shows_only_the_name_and_icon", @"Shows only the name and icon.") forKey:@"footerText"];
 	PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"sources.privacy_mode", @"Privacy Mode") target:target set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 	MenzenSetSetting(toggle, [MenzenSettingPrivatePrefix stringByAppendingString:bundleIdentifier], @NO);
 	return @[group, toggle];

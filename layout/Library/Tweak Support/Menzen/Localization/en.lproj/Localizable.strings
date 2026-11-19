@@ -11,22 +11,12 @@
 /* Activity preview. %@ is an app name. */
 "activity.watching_x" = "Watching %@";
 
-/* Sample text in the Activity settings preview: the title of a TV episode. */
-"appearance.episode_title" = "Episode Title";
-/* Activity settings: preview picker segment, and the sample name for a game. */
-"appearance.game" = "Game";
-/* Activity settings, footer while the Game preview is picked. */
-"appearance.games_show_their_name_icon" = "Games show their name, icon and time played, whatever these settings are.";
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "Links";
 /* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
 "appearance.member_lists_can_only_show_the" = "Member lists can only show the heading, first line or second line. To pick something greyed out, put it on one of those lines on the Activity page.";
-/* Activity settings: preview picker segment. */
-"appearance.music" = "Music";
 /* Activity settings: section header for the big and small pictures. */
 "appearance.pictures" = "Pictures";
-/* Sample text in the Activity settings preview: the name of a TV show. */
-"appearance.show" = "Show";
 /* Activity settings: row for the text shown when hovering the small picture on Discord. */
 "appearance.small_picture_text" = "Small Picture Text";
 /* Sample text in the Activity settings preview: the title of a song. */
@@ -35,8 +25,6 @@
 "appearance.third_line" = "Third Line";
 /* Activity settings: row for how time is shown (progress bar or time elapsed). */
 "appearance.time" = "Time";
-/* Activity settings: preview picker segment. */
-"appearance.video" = "Video";
 
 /* Activity settings: an option for a line of the card. The album for music, the episode for video. */
 "card.album_or_episode" = "Album or Episode";

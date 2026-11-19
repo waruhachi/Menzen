@@ -11,51 +11,12 @@
 /* Activity preview. %@ is an app name. */
 "activity.watching_x" = "Vizionează %@";
 
-/* What the Apelin coding agent is doing, shown on Discord. Apelin is a product name; don't translate it. */
-"apelin.state.building" = "Construind";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.cloning_a_repository" = "Clonarea unui repositoriu";
-/* Apelin agent status, shown on Discord. The agent is shortening its conversation history. */
-"apelin.state.compacting" = "Compactare";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.editing_files" = "Editare fișiere";
-/* Apelin agent status, shown on Discord. A package is a jailbreak tweak or app package. */
-"apelin.state.installing_a_package" = "Instalând un pachet";
-/* Apelin agent status, shown on Discord. Building an installable package. */
-"apelin.state.packaging" = "Împachetând";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.reading_files" = "Citire fișiere";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.reconnecting" = "Reconectare";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.removing_a_package" = "Ștergerea unui pachet";
-/* Apelin agent status, shown on Discord. The agent is writing its reply. */
-"apelin.state.responding" = "Răspundere";
-/* Apelin agent status, shown on Discord. Restarting the iPhone's home screen (SpringBoard), jailbreak slang "respring". */
-"apelin.state.respringing" = "Se face respring";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.running_tools" = "Instrumente de rulare";
-/* Apelin agent status, shown on Discord. */
-"apelin.state.thinking" = "Gândire";
-/* Apelin agent status, shown on Discord. The agent is waiting for the person to allow an action. */
-"apelin.state.waiting_for_approval" = "Așteptând pentru acord";
-
-/* Sample text in the Activity settings preview: the title of a TV episode. */
-"appearance.episode_title" = "Titlu episod";
-/* Activity settings: preview picker segment, and the sample name for a game. */
-"appearance.game" = "Joc";
-/* Activity settings, footer while the Game preview is picked. */
-"appearance.games_show_their_name_icon" = "Jocurile arată numele lor, iconița și timpul jucat, nu contează ce setări sunt.";
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "Linkuri";
 /* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
 "appearance.member_lists_can_only_show_the" = "Lista de membri pot să arate doar titlul, pe primul sau al doilea rând. Pentru a alege ceva indisponibil, puneți-l pe una dintre rândurile de pe pagina de Activitate.";
-/* Activity settings: preview picker segment. */
-"appearance.music" = "Muzică";
 /* Activity settings: section header for the big and small pictures. */
 "appearance.pictures" = "Imagini";
-/* Sample text in the Activity settings preview: the name of a TV show. */
-"appearance.show" = "Arată";
 /* Activity settings: row for the text shown when hovering the small picture on Discord. */
 "appearance.small_picture_text" = "Text Imagine Mică";
 /* Sample text in the Activity settings preview: the title of a song. */
@@ -64,8 +25,6 @@
 "appearance.third_line" = "Al Treilea Rând";
 /* Activity settings: row for how time is shown (progress bar or time elapsed). */
 "appearance.time" = "Timp";
-/* Activity settings: preview picker segment. */
-"appearance.video" = "Video";
 
 /* Activity settings: an option for a line of the card. The album for music, the episode for video. */
 "card.album_or_episode" = "Album sau Episod";
@@ -84,8 +43,6 @@
 /* Activity settings: an option for Time, a bar showing how far into the song or video it is. */
 "card.progress_bar" = "Bară de Progres";
 
-/* App details for Apelin: row showing what the agent is doing. */
-"common.agent_status" = "Statut Agent";
 /* Sample text in the Activity settings preview: an album name. */
 "common.album" = "Album";
 /* Sample text in the Activity settings preview: an artist name. */
@@ -126,8 +83,6 @@
 "common.on" = "Pornit";
 /* Activity type (as in "Playing a game"), used as a section header and a picker option. */
 "common.playing" = "Jucare";
-/* App details for Apelin: row showing the project's name. */
-"common.project_name" = "Nume Proiect";
 /* Button that opens a bug report on GitHub. */
 "common.report_on_github" = "Reportează pe GitHub";
 /* Row: the second line of text under the heading of a Discord activity. */
@@ -152,15 +107,8 @@
 "common.watching" = "Vizionează";
 /* App status: Menzen fully works with this app. Keep it short. */
 "common.works" = "Merge";
-
 /* Connected Apps page: section header for the tweaks that asked to show activity. */
 "connected.apps" = "Aplicații";
-/* Connected Apps page, footer under the list of tweaks. */
-"connected.apps_show_here_the_first" = "Aplicații arată aici prima dată când întreabă. Ultima care a actualizată se vede.";
-/* Connected Apps page, footer when the list is empty. */
-"connected.no_apps_have_asked_yet" = "Nicio aplicație nu a întrebat încă. Aplicații se văd aici doar de prima dată când întreabă.";
-/* Connected Apps page, footer under the switch. "Tweaks" are jailbreak add-ons. */
-"connected.other_tweaks_can_show_activity" = "Alte tweak-uri pot arăta activitatea lor proprie prin Menzen, singure odată atunci când le permite dedesubt.";
 
 /* Custom Activity page: button that adds a new preset (a saved custom status). */
 "custom.add_preset" = "Șterge Presetare";
@@ -216,8 +164,6 @@
 "priority.connected_apps" = "Aplicații Conectate";
 /* Priority page row. */
 "priority.games" = "Jocuri";
-/* Priority page footer. The rows can be dragged into a different order. */
-"priority.menzen_shows_the_first_of" = "Menzen arată prima dintre cele care au ceva să arate. Trage să reordonezi.";
 /* Priority page row. */
 "priority.music_and_video" = "Muzică & Video";
 
@@ -254,22 +200,12 @@
 
 /* Settings row that opens the page choosing what each line and picture of the activity shows. */
 "root.activity" = "Activitate";
-/* Settings footer under the activity options. */
-"root.activity_stops_when_media_pauses" = "Activitatea se oprește când media se pune pauză sau tu ieși dintr-un joc.";
 /* Settings section header. */
 "root.appearance" = "Aspect";
 /* Settings row that opens the list of supported apps and games. */
 "root.apps" = "Aplicații";
 /* Settings section header. */
 "root.behavior" = "Comportament";
-/* Option for When Activity Stops. */
-"root.clear_after_10_seconds" = "Șterge După 10 Secunde";
-/* Option for When Activity Stops. */
-"root.clear_after_1_minute" = "Șterge După 1 Minut";
-/* Option for When Activity Stops. */
-"root.clear_after_30_seconds" = "Șterge După 30 de Secunde";
-/* Option for When Activity Stops. */
-"root.clear_immediately" = "Șterge Instant";
 /* Shown over the profile card while Menzen connects. */
 "root.connecting_to_discord" = "Conectare la Discord…";
 /* Settings row and Priority page row. */
@@ -282,7 +218,7 @@
 "root.every_setting_goes_back_to_its" = "Fiecare setare devine implicită. Tu rămâi autentificat.";
 /* Note under the sign-in button. */
 "root.if_the_page_doesn_t_load" = "Dacă pagina nu se încarcă, autentifică-te pe alt dispozitiv.";
-/* Option for When Activity Stops: never clear it. */
+/* Option for Clear Activity: never clear it. */
 "root.keep_showing" = "Continuă să Afișezi";
 /* Settings row that opens what shows under the person's name in Discord's member list. */
 "root.member_list" = "Listă Membri";
@@ -320,8 +256,6 @@
 "root.sources" = "Surse";
 /* Error under the sign-in button. */
 "root.the_sign_in_page_couldn_t" = "Pagina de conectare nu a putut fi deschisă. Încearcă din nou.";
-/* Settings row: what happens when music pauses or a game closes. */
-"root.when_activity_stops" = "Când Activitatea se Oprește";
 /* Note under the sign-in button. */
 "root.you_sign_in_on_discord_s" = "Tu te conectezi pe pagina lui Discord proprie. Menzen nu Vede sau depozită parola dumneavoastră.";
 
@@ -366,8 +300,6 @@
 /* Button that gets a new code. */
 "signin.try_again" = "Încearcă din nou";
 
-/* Apelin details: section header for what the agent shows on Discord. */
-"sources.activity" = "Activitate";
 /* Page title: the list of supported apps and games. */
 "sources.apps" = "Aplicații";
 /* Section header for features that may not work well. */

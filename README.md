@@ -40,6 +40,32 @@ Menzen includes English. You can help translate it into your language on [Crowdi
 Thanks to everyone who translates Menzen:
 
 <!-- CROWDIN-CONTRIBUTORS-START -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top">
+        <a href="https://crowdin.com/profile/meteoni"><img alt="logo" style="width: 64px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17789157/medium/db595cc3b6a767409fd465c78753a924.jpeg" />
+          <br />
+          <sub><b>Meteoni-San</b></sub>
+          <br />
+          <sub><b>(meteoni)</b></sub></a>
+        <br />
+        <sub><b>748 words</b></sub>
+        <br /><sub><b><code title="Chinese Simplified">zh-CN</code></b></sub>
+      </td>
+      <td align="center" valign="top">
+        <a href="https://crowdin.com/profile/gabiebun"><img alt="logo" style="width: 64px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17969167/medium/5456e77e6cf22463b64b1ea3ad0060c1.png" />
+          <br />
+          <sub><b>Gabi gabi</b></sub>
+          <br />
+          <sub><b>(gabiebun)</b></sub></a>
+        <br />
+        <sub><b>748 words</b></sub>
+        <br /><sub><b><code title="Romanian">ro</code></b></sub>
+      </td>
+    </tr>
+  </tbody>
+</table>
 <!-- CROWDIN-CONTRIBUTORS-END -->
 
 Menzen is open source under the [GNU GPLv3 license](LICENSE). You can explore the code, contribute improvements, or [report an issue](https://github.com/waruhachi/Menzen/issues).

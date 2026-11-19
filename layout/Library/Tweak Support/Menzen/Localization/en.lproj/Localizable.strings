@@ -110,6 +110,14 @@
 
 /* Connected Apps page: section header for the tweaks that asked to show activity. */
 "connected.apps" = "Apps";
+/* Message of the alert that confirms removing a tweak from Connected Apps. It's listed again the next time the tweak asks to show activity. */
+"connected.it_shows_up_here_again" = "It shows up here again, switched off, the next time it asks to show activity.";
+/* Button in the alert that confirms removing a tweak from Connected Apps. */
+"connected.remove" = "Remove";
+/* Button on a tweak's page in Connected Apps that removes it from the list. */
+"connected.remove_app" = "Remove App";
+/* Title of the alert that confirms removing a tweak from Connected Apps. %@ is the tweak's name. */
+"connected.remove_x" = "Remove %@?";
 /* Notification body when a tweak first asks to show activity. Tapping the notification opens the Connected Apps page in Menzen's settings, where the person can allow it. */
 "connected.tap_to_allow_it_in_connected_apps" = "Tap to allow it in Connected Apps.";
 /* Notification title when a tweak first asks to show activity. %@ is the tweak's name. */

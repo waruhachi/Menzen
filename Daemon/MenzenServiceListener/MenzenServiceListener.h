@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 // Runs on the main queue when the pane asks for a refresh, before the profile
 // is fetched.
 @property (nonatomic, copy, nullable) void (^refreshHandler)(void);
+// Runs on the main queue when the pane removes a Connected App.
+@property (nonatomic, copy, nullable) void (^removeConnectedAppHandler)(NSString *identifier);
 @property (nonatomic, strong, nullable) MenzenAppChecker *appChecker;
 @property (nonatomic, strong, nullable) MenzenAppCatalog *appCatalog;
 - (void)start;

@@ -220,6 +220,30 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	return YES;
 }
 
+- (void)removeApp:(NSString *)identifier {
+	// The pane has just taken it off the allowed list.
+	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	NSMutableDictionary *apps = [MenzenConnectedApps() mutableCopy];
+	if (apps[identifier]) {
+		[apps removeObjectForKey:identifier];
+		CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingConnectedApps, (__bridge CFDictionaryRef)apps, (__bridge CFStringRef)MenzenSettingsDomain);
+		CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+		CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenConnectedAppsChangedNotification), NULL, NULL, YES);
+	}
+
+	// Ending the connection would have the client register again right
+	// away, so its connection stops counting as the app instead.
+	for (MenzenConnectedSession *session in _sessions) {
+		if (![session.identifier isEqualToString:identifier]) continue;
+		[self updateSession:session];
+		session.identifier = nil;
+		session.name = nil;
+		session.sentActivity = nil;
+	}
+
+	[self showLatest];
+}
+
 - (void)session:(MenzenConnectedSession *)session setActivity:(NSDictionary *)activity {
 	if (!session.identifier) return;
 	session.sentActivity = [activity isKindOfClass:NSDictionary.class] ? activity : nil;

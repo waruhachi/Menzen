@@ -15,6 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)start;
 // Connected Apps, an app's allowance, Menzen itself or Privacy Mode changed.
 - (void)settingsChanged;
+// Takes the app off the list. Its open connections stop counting as it, so it
+// comes back once it connects again.
+- (void)removeApp:(NSString *)identifier;
 @end
 
 NS_ASSUME_NONNULL_END

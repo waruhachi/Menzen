@@ -6,14 +6,11 @@
 #import "../../Shared/MenzenProviders.h"
 #import "../../Shared/MenzenSettings.h"
 #import "../../Shared/MenzenSupport.h"
+#import "../Helpers/MenzenAppIcon.h"
 #import "../Helpers/MenzenAppSupport.h"
 #import "../Helpers/MenzenServiceClient.h"
 #import "../Views/MenzenLogoCell.h"
 #import "MenzenSourcesListController.h"
-
-@interface UIImage (MenzenPrivate)
-+ (UIImage *)_applicationIconImageForBundleIdentifier:(NSString *)bundleIdentifier format:(int)format scale:(CGFloat)scale;
-@end
 
 static BOOL MenzenInstalled(NSDictionary *provider) {
 	return [MenzenWorkspace() applicationIsInstalled:provider[MenzenProviderBundleIdentifierKey]];
@@ -52,11 +49,6 @@ static NSArray<PSSpecifier *> *MenzenPrivacySpecifiers(id target, NSString *bund
 	PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"sources.privacy_mode", @"Privacy Mode") target:target set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 	MenzenSetSetting(toggle, [MenzenSettingPrivatePrefix stringByAppendingString:bundleIdentifier], @NO);
 	return @[group, toggle];
-}
-
-static void MenzenSetAppIcon(PSSpecifier *specifier, NSString *bundleIdentifier) {
-	UIImage *icon = [UIImage _applicationIconImageForBundleIdentifier:bundleIdentifier format:0 scale:UIScreen.mainScreen.scale];
-	if (icon) [specifier setProperty:icon forKey:@"iconImage"];
 }
 
 static void MenzenSetIcon(PSSpecifier *specifier, NSDictionary *provider) {

@@ -1,5 +1,6 @@
 #import <Security/Security.h>
 
+#import "../../Shared/MenzenConnectedApps.h"
 #import "../../Shared/MenzenService.h"
 #import "../MenzenApps/MenzenAppCatalog.h"
 #import "../MenzenApps/MenzenAppChecker.h"
@@ -184,6 +185,13 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 - (void)appIconsWithReply:(void (^)(NSDictionary<NSString *, NSString *> *))reply {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		reply(self.appCatalog.providerIcons ?: @{});
+	});
+}
+
+- (void)removeConnectedApp:(NSString *)identifier reply:(void (^)(void))reply {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (MenzenConnectedIdentifierIsValid(identifier) && self.removeConnectedAppHandler) self.removeConnectedAppHandler(identifier);
+		reply();
 	});
 }
 

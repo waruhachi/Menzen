@@ -77,6 +77,9 @@ int main(int argc, char *argv[]) {
 		}];
 		MenzenConnectedListener *connected = [[MenzenConnectedListener alloc] initWithPresence:presence];
 		[connected start];
+		service.removeConnectedAppHandler = ^(NSString *identifier) {
+			[connected removeApp:identifier];
+		};
 		appCatalog.changedHandler = ^{
 			[presence appCatalogChanged];
 		};

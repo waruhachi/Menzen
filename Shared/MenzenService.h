@@ -113,6 +113,9 @@ static uint64_t const MenzenApplicationId = 1564329461036617748ULL;
 - (void)gamesWithReply:(void (^)(NSArray<NSDictionary<NSString *, id> *> *games))reply;
 // Each supported app's App Store icon URL, installed or not, by bundle ID.
 - (void)appIconsWithReply:(void (^)(NSDictionary<NSString *, NSString *> *icons))reply;
+// Takes a Connected App (Shared/MenzenConnectedApps.h) off the list. It's
+// listed again, switched off, once it connects again.
+- (void)removeConnectedApp:(NSString *)identifier reply:(void (^)(void))reply;
 @end
 
 static inline NSString *MenzenCallbackScheme(void) {

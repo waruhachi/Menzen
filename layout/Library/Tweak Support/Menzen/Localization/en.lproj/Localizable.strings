@@ -108,14 +108,10 @@
 /* App status: Menzen fully works with this app. Keep it short. */
 "common.works" = "Works";
 
-/* Button on the notification when a tweak first asks to show activity, shown when the person touches and holds it. */
-"connected.allow" = "Allow";
 /* Connected Apps page: section header for the tweaks that asked to show activity. */
 "connected.apps" = "Apps";
-/* Button on the notification when a tweak first asks to show activity, shown when the person touches and holds it. */
-"connected.deny" = "Deny";
-/* Notification body when a tweak first asks to show activity. Touching and holding it shows Allow and Deny; tapping it opens the Connected Apps page in Menzen's settings. */
-"connected.touch_and_hold_to_allow" = "Touch and hold to allow it, or tap to open Connected Apps.";
+/* Notification body when a tweak first asks to show activity. Tapping the notification opens the Connected Apps page in Menzen's settings, where the person can allow it. */
+"connected.tap_to_allow_it_in_connected_apps" = "Tap to allow it in Connected Apps.";
 /* Notification title when a tweak first asks to show activity. %@ is the tweak's name. */
 "connected.x_wants_to_show_activity" = "%@ wants to show activity";
 

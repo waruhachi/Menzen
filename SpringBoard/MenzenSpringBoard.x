@@ -4,8 +4,7 @@
 #import "../Shared/MenzenLocalization/MenzenLocalization.h"
 
 // Connected Apps' requests (MenzenSettingConnectedRequests), shown as
-// notifications from Menzen. Tapping one opens Connected Apps; touching and
-// holding offers Allow and Deny.
+// notifications from Menzen. Tapping one opens Connected Apps.
 
 @interface BBSectionIconVariant : NSObject
 + (instancetype)variantWithFormat:(NSInteger)format imageData:(NSData *)imageData;
@@ -15,14 +14,8 @@
 - (void)addVariant:(BBSectionIconVariant *)variant;
 @end
 
-@interface BBAppearance : NSObject
-+ (instancetype)appearanceWithTitle:(NSString *)title;
-@end
-
 @interface BBAction : NSObject
 + (instancetype)actionWithLaunchURL:(NSURL *)url;
-@property (nonatomic, copy) NSString *identifier;
-@property (nonatomic, copy) BBAppearance *appearance;
 @end
 
 @interface BBBulletin : NSObject
@@ -37,14 +30,8 @@
 @property (nonatomic, retain) NSDate *date;
 @property (nonatomic, copy) BBSectionIcon *icon;
 @property (nonatomic, copy) BBAction *defaultAction;
-@property (nonatomic, copy) NSDictionary *supplementaryActionsByLayout;
 @property (nonatomic) BOOL clearable;
 @property (nonatomic) BOOL showsMessagePreview;
-@end
-
-@interface BBResponse : NSObject
-@property (nonatomic, copy) NSString *bulletinID;
-@property (nonatomic, copy) NSString *actionID;
 @end
 
 @interface BBServer : NSObject
@@ -60,17 +47,19 @@ static NSString *const MenzenRequestPrefix = @"moe.waru.menzen.connected.";
 static NSUInteger const MenzenRequestDestinations = 15;
 // Every feed, as BBServer removes its own bulletins.
 static NSUInteger const MenzenRequestFeeds = 0x3dff;
-static NSString *const MenzenRequestAllow = @"allow";
-static NSString *const MenzenRequestDeny = @"deny";
 
 static BBServer *MenzenBulletinServer;
 static dispatch_queue_t MenzenBulletinQueue;
-// The request shown for each app, used only on MenzenBulletinQueue. BBServer
-// lets go of a bulletin once it's shown, so removing one needs it kept here.
-static NSMutableDictionary<NSString *, BBBulletin *> *MenzenRequestBulletins;
+// The bulletin ID of the request shown for each app, used only on
+// MenzenBulletinQueue. Lost on a respring, while Notification Center keeps
+// the request.
+static NSMutableDictionary<NSString *, NSString *> *MenzenRequestBulletinIDs;
 // Requests from before this were shown already, or SpringBoard wasn't there
 // to show them.
 static NSDate *MenzenRequestsShownUntil;
+// Set once SpringBoard has launched: before then, BulletinBoard drops what's
+// published.
+static BOOL MenzenRequestsReady;
 
 // Shuffle moves tweak panes into its own Tweaks page and turns root=Menzen
 // into root=Tweaks&path=Menzen, so there the page has to go in the root.
@@ -91,31 +80,31 @@ static BBSectionIcon *MenzenIcon(void) {
 	return icon;
 }
 
-static void MenzenRemoveRequestBulletin(NSString *identifier) {
-	BBBulletin *bulletin = MenzenRequestBulletins[identifier];
-	if (!bulletin) return;
-	[MenzenRequestBulletins removeObjectForKey:identifier];
+// BBServer lets go of a bulletin once it's shown, so the removal is a new
+// one with the same IDs.
+static void MenzenRemoveRequestBulletin(NSString *identifier, NSString *bulletinID) {
+	if ([MenzenRequestBulletinIDs[identifier] isEqualToString:bulletinID]) [MenzenRequestBulletinIDs removeObjectForKey:identifier];
+	BBBulletin *bulletin = [%c(BBBulletin) new];
+	bulletin.sectionID = MenzenRequestSection;
+	bulletin.bulletinID = bulletinID;
+	bulletin.recordID = [MenzenRequestPrefix stringByAppendingString:identifier];
+	bulletin.publisherBulletinID = bulletinID;
 	[MenzenBulletinServer _sendRemoveBulletin:bulletin toFeeds:MenzenRequestFeeds shouldSync:NO];
 }
 
+// The request shown since SpringBoard launched, if there's one.
 static void MenzenWithdrawRequest(NSString *identifier) {
 	dispatch_async(MenzenBulletinQueue, ^{
-		MenzenRemoveRequestBulletin(identifier);
+		NSString *bulletinID = MenzenRequestBulletinIDs[identifier];
+		if (bulletinID) MenzenRemoveRequestBulletin(identifier, bulletinID);
 	});
-}
-
-static BBAction *MenzenRequestAction(NSString *identifier, NSString *title) {
-	BBAction *action = [%c(BBAction) actionWithLaunchURL:nil];
-	action.identifier = identifier;
-	action.appearance = [%c(BBAppearance) appearanceWithTitle:title];
-	return action;
 }
 
 static void MenzenShowRequest(NSString *identifier, NSString *name) {
 	BBBulletin *bulletin = [%c(BBBulletin) new];
 	NSString *recordID = [MenzenRequestPrefix stringByAppendingString:identifier];
-	// A new ID each time, so a request shown again gets fresh actions; the
-	// app's identifier comes before the slash.
+	// A new ID each time, so a request shown again opens Connected Apps again;
+	// the app's identifier comes before the slash.
 	NSString *bulletinID = [NSString stringWithFormat:@"%@/%@", recordID, NSUUID.UUID.UUIDString];
 	bulletin.sectionID = MenzenRequestSection;
 	bulletin.bulletinID = bulletinID;
@@ -124,25 +113,22 @@ static void MenzenShowRequest(NSString *identifier, NSString *name) {
 	bulletin.threadID = @"moe.waru.menzen.connected";
 	bulletin.header = @"Menzen";
 	bulletin.title = [NSString stringWithFormat:MenzenLocalizedString(@"connected.x_wants_to_show_activity", @"%@ wants to show activity"), name];
-	bulletin.message = MenzenLocalizedString(@"connected.touch_and_hold_to_allow", @"Touch and hold to allow it, or tap to open Connected Apps.");
+	bulletin.message = MenzenLocalizedString(@"connected.tap_to_allow_it_in_connected_apps", @"Tap to allow it in Connected Apps.");
 	bulletin.date = NSDate.date;
 	bulletin.icon = MenzenIcon();
 	bulletin.clearable = YES;
 	bulletin.showsMessagePreview = YES;
 	bulletin.defaultAction = [%c(BBAction) actionWithLaunchURL:MenzenConnectedPageURL()];
-	bulletin.supplementaryActionsByLayout = @{@0: @[
-		MenzenRequestAction(MenzenRequestAllow, MenzenLocalizedString(@"connected.allow", @"Allow")),
-		MenzenRequestAction(MenzenRequestDeny, MenzenLocalizedString(@"connected.deny", @"Deny")),
-	]};
 	dispatch_async(MenzenBulletinQueue, ^{
-		MenzenRemoveRequestBulletin(identifier);
-		MenzenRequestBulletins[identifier] = bulletin;
+		NSString *previous = MenzenRequestBulletinIDs[identifier];
+		if (previous) MenzenRemoveRequestBulletin(identifier, previous);
+		MenzenRequestBulletinIDs[identifier] = bulletinID;
 		[MenzenBulletinServer publishBulletin:bulletin destinations:MenzenRequestDestinations];
 	});
 }
 
-static void MenzenRequestsChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef info) {
-	if (!MenzenBulletinServer) return;
+static void MenzenShowRequests(void) {
+	if (!MenzenRequestsReady || !MenzenBulletinServer) return;
 	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
 	NSArray *requests = MenzenSettingValue(MenzenSettingConnectedRequests);
 	if (![requests isKindOfClass:NSArray.class]) return;
@@ -160,6 +146,10 @@ static void MenzenRequestsChanged(CFNotificationCenterRef center, void *observer
 	}
 
 	MenzenRequestsShownUntil = latest;
+}
+
+static void MenzenRequestsChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef info) {
+	MenzenShowRequests();
 }
 
 // Allowed in the settings, so nothing left to ask.
@@ -181,27 +171,22 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 	return self;
 }
 
-// Action callblocks don't make it through to the notification, so Allow and
-// Deny are handled here when their response comes back.
-- (void)observer:(id)observer handleResponse:(BBResponse *)response withCompletion:(id)completion {
-	NSString *bulletinID = response.bulletinID;
-	NSString *actionID = response.actionID;
-	if ([bulletinID hasPrefix:MenzenRequestPrefix] && ([actionID isEqualToString:MenzenRequestAllow] || [actionID isEqualToString:MenzenRequestDeny])) {
-		NSString *identifier = [bulletinID substringFromIndex:MenzenRequestPrefix.length].pathComponents.firstObject;
-		if (MenzenConnectedIdentifierIsValid(identifier)) {
-			if ([actionID isEqualToString:MenzenRequestAllow]) MenzenConnectedSetAllowed(identifier, YES);
-			MenzenWithdrawRequest(identifier);
-		}
-	}
+%end
 
+%hook SpringBoard
+
+// Requests that came while SpringBoard was starting.
+- (void)applicationDidFinishLaunching:(id)application {
 	%orig;
+	MenzenRequestsReady = YES;
+	MenzenShowRequests();
 }
 
 %end
 
 %ctor {
 	MenzenRequestsShownUntil = NSDate.date;
-	MenzenRequestBulletins = [NSMutableDictionary dictionary];
+	MenzenRequestBulletinIDs = [NSMutableDictionary dictionary];
 	CFNotificationCenterRef center = CFNotificationCenterGetDarwinNotifyCenter();
 	CFNotificationCenterAddObserver(center, NULL, MenzenRequestsChanged, CFSTR(MenzenConnectedRequestNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	CFNotificationCenterAddObserver(center, NULL, MenzenSettingsChanged, CFSTR(MenzenSettingsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);

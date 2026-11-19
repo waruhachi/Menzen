@@ -18,8 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Dictionary: identifier to MenzenConnectedApp*Key, every app that has
 // registered. Written by menzend only.
 #define MenzenSettingConnectedApps @"connectedApps"
-// Array of the identifiers the user allows. Written by the pane and by
-// SpringBoard (MenzenSpringBoard), when a request is allowed.
+// Array of the identifiers the user allows. Written by the pane only.
 #define MenzenSettingConnectedAllowed @"connectedAllowed"
 // Array of MenzenConnectedRequest*Key dictionaries, oldest first: apps that
 // asked for the first time while Connected Apps was on. Written by menzend

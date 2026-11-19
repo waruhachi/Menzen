@@ -203,22 +203,20 @@
 
 /* Settings row that opens the page choosing what each line and picture of the activity shows. */
 "root.activity" = "Activity";
-/* Settings footer under the activity options. */
-"root.activity_stops_when_media_pauses" = "Activity stops when media pauses or you leave a game.";
+/* Option for Clear Activity. */
+"root.after_10_seconds" = "After 10 Seconds";
+/* Option for Clear Activity. */
+"root.after_1_minute" = "After 1 Minute";
+/* Option for Clear Activity. */
+"root.after_30_seconds" = "After 30 Seconds";
 /* Settings section header. */
 "root.appearance" = "Appearance";
 /* Settings row that opens the list of supported apps and games. */
 "root.apps" = "Apps";
 /* Settings section header. */
 "root.behavior" = "Behavior";
-/* Option for When Activity Stops. */
-"root.clear_after_10_seconds" = "Clear After 10 Seconds";
-/* Option for When Activity Stops. */
-"root.clear_after_1_minute" = "Clear After 1 Minute";
-/* Option for When Activity Stops. */
-"root.clear_after_30_seconds" = "Clear After 30 Seconds";
-/* Option for When Activity Stops. */
-"root.clear_immediately" = "Clear Immediately";
+/* Settings row with a menu: how long activity keeps showing after media pauses or the person leaves a game. */
+"root.clear_activity" = "Clear Activity";
 /* Shown over the profile card while Menzen connects. */
 "root.connecting_to_discord" = "Connecting to Discord…";
 /* Settings row and Priority page row. */
@@ -231,7 +229,9 @@
 "root.every_setting_goes_back_to_its" = "Every setting goes back to its default. You stay signed in, and your custom activity presets are kept.";
 /* Note under the sign-in button. */
 "root.if_the_page_doesn_t_load" = "If the page doesn't load, sign in on another device.";
-/* Option for When Activity Stops: never clear it. */
+/* Option for Clear Activity: clear it as soon as media pauses or the person leaves a game. */
+"root.immediately" = "Immediately";
+/* Option for Clear Activity: never clear it. */
 "root.keep_showing" = "Keep Showing";
 /* Settings row that opens what shows under the person's name in Discord's member list. */
 "root.member_list" = "Member List";
@@ -269,8 +269,6 @@
 "root.sources" = "Sources";
 /* Error under the sign-in button. */
 "root.the_sign_in_page_couldn_t" = "The sign-in page couldn't be opened. Try again.";
-/* Settings row: what happens when music pauses or a game closes. */
-"root.when_activity_stops" = "When Activity Stops";
 /* Note under the sign-in button. */
 "root.you_sign_in_on_discord_s" = "You sign in on Discord's own page. Menzen never sees or stores your password.";
 

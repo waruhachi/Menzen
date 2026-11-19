@@ -1,6 +1,5 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 #import <Preferences/PSListController.h>
-#import <Preferences/PSListItemsController.h>
 #import <Preferences/PSSpecifier.h>
 #import <Preferences/PSTableCell.h>
 #import <UIKit/UIKit.h>
@@ -10,6 +9,7 @@
 #import "../../Shared/MenzenSettings.h"
 #import "../Helpers/MenzenLocalizeSpecifiers.h"
 #import "../Helpers/MenzenServiceClient.h"
+#import "../Views/MenzenChoiceCells.h"
 #import "../Views/MenzenDestructiveButtonCell.h"
 #import "../Views/MenzenProfileCell.h"
 #import "MenzenOtherDeviceSignIn.h"
@@ -21,19 +21,6 @@
 // sign-in stopped working without Discord saying so, and signing in again
 // fixes it.
 static NSTimeInterval const MenzenConnectTimeout = 30;
-
-// The pane's lists have no separators.
-@interface MenzenListItemsController : PSListItemsController
-@end
-
-@implementation MenzenListItemsController
-
-- (void)viewDidLoad {
-	[super viewDidLoad];
-	self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
-}
-
-@end
 
 @interface MenzenRootListController : PSListController <ASWebAuthenticationPresentationContextProviding>
 - (void)settingsChanged;
@@ -87,6 +74,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 			[specifiers insertObjects:profileSpecifiers atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, profileSpecifiers.count)]];
 		}
 		[self applyStatusToSpecifiers:specifiers];
+		[self makeMenu:MenzenSpecifier(specifiers, MenzenSettingPauseGrace)];
 		_specifiers = specifiers;
 	}
 
@@ -235,8 +223,37 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	return [[self specifierAtIndexPath:indexPath].identifier isEqualToString:@"profile"];
 }
 
+// A setting with validValues and validTitles, picked from a menu on its row.
+// Preferences only loads those into the specifier for list cells, so they're
+// read from the plist's entries.
+- (void)makeMenu:(PSSpecifier *)specifier {
+	NSArray *values = [specifier propertyForKey:@"validValues"];
+	NSArray *titles = [specifier propertyForKey:@"validTitles"];
+	NSArray *keys = [specifier propertyForKey:@"validTitlesKeys"];
+	if (![values isKindOfClass:NSArray.class] || ![titles isKindOfClass:NSArray.class] || titles.count != values.count) return;
+	BOOL localized = [keys isKindOfClass:NSArray.class] && keys.count == titles.count;
+	NSMutableArray *choices = [NSMutableArray array];
+	[values enumerateObjectsUsingBlock:^(id value, NSUInteger index, BOOL *stop) {
+		[choices addObject:@[value, localized ? MenzenLocalizedString(keys[index], titles[index]) : titles[index]]];
+	}];
+	[specifier setProperty:choices forKey:@"choices"];
+	[specifier setProperty:[self readPreferenceValue:specifier] forKey:@"choice"];
+	[specifier setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
+}
+
+- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+	[super setPreferenceValue:value specifier:specifier];
+	if (![specifier propertyForKey:@"choices"]) return;
+	[specifier setProperty:value forKey:@"choice"];
+	// reloadSpecifier: doesn't redraw the menu's title.
+	NSIndexPath *indexPath = [self indexPathForSpecifier:specifier];
+	PSTableCell *cell = indexPath ? (PSTableCell *)[self.table cellForRowAtIndexPath:indexPath] : nil;
+	if ([cell isKindOfClass:PSTableCell.class]) [cell refreshCellContentsWithSpecifier:specifier];
+}
+
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 	if ([self isSelfSizingRowAtIndexPath:indexPath]) return UITableViewAutomaticDimension;
+	if ([[self specifierAtIndexPath:indexPath] propertyForKey:@"choices"]) return MenzenChoiceRowHeight;
 	return [super tableView:tableView heightForRowAtIndexPath:indexPath];
 }
 

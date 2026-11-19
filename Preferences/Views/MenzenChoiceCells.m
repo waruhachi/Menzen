@@ -39,7 +39,8 @@ CGFloat const MenzenChoiceRowHeight = 52;
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier specifier:(PSSpecifier *)specifier {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier specifier:specifier])) {
 		self.selectionStyle = UITableViewCellSelectionStyleNone;
-		// Just the value, so the menu opens next to it.
+		// Across the whole row, so a tap anywhere opens the menu, with the value
+		// on the right.
 		_button = [UIButton buttonWithType:UIButtonTypeSystem];
 		_button.showsMenuAsPrimaryAction = YES;
 		// The chevron after the title, on the right.
@@ -57,18 +58,13 @@ CGFloat const MenzenChoiceRowHeight = 52;
 		[NSLayoutConstraint activateConstraints:@[
 			[_button.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
 			[_button.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor],
+			[_button.leadingAnchor constraintEqualToAnchor:margins.leadingAnchor],
 			[_button.trailingAnchor constraintEqualToAnchor:margins.trailingAnchor],
 			[self.contentView.heightAnchor constraintGreaterThanOrEqualToConstant:MenzenChoiceRowHeight],
 		]];
-		// The rest of the row opens the same menu, where iOS can (17.4).
-		[self.contentView addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(openMenu)]];
 	}
 
 	return self;
-}
-
-- (void)openMenu {
-	if (_button.enabled && [_button respondsToSelector:@selector(performPrimaryAction)]) [_button performPrimaryAction];
 }
 
 - (void)refreshCellContentsWithSpecifier:(PSSpecifier *)specifier {

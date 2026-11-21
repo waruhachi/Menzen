@@ -44,6 +44,14 @@ Thanks to everyone who translates Menzen:
   <tbody>
     <tr>
       <td align="center" valign="top">
+        <a href="https://crowdin.com/profile/TheMightyOfTrains"><img alt="logo" style="width: 64px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17969167/medium/cb3366e5d6fc15f8a9930668d4f923e6.jpeg" />
+          <br />
+          <sub><b>TheMightyOfTrains</b></sub></a>
+        <br />
+        <sub><b>806 words</b></sub>
+        <br /><sub><b><code title="Romanian">ro</code></b></sub>
+      </td>
+      <td align="center" valign="top">
         <a href="https://crowdin.com/profile/meteoni"><img alt="logo" style="width: 64px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17789157/medium/db595cc3b6a767409fd465c78753a924.jpeg" />
           <br />
           <sub><b>Meteoni-San</b></sub>
@@ -52,14 +60,6 @@ Thanks to everyone who translates Menzen:
         <br />
         <sub><b>748 words</b></sub>
         <br /><sub><b><code title="Chinese Simplified">zh-CN</code></b></sub>
-      </td>
-      <td align="center" valign="top">
-        <a href="https://crowdin.com/profile/TheMightyOfTrains"><img alt="logo" style="width: 64px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17969167/medium/cb3366e5d6fc15f8a9930668d4f923e6.jpeg" />
-          <br />
-          <sub><b>TheMightyOfTrains</b></sub></a>
-        <br />
-        <sub><b>748 words</b></sub>
-        <br /><sub><b><code title="Romanian">ro</code></b></sub>
       </td>
     </tr>
   </tbody>

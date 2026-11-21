@@ -1,6 +1,6 @@
 Package: moe.waru.menzen
 Name: Menzen
-Version: 1.0.0-rc.2
+Version: 1.0.0-rc.3
 Architecture: iphoneos-arm
 Description: Discord RPC on iOS
 Maintainer: waruhachi

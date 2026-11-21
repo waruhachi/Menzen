@@ -1,4 +1,7 @@
 #import <Security/Security.h>
+#import <roothide.h>
+#import <stdlib.h>
+#import <sys/param.h>
 
 #import "../../Shared/MenzenConnectedApps.h"
 #import "../../Shared/MenzenService.h"
@@ -19,6 +22,9 @@ extern CFStringRef SecTaskCopySigningIdentifier(SecTaskRef task, CFErrorRef *err
 extern CFTypeRef SecTaskCopyValueForEntitlement(SecTaskRef task, CFStringRef entitlement, CFErrorRef *error);
 extern uint32_t SecTaskGetCodeSignStatus(SecTaskRef task);
 
+// Weak, as it's newer than proc_pidpath.
+extern int proc_pidpath_audittoken(audit_token_t *token, void *buffer, uint32_t size) __attribute__((weak_import));
+
 #define MenzenCodeSignValid 0x00000001
 #define MenzenCodeSignPlatformBinary 0x04000000
 
@@ -26,13 +32,31 @@ extern uint32_t SecTaskGetCodeSignStatus(SecTaskRef task);
 // ("TweakSettings.<hash>.unsigned"), so it's known by its application
 // identifier instead.
 static NSString *const MenzenTweakSettingsIdentifier = @"com.creaturecoding.tweaksettings";
+// R3v4mp's own app for tweak settings. Its signing identifier is made up when
+// it's signed, like TweakSettings's, and it has no application identifier,
+// so it's known by where it's installed, which only root can write to.
+static NSString *const MenzenR3v4mpIdentifier = @"com.samuel.r3v4mp.app";
+
+static BOOL MenzenIsR3v4mp(audit_token_t token) {
+	static NSString *executable;
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		char *path = realpath(jbroot("/Applications/R3v4mpApp.app/R3v4mpApp"), NULL);
+		if (path) executable = @(path);
+		free(path);
+	});
+	char path[MAXPATHLEN] = {};
+	return executable && proc_pidpath_audittoken && proc_pidpath_audittoken(&token, path, sizeof(path)) > 0 && [executable isEqualToString:@(path)];
+}
 
 // The bundle ID of the app the pane is in, nil for any other process. The
 // audit token identifies the process that sent the connection, unlike its
-// pid, which can be reused. Only platform binaries: App Store apps never are,
-// whatever they're signed as.
+// pid, which can be reused. Only platform binaries and R3v4mp: App Store
+// apps never are, whatever they're signed as.
 static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
-	SecTaskRef task = SecTaskCreateWithAuditToken(kCFAllocatorDefault, connection.auditToken);
+	audit_token_t token = connection.auditToken;
+	if (MenzenIsR3v4mp(token)) return MenzenR3v4mpIdentifier;
+	SecTaskRef task = SecTaskCreateWithAuditToken(kCFAllocatorDefault, token);
 	if (!task) return nil;
 	NSString *identifier = CFBridgingRelease(SecTaskCopySigningIdentifier(task, NULL));
 	id application = CFBridgingRelease(SecTaskCopyValueForEntitlement(task, CFSTR("application-identifier"), NULL));

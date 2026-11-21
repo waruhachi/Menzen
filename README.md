@@ -1,7 +1,7 @@
 <h1 align="center">Menzen</h1>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0--rc.2-0a84ff?style=for-the-badge" />
+  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0--rc.3-0a84ff?style=for-the-badge" />
   <img alt="Platform" src="https://img.shields.io/badge/platform-iOS%2014%E2%80%9326-111111?style=for-the-badge" />
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-GPLv3-blue?style=for-the-badge" /></a>
   <img alt="Language" src="https://img.shields.io/badge/language-Objective--C%20%26%20Logos-2b2b2b?style=for-the-badge" />
@@ -26,8 +26,9 @@ It runs on iOS 14 through 26, on rootful, rootless and RootHide jailbreaks.
 - Custom statuses with your own text, pictures and a timer.
 - Privacy Mode shows only the app's name and icon. You can turn it on from Settings or from Control Center, which also has a toggle to turn Menzen on and off.
 - You choose which apps and games can show up, and which comes first when more than one has something to show.
-- Other tweaks can show their own activity through Menzen once you allow them. Developers can find how in [docs/API.md](docs/API.md).
+- Other tweaks can show their own activity through Menzen once you allow them, and each one gets its own page where you can remove it again. Developers can find how in [docs/API.md](docs/API.md).
 - You sign in on Discord's own page, on the iPhone or from another device with a code. Menzen never asks for your Discord token and keeps the sign-in in the iPhone's Keychain. If Discord stops connecting, Settings asks you to sign in again.
+- The settings work inside the Settings app, TweakSettings and R3v4mp.
 
 ## Privacy
 

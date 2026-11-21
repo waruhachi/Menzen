@@ -95,8 +95,7 @@ static inline void MenzenConnectedSetAllowed(NSString *identifier, BOOL allowed)
 	NSMutableArray<NSString *> *identifiers = [MenzenConnectedAllowed() mutableCopy];
 	[identifiers removeObject:identifier];
 	if (allowed) [identifiers addObject:identifier];
-	CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingConnectedAllowed, (__bridge CFArrayRef)identifiers, (__bridge CFStringRef)MenzenSettingsDomain);
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	MenzenWriteSetting(MenzenSettingConnectedAllowed, identifiers);
 	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
 }
 

@@ -1,10 +1,10 @@
-#import <Preferences/PSListController.h>
+#import "MenzenListController.h"
 
 // Custom Activity: its switch and the presets, each opening its page
 // (MenzenPresetListController), plus a way to add one.
-@interface MenzenCustomListController : PSListController
+@interface MenzenCustomListController : MenzenListController
 @end
 
 // One preset's fields, from the specifier's "presetIdentifier" property.
-@interface MenzenPresetListController : PSListController
+@interface MenzenPresetListController : MenzenListController
 @end

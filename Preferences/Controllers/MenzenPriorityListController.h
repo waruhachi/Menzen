@@ -1,6 +1,6 @@
-#import <Preferences/PSListController.h>
+#import "MenzenListController.h"
 
 // Priority: what Menzen shows when more than one source has something
 // (MenzenSettingPriority), as a list to drag into order.
-@interface MenzenPriorityListController : PSListController
+@interface MenzenPriorityListController : MenzenListController
 @end

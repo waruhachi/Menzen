@@ -1,6 +1,9 @@
 #import <Foundation/Foundation.h>
+#import <unistd.h>
 
-// The pane and menzend both run as mobile, so they share one plist.
+// The pane and menzend share mobile's plist. Some apps that host the pane
+// run as root (R3v4mp's own app), so the pane asks cfprefsd for mobile's
+// settings by name.
 
 #define MenzenSettingsDomain @"moe.waru.menzen"
 #define MenzenSettingsChangedNotification "moe.waru.menzen.settings"
@@ -38,8 +41,22 @@
 // just that app.
 #define MenzenSettingPrivatePrefix @"private."
 
+static inline CFStringRef MenzenSettingsUser(void) {
+	return geteuid() == 0 ? CFSTR("mobile") : kCFPreferencesCurrentUser;
+}
+
+static inline void MenzenSettingsSynchronize(void) {
+	CFPreferencesSynchronize((__bridge CFStringRef)MenzenSettingsDomain, MenzenSettingsUser(), kCFPreferencesAnyHost);
+}
+
 static inline id MenzenSettingValue(NSString *key) {
-	return CFBridgingRelease(CFPreferencesCopyAppValue((__bridge CFStringRef)key, (__bridge CFStringRef)MenzenSettingsDomain));
+	return CFBridgingRelease(CFPreferencesCopyValue((__bridge CFStringRef)key, (__bridge CFStringRef)MenzenSettingsDomain, MenzenSettingsUser(), kCFPreferencesAnyHost));
+}
+
+// nil removes the setting.
+static inline void MenzenWriteSetting(NSString *key, id value) {
+	CFPreferencesSetValue((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, (__bridge CFStringRef)MenzenSettingsDomain, MenzenSettingsUser(), kCFPreferencesAnyHost);
+	MenzenSettingsSynchronize();
 }
 
 static inline BOOL MenzenSettingBool(NSString *key, BOOL fallback) {

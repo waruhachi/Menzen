@@ -1,8 +1,8 @@
-#import <Preferences/PSListController.h>
+#import "MenzenListController.h"
 
 // A page with a preview at the top (identifier "preview") that follows
 // menzend's status and the page's settings.
-@interface MenzenPreviewListController : PSListController
+@interface MenzenPreviewListController : MenzenListController
 @property (nonatomic, readonly, nullable) NSDictionary<NSString *, id> *status;
 - (nonnull PSSpecifier *)previewSpecifier;
 @end

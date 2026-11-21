@@ -11,7 +11,7 @@
 static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
 	MenzenConnectedListController *controller = (__bridge MenzenConnectedListController *)observer;
 	dispatch_async(dispatch_get_main_queue(), ^{
-		CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+		MenzenSettingsSynchronize();
 		[controller reloadSpecifiers];
 	});
 }

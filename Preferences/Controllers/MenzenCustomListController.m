@@ -15,11 +15,6 @@
 - (UITextField *)textField;
 @end
 
-static void MenzenWriteSetting(NSString *key, id value) {
-	CFPreferencesSetAppValue((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, (__bridge CFStringRef)MenzenSettingsDomain);
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
-}
-
 static void MenzenPostSettingsChanged(void) {
 	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
 }

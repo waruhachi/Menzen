@@ -13,6 +13,7 @@
 #import "../Views/MenzenDestructiveButtonCell.h"
 #import "../Views/MenzenProfileCell.h"
 #import "MenzenConnectedListController.h"
+#import "MenzenListController.h"
 #import "MenzenOtherDeviceSignIn.h"
 
 // The pane never sees a token: menzend hands it an authorize URL, the web
@@ -27,7 +28,7 @@ static NSTimeInterval const MenzenConnectTimeout = 30;
 - (void)handleURL:(NSDictionary *)url withCompletion:(void (^)(void))completion;
 @end
 
-@interface MenzenRootListController : PSListController <ASWebAuthenticationPresentationContextProviding>
+@interface MenzenRootListController : MenzenListController <ASWebAuthenticationPresentationContextProviding>
 - (void)settingsChanged;
 @end
 
@@ -121,7 +122,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 
 // The Control Center modules change these switches' settings from SpringBoard.
 - (void)settingsChanged {
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	MenzenSettingsSynchronize();
 	[self reloadSpecifierID:@"enabled" animated:NO];
 	[self reloadSpecifierID:@"privacy" animated:NO];
 }
@@ -423,10 +424,10 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)resetSettings {
 	CFStringRef domain = (__bridge CFStringRef)MenzenSettingsDomain;
-	NSMutableArray *keys = [CFBridgingRelease(CFPreferencesCopyKeyList(domain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost)) mutableCopy];
+	NSMutableArray *keys = [CFBridgingRelease(CFPreferencesCopyKeyList(domain, MenzenSettingsUser(), kCFPreferencesAnyHost)) mutableCopy];
 	[keys removeObject:MenzenSettingCustomPresets];
-	if (keys.count) CFPreferencesSetMultiple(NULL, (__bridge CFArrayRef)keys, domain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
-	CFPreferencesSynchronize(domain, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+	if (keys.count) CFPreferencesSetMultiple(NULL, (__bridge CFArrayRef)keys, domain, MenzenSettingsUser(), kCFPreferencesAnyHost);
+	CFPreferencesSynchronize(domain, MenzenSettingsUser(), kCFPreferencesAnyHost);
 	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
 	[self reloadSpecifiers];
 }

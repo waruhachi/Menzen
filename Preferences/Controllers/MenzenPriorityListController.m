@@ -74,8 +74,7 @@ static NSString *MenzenSourceSymbol(NSString *source) {
 		if (specifier.identifier.length && specifier.cellType != PSGroupCell) [order addObject:specifier.identifier];
 	}
 
-	CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingPriority, (__bridge CFArrayRef)order, (__bridge CFStringRef)MenzenSettingsDomain);
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	MenzenWriteSetting(MenzenSettingPriority, order);
 	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
 }
 

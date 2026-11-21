@@ -110,6 +110,18 @@
 
 /* Connected Apps page: section header for the tweaks that asked to show activity. */
 "connected.apps" = "Aplicații";
+/* Message of the alert that confirms removing a tweak from Connected Apps. It's listed again the next time the tweak asks to show activity. */
+"connected.it_shows_up_here_again" = "Apare înapoi sus aici, oprit, următoarea oară întreabă ca să arate activitate.";
+/* Button in the alert that confirms removing a tweak from Connected Apps. */
+"connected.remove" = "Șterge";
+/* Button on a tweak's page in Connected Apps that removes it from the list. */
+"connected.remove_app" = "Șterge Aplicația";
+/* Title of the alert that confirms removing a tweak from Connected Apps. %@ is the tweak's name. */
+"connected.remove_x" = "Șterge %@?";
+/* Notification body when a tweak first asks to show activity. Tapping the notification opens the Connected Apps page in Menzen's settings, where the person can allow it. */
+"connected.tap_to_allow_it_in_connected_apps" = "Apasă pentru a îi da voie în Aplicații Conectate.";
+/* Notification title when a tweak first asks to show activity. %@ is the tweak's name. */
+"connected.x_wants_to_show_activity" = "%@ vrea să arate activitatea";
 
 /* Custom Activity page: button that adds a new preset (a saved custom status). */
 "custom.add_preset" = "Șterge Presetare";
@@ -165,6 +177,8 @@
 "priority.connected_apps" = "Aplicații Conectate";
 /* Priority page row. */
 "priority.games" = "Jocuri";
+/* Priority page footer. Menzen checks the rows in order, top row first. */
+"priority.menzen_shows_the_first_of" = "Menzen se uită la acestea de sus până jos și arată prima cu activitate.";
 /* Priority page row. */
 "priority.music_and_video" = "Muzică & Video";
 
@@ -201,12 +215,20 @@
 
 /* Settings row that opens the page choosing what each line and picture of the activity shows. */
 "root.activity" = "Activitate";
+/* Option for Clear Activity. */
+"root.after_10_seconds" = "După 10 Secunde";
+/* Option for Clear Activity. */
+"root.after_1_minute" = "După 1 Minut";
+/* Option for Clear Activity. */
+"root.after_30_seconds" = "După 30 de Secunde";
 /* Settings section header. */
 "root.appearance" = "Aspect";
 /* Settings row that opens the list of supported apps and games. */
 "root.apps" = "Aplicații";
 /* Settings section header. */
 "root.behavior" = "Comportament";
+/* Settings row with a menu: how long activity keeps showing after media pauses or the person leaves a game. */
+"root.clear_activity" = "Șterge Activitatea";
 /* Shown over the profile card while Menzen connects. */
 "root.connecting_to_discord" = "Conectare la Discord…";
 /* Settings row and Priority page row. */
@@ -219,6 +241,8 @@
 "root.every_setting_goes_back_to_its" = "Fiecare setare devine implicită. Tu rămâi autentificat.";
 /* Note under the sign-in button. */
 "root.if_the_page_doesn_t_load" = "Dacă pagina nu se încarcă, autentifică-te pe alt dispozitiv.";
+/* Option for Clear Activity: clear it as soon as media pauses or the person leaves a game. */
+"root.immediately" = "Instant";
 /* Option for Clear Activity: never clear it. */
 "root.keep_showing" = "Continuă să Afișezi";
 /* Settings row that opens what shows under the person's name in Discord's member list. */
@@ -323,6 +347,8 @@
 "sources.open_x_to_check" = "Deschide %@ pentru a Verifica";
 /* Switch that shows apps Menzen doesn't support. */
 "sources.other_apps" = "Alte Aplicații";
+/* Switch on an app's or game's page in Sources: Privacy Mode for just that app. */
+"sources.privacy_mode" = "Mod Confidențialitate";
 /* Button that asks on GitHub for a game's icon to be added. */
 "sources.request_icon_on_github" = "Cere Iconiță pe GitHub";
 /* Footer under Other Apps. */

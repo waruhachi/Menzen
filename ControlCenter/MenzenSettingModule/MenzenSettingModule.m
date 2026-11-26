@@ -61,7 +61,6 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 	return controller;
 }
 
-// The tint where the glyph view can't keep the colors.
 - (UIColor *)selectedColor {
 	return UIColor.blackColor;
 }

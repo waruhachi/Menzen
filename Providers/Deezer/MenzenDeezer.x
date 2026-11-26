@@ -22,7 +22,6 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	Class trackClass = %c(DeezerTrack);
 	if (!trackClass || ![track isKindOfClass:trackClass]) return nil;
 
-	// Only the playing track's.
 	NSString *title = MenzenString(MenzenGet(track, @"title"));
 	if (!title || ![title isEqualToString:MenzenString(info[MPMediaItemPropertyTitle])]) return nil;
 	NSString *trackID = MenzenCatalogID(MenzenGet(track, @"deezerId"));

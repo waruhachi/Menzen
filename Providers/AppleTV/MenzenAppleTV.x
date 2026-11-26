@@ -42,7 +42,6 @@ static MenzenTVMediaItem *MenzenCurrentMediaItem(void) {
 
 - (void)_updateNowPlayingInfo:(NSDictionary *)info commandsAndStates:(id)commandsAndStates {
 	MenzenTVMediaItem *item = [info isKindOfClass:NSDictionary.class] && [info[MenzenInfoTitle] length] ? MenzenCurrentMediaItem() : nil;
-	// Only the item's own info.
 	NSString *identifier = MenzenMetadataString(item, @"ExternalIdentifier");
 	if (!identifier || ![info[MenzenInfoExternalContentIdentifier] isEqual:identifier]) {
 		%orig;

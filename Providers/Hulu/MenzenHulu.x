@@ -14,7 +14,6 @@ static NSString *MenzenArtworkURL(NSDictionary *entity, NSString *ID) {
 		NSURLComponents *components = [NSURLComponents componentsWithString:MenzenString(image[@"path"]) ?: @""];
 		NSString *host = components.host.lowercaseString;
 		if (![components.scheme isEqualToString:@"https"] || !([host isEqualToString:@"img.hulu.com"] || ([host hasPrefix:@"img"] && [host hasSuffix:@".hulu.com"])) || ![components.path isEqualToString:[@"/user/v3/artwork/" stringByAppendingString:ID]]) continue;
-		// Only which image it is.
 		NSMutableArray *items = [NSMutableArray array];
 		for (NSURLQueryItem *item in components.queryItems) {
 			if (([item.name isEqualToString:@"base_image_bucket_name"] || [item.name isEqualToString:@"base_image"]) && MenzenLinkURL(@"%@", item.value)) [items addObject:item];

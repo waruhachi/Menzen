@@ -24,7 +24,6 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge const void *)self, MenzenConnectedAppsChanged, CFSTR(MenzenConnectedAppsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 }
 
-// The page of an app may have switched it on or off.
 - (void)viewWillAppear:(BOOL)animated {
 	[super viewWillAppear:animated];
 	[self reloadSpecifiers];

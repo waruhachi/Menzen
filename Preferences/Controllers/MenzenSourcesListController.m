@@ -31,7 +31,6 @@ static NSString *MenzenGameKey(NSDictionary *game) {
 	return [MenzenSettingGamePrefix stringByAppendingString:game[MenzenGameBundleIdentifierKey]];
 }
 
-// Apps that aren't installed stay off and can't be switched on.
 static PSSpecifier *MenzenSourceSwitch(id target, NSDictionary *provider, NSString *name) {
 	PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:name target:target set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 	MenzenSetSetting(specifier, MenzenSourceKey(provider), @YES);
@@ -41,7 +40,6 @@ static PSSpecifier *MenzenSourceSwitch(id target, NSDictionary *provider, NSStri
 	return specifier;
 }
 
-// Privacy Mode for just this app, on its page under its switch.
 static NSArray<PSSpecifier *> *MenzenPrivacySpecifiers(id target, NSString *bundleIdentifier) {
 	PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
 	PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"sources.privacy_mode", @"Privacy Mode") target:target set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
@@ -66,7 +64,6 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 
 @implementation MenzenSourcesListController {
 	NSSet<NSString *> *_hooked;
-	// From menzend (MenzenGame*Key); nil until it answers.
 	NSArray<NSDictionary *> *_games;
 }
 
@@ -74,7 +71,6 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 	if (!_specifiers) {
 		_hooked = MenzenHookedBundles();
 		NSMutableArray *specifiers = [NSMutableArray array];
-		// Only the installed apps; the rest are on their own page.
 		NSMutableArray<NSDictionary *> *missing = [NSMutableArray array];
 		for (NSNumber *watching in @[@NO, @YES]) {
 			NSMutableArray *rows = [NSMutableArray array];

@@ -5,7 +5,6 @@
 // with albums.coverArt included; the request is changed to also include the
 // artists' pictures, and the answer is matched by title and album.
 
-// By title and album.
 static MenzenCache<NSString *, NSDictionary *> *items;
 
 static BOOL MenzenIsTrack(NSURL *url) {
@@ -14,8 +13,6 @@ static BOOL MenzenIsTrack(NSURL *url) {
 	return components.count == 4 && [components[1] isEqualToString:@"v2"] && [components[2] isEqualToString:@"tracks"];
 }
 
-// url with artists.profileArt added to its include when it includes the
-// album's cover; nil when it doesn't.
 static NSURL *MenzenWithArtists(NSURL *url) {
 	NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
 	NSMutableArray<NSURLQueryItem *> *query = [components.queryItems mutableCopy];
@@ -45,7 +42,6 @@ static NSArray<NSString *> *MenzenRelated(NSDictionary *resource, NSString *rela
 	return IDs;
 }
 
-// The smallest of an artwork's files at least 600 wide, else the widest.
 static NSString *MenzenImage(NSDictionary *artwork) {
 	NSArray *files = MenzenDictionary(artwork[@"attributes"])[@"files"];
 	if (![files isKindOfClass:NSArray.class]) return nil;

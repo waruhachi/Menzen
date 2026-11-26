@@ -12,12 +12,8 @@
 
 static BOOL pluto;
 static NSString *site;
-// Resizes pictures at thumbnails/photos/w<width>-q<quality>/<path without
-// "files/">.
 static NSString *imageServer;
 
-// Guarded by @synchronized(videos). Listings are by the video they play,
-// then by listing ID.
 static NSMutableDictionary<NSString *, NSDictionary *> *videos;
 static NSMutableDictionary<NSString *, NSMutableDictionary<NSString *, NSDictionary *> *> *listings;
 static NSMutableDictionary<NSString *, NSString *> *channelNames;
@@ -68,7 +64,6 @@ static void MenzenRememberListing(NSDictionary *listing, NSString *contentID) {
 			if (listings.count > 2000) [listings removeAllObjects];
 			forVideo = listings[contentID] = [NSMutableDictionary dictionary];
 		}
-		// Drop the ones that are over.
 		for (NSString *otherID in forVideo.allKeys) {
 			if (MenzenDate(forVideo[otherID][@"endTimestamp"]).timeIntervalSinceNow < 0) [forVideo removeObjectForKey:otherID];
 		}

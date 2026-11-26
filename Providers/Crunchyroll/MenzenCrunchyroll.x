@@ -5,7 +5,6 @@
 // async URLSession API, matched by content ID, else by title and series.
 // Untested: found from the app's code only.
 
-// By content ID and by title and series.
 static MenzenCache<NSString *, NSDictionary *> *items;
 
 static BOOL MenzenIsContent(NSURL *url) {
@@ -13,8 +12,7 @@ static BOOL MenzenIsContent(NSURL *url) {
 	return [url.scheme isEqualToString:@"https"] && ([host isEqualToString:@"crunchyroll.com"] || [host hasSuffix:@".crunchyroll.com"]) && [url.path hasPrefix:@"/content/"];
 }
 
-// The smallest picture at least 600 wide, else the widest. Episodes nest
-// their pictures in one more array than music.
+// Episodes nest their pictures in one more array than music.
 static NSString *MenzenThumbnail(id images) {
 	if (![images isKindOfClass:NSArray.class]) return nil;
 	NSString *found = nil;

@@ -1,13 +1,9 @@
 #import <Foundation/Foundation.h>
 
-// What MenzenProviderCheck found, kept in the app's data container for the
-// settings pane.
-
 #define MenzenIssuesURL @"https://github.com/waruhachi/Menzen/issues"
 
 #define MenzenSupportStatusPath @"Library/Application Support/moe.waru.menzen/status.plist"
 
-// "<version> (<build>)".
 #define MenzenSupportAppVersionKey @"appVersion"
 #define MenzenSupportMenzenVersionKey @"menzenVersion"
 #define MenzenSupportCheckedKey @"checked"
@@ -20,13 +16,9 @@
 // parts only load once the app is open, so missing ones aren't final.
 #define MenzenSupportBackgroundKey @"background"
 
-// Followed by the app's bundle ID.
 #define MenzenSupportCheckedNotificationPrefix "moe.waru.menzen.checked."
 
-NS_ASSUME_NONNULL_BEGIN
-
-// Just the version when the build is the same or missing.
-static inline NSString *MenzenSupportVersion(NSString *_Nullable version, NSString *_Nullable build) {
+static inline NSString *MenzenSupportVersion(NSString *version, NSString *build) {
 	if (![version isKindOfClass:NSString.class] || !version.length) version = @"?";
 	return [build isKindOfClass:NSString.class] && build.length && ![build isEqualToString:version] ? [NSString stringWithFormat:@"%@ (%@)", version, build] : version;
 }
@@ -44,7 +36,6 @@ static inline NSURL *MenzenSupportReportURL(NSString *app, NSString *version, NS
 	return components.URL ?: [NSURL URLWithString:MenzenIssuesURL];
 }
 
-// The repository's catalog workflow adds the requested app to the list.
 static inline NSURL *MenzenAppRequestURL(NSString *bundleIdentifier) {
 	NSURLComponents *components = [NSURLComponents componentsWithString:[MenzenIssuesURL stringByAppendingString:@"/new"]];
 	components.queryItems = @[
@@ -53,5 +44,3 @@ static inline NSURL *MenzenAppRequestURL(NSString *bundleIdentifier) {
 	];
 	return components.URL ?: [NSURL URLWithString:MenzenIssuesURL];
 }
-
-NS_ASSUME_NONNULL_END

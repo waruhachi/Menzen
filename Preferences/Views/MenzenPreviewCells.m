@@ -59,7 +59,6 @@ static CGFloat const MenzenMemberStatusSize = 14;
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier specifier:specifier])) {
 		self.selectionStyle = UITableViewCellSelectionStyleNone;
 
-		// Static frame, filling the row like Discord's.
 		_nameplateView = [UIImageView new];
 		_nameplateView.contentMode = UIViewContentModeScaleAspectFill;
 		_nameplateView.clipsToBounds = YES;
@@ -150,7 +149,6 @@ static CGFloat const MenzenMemberStatusSize = 14;
 
 - (void)layoutSubviews {
 	[super layoutSubviews];
-	// Cuts the status out of the avatar, in the cell's colour.
 	UIColor *background = self.backgroundColor ?: UIColor.secondarySystemGroupedBackgroundColor;
 	_statusView.layer.borderColor = [background resolvedColorWithTraitCollection:self.traitCollection].CGColor;
 	if (_nameColors.count > 1) _nameLabel.textColor = MenzenNameColor(_nameColors, _nameLabel.bounds.size);
@@ -181,8 +179,6 @@ static CGFloat const MenzenMemberStatusSize = 14;
 	_statusView.hidden = !statusColor;
 	_statusView.backgroundColor = statusColor;
 
-	// Discord shows the activity's icon and the line picked by its status
-	// display type.
 	NSDictionary *activity = [specifier propertyForKey:@"activity"];
 	NSString *display = activity[MenzenActivityStatusDisplayKey];
 	NSString *line = activity[MenzenActivityDetailsKey];

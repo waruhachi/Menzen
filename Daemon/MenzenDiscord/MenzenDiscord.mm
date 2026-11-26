@@ -15,7 +15,6 @@ static NSString *const MenzenScopes = @"openid identify sdk.social_layer_presenc
 static NSTimeInterval const MenzenProfileMaxAge = 5 * 60;
 // The gateway's close code for a token it doesn't accept.
 static int32_t const MenzenAuthenticationFailedCloseCode = 4004;
-// How long an authorize URL stays usable.
 static NSTimeInterval const MenzenSignInTimeout = 10 * 60;
 // Before the first unlock the Keychain item can't be read yet.
 static NSTimeInterval const MenzenKeychainLockedRetry = 30;
@@ -70,7 +69,6 @@ static uint64_t MenzenMilliseconds(NSDate *date) {
 	return (uint64_t)(date.timeIntervalSince1970 * 1000);
 }
 
-// For the OAuth state parameter: base64url, 32 random bytes.
 static NSString *MenzenRandomString(void) {
 	uint8_t bytes[32];
 	if (SecRandomCopyBytes(kSecRandomDefault, sizeof(bytes), bytes) != errSecSuccess) return nil;
@@ -163,7 +161,6 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSDictionary *_previewInfo;
 	std::shared_ptr<discordpp::Client> _client;
 	dispatch_source_t _callbackTimer;
-	// Until when callbacks run often: something asked Discord for an answer.
 	CFAbsoluteTime _busyUntil;
 	BOOL _callbacksFast;
 	BOOL _ready;
@@ -172,11 +169,9 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	BOOL _rejectedTokenRefreshed;
 	MenzenActivity *_desiredActivity;
 	MenzenActivity *_publishedActivity;
-	// Whether _publishedActivity is what Discord has; unknown after a connect.
 	BOOL _publishedKnown;
 	BOOL _publishPending;
 	CFAbsoluteTime _publishFireTime;
-	// When recent updates went out, oldest first, for MenzenPublishLimit.
 	NSMutableArray<NSNumber *> *_publishTimes;
 	// Image keys Discord couldn't find (a logo not uploaded yet), left out
 	// until the next connect.
@@ -188,8 +183,6 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	BOOL _signedIn;
 	NSString *_username;
 	NSString *_accountError;
-	// When the client started connecting or lost its connection; nil while
-	// connected or signed out.
 	NSDate *_connectingSince;
 	// In memory only, for the /users/@me request.
 	NSString *_accessToken;
@@ -214,7 +207,6 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	_client->SetStatusChangedCallback([weakSelf](discordpp::Client::Status status, discordpp::Client::Error error, int32_t errorDetail) {
 		[weakSelf statusChanged:status error:error errorDetail:errorDetail];
 	});
-	// Online status and name changes.
 	_client->SetUserUpdatedCallback([weakSelf](uint64_t userId) {
 		typeof(self) strongSelf = weakSelf;
 		if (strongSelf && strongSelf->_profile && userId == strtoull([strongSelf->_profile[MenzenProfileIdKey] UTF8String], NULL, 10)) [strongSelf updateProfileFromClient];
@@ -368,7 +360,6 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	[_deviceSignIn cancel];
 }
 
-// A message for the user when the tokens couldn't be kept.
 - (NSString *)signInWithAccessToken:(NSString *)accessToken refreshToken:(NSString *)refreshToken expiresIn:(NSTimeInterval)expiresIn {
 	if (![self saveAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn]) return MenzenLocalizedString(@"signin.error.couldn_t_save_the_sign_in", @"Couldn't save the sign-in to the Keychain.");
 	_signedIn = YES;
@@ -495,7 +486,6 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)statusChanged:(discordpp::Client::Status)status error:(discordpp::Client::Error)error errorDetail:(int32_t)errorDetail {
 	BOOL wasReady = _ready;
-	// Connecting: more is on its way.
 	if (status != discordpp::Client::Status::Ready && status != discordpp::Client::Status::Disconnected) [self expectCallbacks];
 	_ready = status == discordpp::Client::Status::Ready;
 	if (_ready) {
@@ -515,7 +505,6 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	if (_ready != wasReady) [self accountStatusChanged];
 }
 
-// The token was revoked or replaced before it expired.
 - (void)accessTokenRejected {
 	NSString *refreshToken = MenzenKeychainLoadTokens(NULL)[MenzenTokensRefreshTokenKey];
 	if (!_rejectedTokenRefreshed && refreshToken.length) {
@@ -547,7 +536,6 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	[self fetchProfileDetailsWithCompletion:completion];
 }
 
-// What the SDK knows, then the rest from /users/@me.
 - (void)updateProfile {
 	if (![self updateProfileFromClient]) return;
 	_profileFetchedAt = NSDate.date;
@@ -625,8 +613,6 @@ static NSString *MenzenAssetName(id value) {
 	return value;
 }
 
-// A CDN folder like "nameplates/<set>/<name>/": single components, each
-// ending in a slash.
 static NSString *MenzenAssetPath(id value) {
 	if (![value isKindOfClass:NSString.class] || ![value hasSuffix:@"/"]) return nil;
 	NSArray<NSString *> *components = [[value substringToIndex:[value length] - 1] componentsSeparatedByString:@"/"];
@@ -637,7 +623,6 @@ static NSString *MenzenAssetPath(id value) {
 	return value;
 }
 
-// completion runs on the main queue once the profile has been updated.
 - (void)fetchProfileDetailsWithCompletion:(void (^)(void))completion {
 	if (!_accessToken.length) {
 		if (completion) completion();
@@ -688,7 +673,6 @@ static NSString *MenzenAssetPath(id value) {
 	id flags = user[@"public_flags"];
 	profile[MenzenProfileBadgesKey] = MenzenBadges([flags isKindOfClass:NSNumber.class] ? [flags unsignedLongLongValue] : 0);
 
-	// The server tag shown next to the name, when the user displays one.
 	NSDictionary *guild = MenzenDictionary(user[@"primary_guild"]);
 	NSString *tag = [guild[@"tag"] isKindOfClass:NSString.class] ? guild[@"tag"] : nil;
 	NSString *guildId = MenzenAssetName(guild[@"identity_guild_id"]);
@@ -737,7 +721,6 @@ static NSString *MenzenAssetPath(id value) {
 	__weak typeof(self) weakSelf = self;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		typeof(self) strongSelf = weakSelf;
-		// Superseded by an earlier publish.
 		if (!strongSelf || !strongSelf->_publishPending || strongSelf->_publishFireTime != fireTime) return;
 		strongSelf->_publishPending = NO;
 		[strongSelf publish];
@@ -785,7 +768,6 @@ static NSString *MenzenAssetPath(id value) {
 
 	_publishedActivity = activity;
 	_publishedKnown = YES;
-	// The settings pane previews what Discord shows.
 	[self accountStatusChanged];
 	[self expectCallbacks];
 

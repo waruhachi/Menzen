@@ -4,8 +4,6 @@
 #import "../../Shared/MenzenService.h"
 #import "MenzenImageLoader.h"
 
-// The CDN URL of the Discord application's art asset named key, from the
-// application's public asset list. Main thread only.
 static void MenzenLoadAssetURL(NSString *key, void (^completion)(NSString *urlString)) {
 	static NSDictionary<NSString *, NSString *> *assets;
 	if (assets) {
@@ -33,7 +31,6 @@ static void MenzenLoadAssetURL(NSString *key, void (^completion)(NSString *urlSt
 }
 
 void MenzenLoadImage(NSString *urlString, void (^completion)(UIImage *image)) {
-	// Anything but a URL is an art asset's key.
 	if (urlString && ![urlString containsString:@":"]) {
 		MenzenLoadAssetURL(urlString, ^(NSString *assetURL) {
 			if (assetURL) MenzenLoadImage(assetURL, completion);

@@ -11,7 +11,6 @@ static NSString *loadedIdentifier;
 static NSString *loadedCover;
 static NSString *loadedPage;
 
-// A picture on Plex's own servers, never one with credentials.
 static NSString *MenzenCover(NSString *imageURI) {
 	NSString *cover = MenzenImageURL(imageURI, @[@"plex.tv", @".plex.tv"]);
 	return cover && [cover rangeOfString:@"token" options:NSCaseInsensitiveSearch].location == NSNotFound ? cover : nil;
@@ -60,7 +59,6 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSString *identifier = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	@synchronized(MPNowPlayingInfoCenter.class) {
-		// Only the loaded item's.
 		if ((identifier && [identifier isEqualToString:loadedIdentifier]) || (title && [title isEqualToString:loadedTitle])) {
 			extras[MenzenExtrasCoverKey] = loadedCover;
 			extras[MenzenExtrasTitleURLKey] = loadedPage;

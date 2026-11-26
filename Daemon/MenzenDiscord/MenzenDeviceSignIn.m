@@ -39,8 +39,6 @@ static NSTimeInterval MenzenJSONSeconds(NSDictionary *json, NSString *key, NSTim
 	NSString *_clientId;
 	NSString *_scopes;
 	NSURLSession *_session;
-	// Bumped by every start, cancel and finish, so answers to an older code
-	// are dropped.
 	NSUInteger _generation;
 	NSString *_deviceCode;
 	NSTimeInterval _pollInterval;
@@ -153,8 +151,6 @@ static NSTimeInterval MenzenJSONSeconds(NSDictionary *json, NSString *key, NSTim
 	if (completion) completion(nil, nil, 0, error);
 }
 
-// completion runs on the main queue; json is nil when the answer wasn't a
-// JSON object.
 - (void)post:(NSString *)url fields:(NSDictionary<NSString *, NSString *> *)fields completion:(void (^)(NSInteger statusCode, NSDictionary *json))completion {
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
 	request.HTTPMethod = @"POST";

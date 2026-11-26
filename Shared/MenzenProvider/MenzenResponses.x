@@ -20,12 +20,10 @@ typedef NSURLRequest * (^MenzenRequestModifier)(NSURLRequest *);
 
 static const NSUInteger MenzenMaxBody = 8 * 1024 * 1024;
 
-// Guarded by @synchronized(delegateClasses).
 static NSArray<MenzenResponseObserver *> *observers;
 static NSArray<MenzenRequestModifier> *modifiers;
 static NSMutableSet<Class> *delegateClasses;
 
-// Weak keys, so finished tasks drop out.
 static NSMapTable<NSURLSessionTask *, NSMutableData *> *bodies;
 
 // Set while a hooked method runs on this thread, so the ones it calls

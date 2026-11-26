@@ -42,19 +42,15 @@
 @end
 
 static NSTimeInterval const MenzenPostDelay = 1;
-// Each refetch asks the store about every artist still held.
 static NSTimeInterval const MenzenRefetchInterval = 30;
 
-// NSNull for an artist without a picture.
 static NSMutableDictionary<NSString *, id> *artists;
 static NSMutableDictionary<NSString *, NSHashTable *> *artistsLoading;
-// Items handed out that the app still holds, for a refetch.
 static NSHashTable *items;
 
 static void MenzenSetAssetURL(MRContentItem *contentItem, NSURL *url) {
 	if (![contentItem respondsToSelector:@selector(metadata)] || ![contentItem respondsToSelector:@selector(setMetadata:)]) return;
 	MRContentItemMetadata *metadata = [contentItem.metadata copy] ?: [%c(MRContentItemMetadata) new];
-	// The app's own asset URL (a local file) wins.
 	if (![metadata respondsToSelector:@selector(setAssetURL:)] || (metadata.assetURL && ![metadata.assetURL.scheme isEqualToString:MenzenExtrasScheme])) return;
 	metadata.assetURL = url;
 	contentItem.metadata = metadata;
@@ -106,7 +102,6 @@ static void MenzenLoadArtist(NSString *artistID) {
 			// one without a picture (a cached one) doesn't stop a later one.
 			if (!artistsLoading[artistID]) return;
 			if (!picture) {
-				// Offline: try again on a later item.
 				if (!metadata && !artists[artistID]) [artistsLoading removeObjectForKey:artistID];
 				else if (metadata) artists[artistID] = NSNull.null;
 				return;
@@ -133,7 +128,6 @@ static void MenzenAddArtistPicture(MPNowPlayingContentItem *item) {
 	@synchronized(artists) {
 		[items addObject:item];
 		extras = artists[identifier];
-		// No picture yet, but a better answer may still come in.
 		if (extras == NSNull.null && artistsLoading[identifier]) [artistsLoading[identifier] addObject:item];
 		if (!extras) {
 			BOOL loading = !!artistsLoading[identifier];
@@ -154,7 +148,6 @@ static void MenzenAddArtistPicture(MPNowPlayingContentItem *item) {
 	});
 }
 
-// Forgets every artist and looks up the ones still playing or queued again.
 static void MenzenRefetch(CFNotificationCenterRef center, void *observer, CFNotificationName name, const void *object, CFDictionaryRef userInfo) {
 	static MenzenThrottle throttle;
 	dispatch_async(dispatch_get_main_queue(), ^{

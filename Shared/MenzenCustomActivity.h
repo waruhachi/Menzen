@@ -2,26 +2,14 @@
 
 #import "MenzenSettings.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
-// Custom activities: presets the user writes, one of which shows instead of
-// anything detected while MenzenSettingCustom is on. Privacy Mode still applies.
-
-// BOOL, default NO.
 #define MenzenSettingCustom @"custom"
-// Array of preset dictionaries (MenzenPreset*Key), in the order they were added.
 // Kept by Reset Settings: they're the user's own writing.
 #define MenzenSettingCustomPresets @"customPresets"
-// String: the MenzenPresetIdentifierKey of the preset shown.
 #define MenzenSettingCustomPreset @"customPreset"
-// Date the shown preset was chosen, for its elapsed time.
 #define MenzenSettingCustomStart @"customStart"
 
-// String, a UUID.
 #define MenzenPresetIdentifierKey @"id"
-// String: playing, listening or watching.
 #define MenzenPresetKindKey @"kind"
-// Strings, any of them empty or missing.
 #define MenzenPresetNameKey @"name"
 #define MenzenPresetDetailsKey @"details"
 #define MenzenPresetStateKey @"state"
@@ -29,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 #define MenzenPresetLargeTextKey @"largeText"
 #define MenzenPresetSmallImageKey @"smallImage"
 #define MenzenPresetSmallTextKey @"smallText"
-// BOOL, default YES: the time since the preset was chosen.
 #define MenzenPresetTimerKey @"timer"
 
 static inline NSArray<NSDictionary *> *MenzenCustomPresets(void) {
@@ -40,7 +27,7 @@ static inline NSArray<NSDictionary *> *MenzenCustomPresets(void) {
 	}]];
 }
 
-static inline NSDictionary *_Nullable MenzenCustomPreset(NSString *_Nullable identifier) {
+static inline NSDictionary *MenzenCustomPreset(NSString *identifier) {
 	if (!identifier) return nil;
 	for (NSDictionary *preset in MenzenCustomPresets()) {
 		if ([preset[MenzenPresetIdentifierKey] isEqualToString:identifier]) return preset;
@@ -48,7 +35,7 @@ static inline NSDictionary *_Nullable MenzenCustomPreset(NSString *_Nullable ide
 	return nil;
 }
 
-static inline NSString *_Nullable MenzenPresetString(NSDictionary *preset, NSString *key) {
+static inline NSString *MenzenPresetString(NSDictionary *preset, NSString *key) {
 	id value = preset[key];
 	if (![value isKindOfClass:NSString.class]) return nil;
 	NSString *text = [value stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];

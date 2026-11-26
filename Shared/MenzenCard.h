@@ -3,39 +3,19 @@
 #import "MenzenLocalization/MenzenLocalization.h"
 #import "MenzenSettings.h"
 
-// The parts of the activity card and what each can show, for menzend (which
-// builds the activity) and the pane (which offers the choices). Each part is
-// one string setting; one that isn't set yet follows the switches it
-// replaced.
-
-NS_ASSUME_NONNULL_BEGIN
-
-// "Listening to <heading>": app (default), menzen, artist, album or custom
-// (MenzenSettingHeadingText).
 #define MenzenPartHeading MenzenSettingHeading
-// title (default), artist or album. Discord needs a first line.
+// Discord needs a first line.
 #define MenzenPartFirstLine @"firstLine"
-// artist (default), album, title or none.
 #define MenzenPartSecondLine @"secondLine"
-// The big picture's caption, which Discord shows as a third line: album
-// (default), artist, title or none.
 #define MenzenPartThirdLine @"thirdLine"
-// cover (default), artistImage, logo or none. A missing cover or artist
-// picture falls back to the app's logo.
 #define MenzenPartBigPicture @"bigPicture"
-// In the big picture's corner: artistImage (default), logo, cover or none.
 #define MenzenPartSmallPicture @"smallPicture"
-// The small picture's hover text: artist (default), app or none.
 #define MenzenPartSmallPictureText @"smallPictureText"
-// progress (default) or elapsed. Without timestamps Discord shows the time
-// since the activity started anyway, so there's no "none".
+// Without timestamps Discord shows the time since the activity started anyway,
+// so there's no "none".
 #define MenzenPartTime @"time"
-// What member lists show next to the name: title (default), artist, album,
-// or name (the heading). Discord can only show the heading, first or second
-// line there; see MenzenMemberListDisplay.
 #define MenzenPartMemberList MenzenSettingMemberList
 
-// [value, title] pairs, the default first.
 static inline NSArray<NSArray<NSString *> *> *MenzenPartChoices(NSString *part) {
 	static NSDictionary<NSString *, NSArray *> *choices;
 	static dispatch_once_t once;
@@ -55,7 +35,6 @@ static inline NSArray<NSArray<NSString *> *> *MenzenPartChoices(NSString *part) 
 	return choices[part] ?: @[];
 }
 
-// The part's setting, one of its choices.
 static inline NSString *MenzenPart(NSString *part) {
 	NSString *value = MenzenSettingString(part, nil);
 	if (!value) {
@@ -100,5 +79,3 @@ static inline NSString *MenzenPartTitle(NSString *part, NSString *value) {
 	}
 	return value;
 }
-
-NS_ASSUME_NONNULL_END

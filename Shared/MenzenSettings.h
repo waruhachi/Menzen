@@ -8,37 +8,23 @@
 #define MenzenSettingsDomain @"moe.waru.menzen"
 #define MenzenSettingsChangedNotification "moe.waru.menzen.settings"
 
-// BOOL, default YES.
 #define MenzenSettingEnabled @"enabled"
-// BOOL per source, "source.<bundle identifier>", default YES.
 #define MenzenSettingSourcePrefix @"source."
-// BOOL, default NO: any app not in MenzenProviders().
 #define MenzenSettingOtherApps @"otherApps"
-// BOOL per game, "game.<bundle identifier>", default YES: the game on screen
-// shows as "Playing <game>", over whatever's playing.
 #define MenzenSettingGamePrefix @"game."
-// The card's parts are in MenzenCard.h. These switches came before them and are
-// only read for parts that haven't been set yet.
+// Only read for card parts that haven't been set yet (MenzenCard.h).
 #define MenzenSettingShowArtist @"showArtist"
 #define MenzenSettingShowCover @"showCover"
 #define MenzenSettingShowProgress @"showProgress"
 #define MenzenSettingShowArtistPicture @"showArtistPicture"
-// BOOL, default YES.
 #define MenzenSettingLinks @"links"
 #define MenzenSettingHeading @"heading"
 #define MenzenSettingHeadingText @"headingText"
 #define MenzenSettingMemberList @"memberList"
-// Seconds to keep an activity once it stops (media paused, or the game left)
-// before clearing it; 0 clears at once, -1 keeps it until something else takes
-// over. Default 10.
+// 0 clears at once, -1 keeps it until something else takes over.
 #define MenzenSettingPauseGrace @"pauseGrace"
-// Array of MenzenSource* strings, the first shown over the others.
 #define MenzenSettingPriority @"priority"
-// BOOL, default NO: only the app's (or game's) name and icon, with no
-// titles, pictures, links or time.
 #define MenzenSettingPrivacy @"privacy"
-// BOOL per app, "private.<bundle identifier>", default NO: Privacy Mode for
-// just that app.
 #define MenzenSettingPrivatePrefix @"private."
 
 static inline CFStringRef MenzenSettingsUser(void) {
@@ -53,7 +39,6 @@ static inline id MenzenSettingValue(NSString *key) {
 	return CFBridgingRelease(CFPreferencesCopyValue((__bridge CFStringRef)key, (__bridge CFStringRef)MenzenSettingsDomain, MenzenSettingsUser(), kCFPreferencesAnyHost));
 }
 
-// nil removes the setting.
 static inline void MenzenWriteSetting(NSString *key, id value) {
 	CFPreferencesSetValue((__bridge CFStringRef)key, (__bridge CFPropertyListRef)value, (__bridge CFStringRef)MenzenSettingsDomain, MenzenSettingsUser(), kCFPreferencesAnyHost);
 	MenzenSettingsSynchronize();
@@ -78,20 +63,16 @@ static inline double MenzenSettingDouble(NSString *key, double fallback) {
 	return [value respondsToSelector:@selector(doubleValue)] ? [value doubleValue] : fallback;
 }
 
-// Privacy Mode, for everything or for just this app.
 static inline BOOL MenzenAppIsPrivate(NSString *bundleIdentifier) {
 	if (MenzenSettingBool(MenzenSettingPrivacy, NO)) return YES;
 	return bundleIdentifier.length && MenzenSettingBool([MenzenSettingPrivatePrefix stringByAppendingString:bundleIdentifier], NO);
 }
 
-// What Menzen can show, for MenzenSettingPriority.
 #define MenzenSourceCustom @"custom"
 #define MenzenSourceConnected @"connected"
 #define MenzenSourceGames @"games"
 #define MenzenSourceMedia @"media"
 
-// The sources, the first shown over the others: the setting's order, with any
-// it's missing after them in the default order.
 static inline NSArray<NSString *> *MenzenPriority(void) {
 	NSArray<NSString *> *defaults = @[MenzenSourceCustom, MenzenSourceConnected, MenzenSourceGames, MenzenSourceMedia];
 	NSMutableArray<NSString *> *order = [NSMutableArray array];

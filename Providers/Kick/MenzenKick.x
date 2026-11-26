@@ -5,7 +5,6 @@
 // from the channel info the app fetches as a channel opens, matched by
 // stream title, else by channel name.
 
-// By stream title and by lowercased channel name.
 static MenzenCache<NSString *, NSDictionary *> *streams;
 
 static BOOL MenzenIsChannelInfo(NSURL *url) {
@@ -58,7 +57,6 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		return MenzenIsChannelInfo(url);
 	}, ^(NSURL *url, NSData *body) {
-		// "/", "api", "v2", "channels", "<slug>", "info"
 		MenzenRememberInfo(body, url.path.pathComponents[4]);
 	});
 }

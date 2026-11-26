@@ -32,8 +32,6 @@ static NSDate *MenzenConnectedDate(id seconds) {
 	return [NSDate dateWithTimeIntervalSince1970:[seconds doubleValue]];
 }
 
-// What a client sent, checked the way custom activities are
-// (-[MenzenPresence customActivity]).
 static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *appName) {
 	MenzenActivity *activity = [MenzenActivity new];
 	id kind = info[MenzenActivityKindKey];
@@ -70,16 +68,15 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 - (void)sessionEnded:(MenzenConnectedSession *)session;
 @end
 
-// One client connection. XPC calls arrive on the connection's queue and are
-// handed to the listener on the main queue.
+// XPC calls arrive on the connection's queue; the listener lives on the main
+// queue.
 @interface MenzenConnectedSession : NSObject <MenzenConnectedService>
 @property (nonatomic, weak) MenzenConnectedListener *listener;
 @property (nonatomic, weak) NSXPCConnection *connection;
 @property (nonatomic, copy) NSString *process;
 @property (nonatomic, copy) NSString *identifier;
 @property (nonatomic, copy) NSString *name;
-@property (nonatomic, copy, nullable) NSDictionary *sentActivity;
-// When the activity was last sent, in sends since menzend started.
+@property (nonatomic, copy) NSDictionary *sentActivity;
 @property (nonatomic) uint64_t sent;
 @property (nonatomic) MenzenClientState state;
 @end
@@ -123,7 +120,6 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	[_listener resume];
 }
 
-// On the listener's queue.
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)connection {
 	__block BOOL full;
 	dispatch_sync(dispatch_get_main_queue(), ^{
@@ -188,7 +184,6 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	MenzenPostDarwinNotification(CFSTR(MenzenConnectedRequestNotification));
 }
 
-// Lists the app in the settings. NO when there's no room for another.
 - (BOOL)rememberApp:(NSString *)identifier name:(NSString *)name process:(NSString *)process {
 	NSMutableDictionary *apps = [MenzenConnectedApps() mutableCopy];
 	NSMutableDictionary *app = [NSMutableDictionary dictionary];
@@ -237,7 +232,6 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	[self showLatest];
 }
 
-// Tells the client when whether it shows has changed.
 - (void)updateSession:(MenzenConnectedSession *)session {
 	MenzenClientState state = [self stateForIdentifier:session.identifier];
 	if (session.state == state) return;
@@ -249,8 +243,6 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	[self showLatestAgain:NO];
 }
 
-// again: even if it's the same activity as before, which shows differently
-// when the settings change.
 - (void)showLatestAgain:(BOOL)again {
 	MenzenConnectedSession *latest;
 	for (MenzenConnectedSession *session in _sessions) {

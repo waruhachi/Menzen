@@ -10,7 +10,6 @@
 - (NSString *)internalString;
 @end
 
-// Guarded by lock.
 static NSString *titleID;
 static NSString *titleCover;
 static NSObject *lock;
@@ -27,7 +26,6 @@ static void MenzenRememberTitle(id title, id image) {
 	}
 }
 
-// "Season 1, Ep. 1 <episode>" as season, episode and title.
 static NSArray<NSString *> *MenzenEpisodeParts(NSString *text) {
 	static NSRegularExpression *expression;
 	static dispatch_once_t once;
@@ -57,7 +55,6 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 		cover = titleCover;
 	}
 
-	// Only the title's own info.
 	if (!ID || !contentID || center != MPNowPlayingInfoCenter.defaultCenter || !([contentID isEqualToString:ID] || [contentID hasPrefix:[ID stringByAppendingString:@":"]])) return nil;
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];

@@ -34,7 +34,6 @@ static BOOL MenzenIsPlayerCore(const void *address) {
 %end
 
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
-	// Only info with the builder's picture.
 	if (!info[MPMediaItemPropertyArtwork] || withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
 	@synchronized(NSURLSession.class) {
 		return cover ? @{MenzenExtrasCoverKey: cover} : nil;

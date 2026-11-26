@@ -1,25 +1,12 @@
 #import <Foundation/Foundation.h>
 
-// The apps Menzen knows how to show. Each one can be switched off in
-// settings; anything else only shows with the experimental "Other Apps"
-// source. Some also have a hook in Providers/<App> for what MediaRemote lacks.
-
-NS_ASSUME_NONNULL_BEGIN
-
 #define MenzenProviderBundleIdentifierKey @"bundleIdentifier"
-// What Discord shows: "Listening to <name>", or "Watching <name>" for apps
-// with MenzenProviderWatchingKey.
 #define MenzenProviderNameKey @"name"
 #define MenzenProviderWatchingKey @"watching"
-// BOOL: listening or watching by what's playing, when the app says (see
-// MenzenTrack.mediaType), else by MenzenProviderWatchingKey.
 #define MenzenProviderKindByMediaTypeKey @"kindByMediaType"
-// BOOL: everything it plays is a podcast, whatever it says (most podcast apps
-// report plain audio).
+// Most podcast apps report plain audio.
 #define MenzenProviderPodcastKey @"podcast"
-// Image hosts the app's cover URLs may come from.
 #define MenzenProviderArtworkHostsKey @"artworkHosts"
-// Hosts the app's links (track, artist, album) may point at.
 #define MenzenProviderLinkHostsKey @"linkHosts"
 
 static inline NSArray<NSDictionary<NSString *, id> *> *MenzenProviders(void) {
@@ -27,7 +14,6 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MenzenProviders(void) {
 	static dispatch_once_t once;
 	dispatch_once(&once, ^{
 		providers = @[
-			// Listening
 			@{
 				MenzenProviderBundleIdentifierKey: @"com.amazon.mp3.AmazonCloudPlayer",
 				MenzenProviderNameKey: @"Amazon Music",
@@ -46,7 +32,6 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MenzenProviders(void) {
 				MenzenProviderPodcastKey: @YES,
 				MenzenProviderArtworkHostsKey: @[@"mzstatic.com"],
 				MenzenProviderLinkHostsKey: @[@"podcasts.apple.com"],
-				// Video podcasts show as watching.
 				MenzenProviderKindByMediaTypeKey: @YES,
 			},
 			@{
@@ -112,7 +97,6 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MenzenProviders(void) {
 				MenzenProviderArtworkHostsKey: @[@"googleusercontent.com", @"i.ytimg.com"],
 				MenzenProviderLinkHostsKey: @[@"music.youtube.com"],
 			},
-			// Watching
 			@{
 				MenzenProviderBundleIdentifierKey: @"com.apple.tv",
 				MenzenProviderNameKey: @"Apple TV",
@@ -179,7 +163,6 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MenzenProviders(void) {
 				MenzenProviderWatchingKey: @YES,
 				MenzenProviderArtworkHostsKey: @[@"plex.tv"],
 				MenzenProviderLinkHostsKey: @[@"watch.plex.tv"],
-				// Plex plays music too.
 				MenzenProviderKindByMediaTypeKey: @YES,
 			},
 			@{
@@ -229,11 +212,9 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MenzenProviders(void) {
 	return providers;
 }
 
-static inline NSDictionary<NSString *, id> *_Nullable MenzenProviderForBundleIdentifier(NSString *_Nullable bundleIdentifier) {
+static inline NSDictionary<NSString *, id> *MenzenProviderForBundleIdentifier(NSString *bundleIdentifier) {
 	for (NSDictionary *provider in MenzenProviders()) {
 		if ([provider[MenzenProviderBundleIdentifierKey] isEqualToString:bundleIdentifier]) return provider;
 	}
 	return nil;
 }
-
-NS_ASSUME_NONNULL_END

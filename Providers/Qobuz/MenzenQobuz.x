@@ -13,7 +13,6 @@
 @implementation MenzenQobuzTrack
 @end
 
-// By title and album.
 static NSMutableDictionary<NSString *, MenzenQobuzTrack *> *tracks;
 static NSMutableDictionary<NSString *, NSString *> *pictures;
 
@@ -40,9 +39,6 @@ static NSString *MenzenArtistImageURL(id value) {
 	return [url hasPrefix:@"https://static.qobuz.com/images/artists/"] ? url : nil;
 }
 
-// An artist's picture: image (sized URLs), picture (a URL), or
-// images.portrait (a hash). Playlists and labels have IDs, names and images
-// too, but not in images/artists/.
 static NSString *MenzenPicture(NSDictionary *artist) {
 	NSDictionary *image = MenzenDictionary(artist[@"image"]);
 	for (NSString *size in @[@"extralarge", @"large", @"mega", @"medium"]) {
@@ -117,8 +113,6 @@ static void MenzenRemember(id object, NSUInteger depth) {
 
 	NSDictionary *dictionary = MenzenDictionary(object);
 	if (!dictionary) return;
-	// An artist, wherever it appears. Artist pages name them as
-	// name.display.
 	NSString *ID = MenzenString(dictionary[@"id"]);
 	BOOL named = MenzenString(dictionary[@"name"]) || MenzenString(MenzenDictionary(dictionary[@"name"])[@"display"]);
 	NSString *picture = ID && named ? MenzenPicture(dictionary) : nil;
@@ -129,9 +123,7 @@ static void MenzenRemember(id object, NSUInteger depth) {
 		}
 	}
 
-	// A track: it has an album.
 	if ([dictionary[@"id"] isKindOfClass:NSNumber.class] && MenzenDictionary(dictionary[@"album"])) MenzenRememberTrack(dictionary);
-	// An album with its tracks, which don't repeat it.
 	NSArray *items = MenzenDictionary(dictionary[@"tracks"])[@"items"];
 	if ([items isKindOfClass:NSArray.class] && MenzenString(dictionary[@"title"]) && MenzenDictionary(dictionary[@"image"])) {
 		NSMutableDictionary *album = [dictionary mutableCopy];

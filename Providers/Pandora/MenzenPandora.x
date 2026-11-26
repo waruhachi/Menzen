@@ -9,7 +9,6 @@
 // loads as each track starts, matched by artist name; the track's ID is only
 // in its lyrics, which not every track has.
 
-// By Pandora ID ("TR:<n>").
 static MenzenCache<NSString *, NSDictionary *> *tracks;
 static MenzenCache<NSString *, NSString *> *pictures;
 static dispatch_queue_t queue;
@@ -74,7 +73,6 @@ static NSString *MenzenTextAfter(NSString *page, NSString *marker, NSString *sta
 	return [page substringWithRange:NSMakeRange(NSMaxRange(from), to.location - NSMaxRange(from))];
 }
 
-// HTML text without its character references (&amp;, &#39;, &#x27;).
 static NSString *MenzenUnescape(NSString *html) {
 	NSMutableString *text = [NSMutableString string];
 	NSScanner *scanner = [NSScanner scannerWithString:html];
@@ -155,7 +153,6 @@ static void MenzenRememberDetails(NSData *data) {
 
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
-	// "TR:<n>::<n>".
 	NSString *pandoraID = [MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]) componentsSeparatedByString:@"::"].firstObject;
 	NSMutableDictionary *extras = pandoraID ? [tracks[pandoraID] mutableCopy] : nil;
 	NSString *artist = MenzenString(info[MPMediaItemPropertyArtist]);

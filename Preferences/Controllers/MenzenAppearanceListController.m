@@ -16,9 +16,8 @@ static NSString *MenzenTrimmed(NSString *string) {
 
 static NSString *const MenzenAppleMusic = @"com.apple.Music";
 
-// A made-up song for the previews, until something has played, following the
-// card's parts the way menzend does. It has no cover or artist picture, so
-// pictures fall back to Apple Music's icon.
+// It has no cover or artist picture, so pictures fall back to Apple Music's
+// icon.
 static NSDictionary<NSString *, id> *MenzenSampleActivity(NSDictionary<NSString *, NSString *> *icons) {
 	NSDictionary *texts = @{@"title": MenzenLocalizedString(@"appearance.song_title", @"Song Title"), @"artist": MenzenLocalizedString(@"common.artist", @"Artist"), @"album": MenzenLocalizedString(@"common.album", @"Album")};
 	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
@@ -90,7 +89,6 @@ static NSDictionary<NSString *, id> *MenzenSampleActivity(NSDictionary<NSString 
 	});
 }
 
-// What played last, else a sample song.
 - (NSDictionary<NSString *, id> *)previewActivity {
 	NSDictionary *preview = _status[MenzenStatusPreviewKey];
 	if ([preview isKindOfClass:NSDictionary.class] && ([preview[MenzenActivityKindKey] isEqual:@"listening"] || [preview[MenzenActivityKindKey] isEqual:@"watching"])) return preview;
@@ -242,7 +240,6 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 }
 
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
-	// The part using the new choice takes this one's old choice.
 	NSString *other = [specifier propertyForKey:@"swaps"][value];
 	if (other) {
 		PSSpecifier *swapped = MenzenSettingSpecifier(self, nil, other, PSStaticTextCell);
@@ -251,8 +248,6 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 
 	[super setPreferenceValue:value specifier:specifier];
 	if (![specifier propertyForKey:@"choices"]) return;
-	// Menus show the new choice, and parts that depend on it follow. Only
-	// rows that changed are reloaded; the custom heading row comes and goes.
 	NSMutableArray<PSSpecifier *> *old = _specifiers;
 	_specifiers = nil;
 	NSArray<PSSpecifier *> *fresh = self.specifiers;

@@ -24,7 +24,7 @@ static NSString *MenzenURLOnHosts(NSString *url, NSArray<NSString *> *hosts) {
 	return nil;
 }
 
-// What the provider hook added; an older hook's plain https asset URL is the cover.
+// An older hook's plain https asset URL is the cover.
 static NSDictionary<NSString *, NSString *> *MenzenTrackExtras(MenzenTrack *track) {
 	NSDictionary *extras = MenzenExtrasFromURL(track.assetURL);
 	if (extras) return extras;
@@ -86,7 +86,6 @@ static BOOL MenzenSameText(NSString *a, NSString *b) {
 	return a && b && [a caseInsensitiveCompare:b] == NSOrderedSame;
 }
 
-// A start (counting up) and, for the progress bar, an end.
 static void MenzenSetTime(MenzenActivity *activity, MenzenTrack *track, NSTimeInterval elapsed, NSDate *now) {
 	activity.startDate = [now dateByAddingTimeInterval:-elapsed];
 	if ([MenzenPart(MenzenPartTime) isEqualToString:@"progress"] && track.duration > 0) activity.endDate = [activity.startDate dateByAddingTimeInterval:track.duration];
@@ -201,8 +200,6 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 	activity.details = texts[firstLine];
 	activity.detailsURL = links[firstLine];
 
-	// Lines repeating one above aren't shown, like singles named after
-	// their album.
 	NSString *secondLine = MenzenPart(MenzenPartSecondLine);
 	NSString *state = texts[secondLine];
 	if (state.length && !MenzenSameText(state, activity.details)) {
@@ -219,7 +216,6 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 
 	NSString *bigPicture = MenzenPart(MenzenPartBigPicture);
 	if (![bigPicture isEqualToString:@"none"]) {
-		// A cover or artist picture the app doesn't have: its logo.
 		if (![images[bigPicture] length]) bigPicture = @"logo";
 		activity.largeImageURL = [images[bigPicture] length] ? images[bigPicture] : nil;
 	}

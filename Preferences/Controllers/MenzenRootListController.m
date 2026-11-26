@@ -47,19 +47,15 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 
 @implementation MenzenRootListController {
 	ASWebAuthenticationSession *_session;
-	// nil until menzend answers, or when it can't be reached.
 	NSDictionary<NSString *, id> *_status;
 	BOOL _unreachable;
 	BOOL _busy;
-	// The last sign-in problem, shown until the next attempt.
 	NSString *_message;
 	UIRefreshControl *_refreshControl;
 	// When the pane first saw menzend connecting, used until menzend says
 	// since when (it only does once it has started connecting).
 	NSDate *_connectingSeen;
 	NSTimer *_connectTimer;
-	// From menzend's connection request notification, opened once the rows
-	// are known.
 	BOOL _opensConnected;
 }
 
@@ -71,7 +67,6 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 			// Not knowing yet, rather than flashing the sign-in.
 			specifiers = [NSMutableArray array];
 		} else if (!self.signedIn) {
-			// Nothing to set up without an account.
 			NSArray *identifiers = @[@"account", @"accountButton", @"otherDevice", @"otherDeviceButton"];
 			NSMutableArray *signInSpecifiers = [NSMutableArray array];
 			for (NSString *identifier in identifiers) [signInSpecifiers addObject:MenzenSpecifier(specifiers, identifier)];
@@ -166,7 +161,6 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	if (completion) completion();
 }
 
-// Signed out, there's no Connected Apps row to open.
 - (void)openConnectedIfRequested {
 	if (!_opensConnected || (!_status && !_unreachable)) return;
 	_opensConnected = NO;
@@ -200,7 +194,6 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	return start ? MAX(-start.timeIntervalSinceNow, 0) : 0;
 }
 
-// Reloads once connecting has taken too long, to swap the spinner for a hint.
 - (void)scheduleConnectTimeout {
 	[_connectTimer invalidate];
 	_connectTimer = nil;
@@ -258,9 +251,8 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	return [[self specifierAtIndexPath:indexPath].identifier isEqualToString:@"profile"];
 }
 
-// A setting with validValues and validTitles, picked from a menu on its row.
-// Preferences only loads those into the specifier for list cells, so they're
-// read from the plist's entries.
+// Preferences only loads validValues and validTitles into list cells'
+// specifiers, so they're read from the plist's entries.
 - (void)makeMenu:(PSSpecifier *)specifier {
 	NSArray *values = [specifier propertyForKey:@"validValues"];
 	NSArray *titles = [specifier propertyForKey:@"validTitles"];

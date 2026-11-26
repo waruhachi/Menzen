@@ -80,8 +80,6 @@ int main(int argc, char *argv[]) {
 		};
 		[appCatalog start];
 
-		// Pull to refresh in the pane: hooks look up their extras again, and
-		// what's playing is read and sent even if nothing changed.
 		service.refreshHandler = ^{
 			MenzenPostDarwinNotification(CFSTR(MenzenRefetchNotification));
 			[nowPlaying refresh];

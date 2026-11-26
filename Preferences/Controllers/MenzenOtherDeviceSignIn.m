@@ -6,7 +6,6 @@
 
 static CGFloat const MenzenCodeSize = 240;
 static CGFloat const MenzenCodeQuietZone = 12;
-// How long Copy Link reads Copied.
 static NSTimeInterval const MenzenCopiedDuration = 1.5;
 
 static UIImage *MenzenQRCodeImage(NSURL *url) {
@@ -38,7 +37,6 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 
 @implementation MenzenOtherDeviceSignInController {
 	NSURL *_verificationURL;
-	// Bumped by every new code, so replies about an older one are dropped.
 	NSUInteger _attempt;
 	UIImageView *_codeView;
 	UILabel *_userCodeLabel;
@@ -142,7 +140,6 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 	[self requestCodeAfterMessage:nil];
 }
 
-// message says why the previous code is gone, unless it just expired.
 - (void)requestCodeAfterMessage:(NSString *)message {
 	NSUInteger attempt = ++_attempt;
 	[self showCodeURL:nil userCode:nil];
@@ -176,7 +173,6 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 			if (signedIn) {
 				[strongSelf finish];
 			} else {
-				// An expired code is just replaced.
 				[strongSelf requestCodeAfterMessage:error];
 			}
 		});

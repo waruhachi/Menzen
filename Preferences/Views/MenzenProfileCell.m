@@ -12,7 +12,6 @@ static CGFloat const MenzenAvatarSize = 80;
 static CGFloat const MenzenAvatarBorder = 4;
 static CGFloat const MenzenStatusSize = 24;
 
-// Symbols stand in for Discord's own badge art.
 static NSArray<NSArray<NSString *> *> *MenzenBadgeDescriptions(NSDictionary *profile) {
 	static NSDictionary<NSString *, NSArray<NSString *> *> *descriptions;
 	static dispatch_once_t once;
@@ -95,7 +94,6 @@ static UIImageView *MenzenRoundImageView(CGFloat size) {
 	UILabel *_badgesLabel;
 	UIView *_statusView;
 	MenzenActivityView *_activityView;
-	// Over everything, for errors and while connecting.
 	UIVisualEffectView *_overlay;
 	UIActivityIndicatorView *_overlaySpinner;
 	UIImageView *_overlayIcon;
@@ -224,13 +222,11 @@ static UIImageView *MenzenRoundImageView(CGFloat size) {
 			[_tagBadgeView.widthAnchor constraintEqualToConstant:16],
 			[_tagBadgeView.heightAnchor constraintEqualToConstant:16],
 
-			// At the avatar's lower right, like Discord's.
 			[_statusView.centerXAnchor constraintEqualToAnchor:_avatarView.centerXAnchor constant:MenzenAvatarSize / 2 * M_SQRT1_2],
 			[_statusView.centerYAnchor constraintEqualToAnchor:_avatarView.centerYAnchor constant:MenzenAvatarSize / 2 * M_SQRT1_2],
 			[_statusView.widthAnchor constraintEqualToConstant:MenzenStatusSize],
 			[_statusView.heightAnchor constraintEqualToConstant:MenzenStatusSize],
 
-			// Room for the decoration, which reaches past the avatar.
 			[info.topAnchor constraintEqualToAnchor:_avatarView.bottomAnchor constant:MenzenAvatarSize * 0.1 + 8],
 			[info.leadingAnchor constraintEqualToAnchor:margins.leadingAnchor],
 			[info.trailingAnchor constraintEqualToAnchor:margins.trailingAnchor],

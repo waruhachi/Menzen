@@ -10,8 +10,6 @@
 // A live event's ID is listed as "<content ID>:<…>:<…>". Its time slot is
 // published as start and end, since a live stream's info has no duration.
 
-// The app's image server, from its configuration
-// (ripcut-delivery/{version}/variant/{partnerId}/{imageId}/scale).
 static NSString *const MenzenImageServer = @"https://disney.images.edge.bamgrid.com/ripcut-delivery/v2/variant/disney/";
 
 #define MenzenItemShowKey @"show"
@@ -26,8 +24,6 @@ static NSString *const MenzenImageServer = @"https://disney.images.edge.bamgrid.
 
 static NSMutableDictionary<NSString *, NSDictionary *> *items;
 
-// The item's 16:9 picture: its thumbnail (an episode's still), else its tile
-// or background.
 static NSString *MenzenImageID(NSDictionary *artwork) {
 	static NSCharacterSet *invalid;
 	static dispatch_once_t once;
@@ -42,7 +38,6 @@ static NSString *MenzenImageID(NSDictionary *artwork) {
 	return nil;
 }
 
-// The movie's or the episode's show's.
 static NSString *MenzenPage(NSArray *actions) {
 	if (![actions isKindOfClass:NSArray.class]) return nil;
 	for (NSDictionary *action in actions) {
@@ -104,7 +99,6 @@ static BOOL MenzenIsExplore(NSURL *url) {
 	return [url.host isEqualToString:@"disney.api.edge.bamgrid.com"] && [url.path hasPrefix:@"/explore/"];
 }
 
-// "S1:E1 <episode>" as season, episode and title.
 static NSArray<NSString *> *MenzenEpisodeParts(NSString *text) {
 	static NSRegularExpression *expression;
 	static dispatch_once_t once;

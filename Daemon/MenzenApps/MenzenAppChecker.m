@@ -12,7 +12,6 @@
 - (pid_t)pidForApplication:(NSString *)bundleIdentifier;
 @end
 
-// How long an app gets to save its check.
 static NSTimeInterval const MenzenBackgroundTimeout = 30;
 static NSTimeInterval const MenzenOpenTimeout = 120;
 // After menzend starts, or apps change: let things settle first.
@@ -129,8 +128,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	});
 }
 
-// Apps with a provider, installed, without a check of this version by this
-// Menzen, and not launched for it before.
 - (void)scan {
 	NSDictionary *tried = self.tried;
 	for (NSString *bundleIdentifier in [MenzenHookedBundles().allObjects sortedArrayUsingSelector:@selector(compare:)]) {
@@ -178,8 +175,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	});
 }
 
-// Closes the app if menzend launched it and it's still in the background,
-// then moves on.
 - (void)finishCurrent {
 	NSString *bundleIdentifier = _current;
 	pid_t pid = _currentPid;

@@ -19,7 +19,6 @@ void MenzenLocalizeSpecifiers(NSArray<PSSpecifier *> *specifiers) {
 		NSString *footer = MenzenLocalizedProperty(specifier, @"footerText");
 		if (footer) [specifier setProperty:footer forKey:@"footerText"];
 
-		// The titles by value, as loaded from validTitles.
 		NSArray *titles = [specifier propertyForKey:@"validTitles"];
 		NSArray *keys = [specifier propertyForKey:@"validTitlesKeys"];
 		if ([titles isKindOfClass:NSArray.class] && [keys isKindOfClass:NSArray.class] && titles.count == keys.count && specifier.titleDictionary) {

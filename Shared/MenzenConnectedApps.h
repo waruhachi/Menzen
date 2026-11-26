@@ -2,28 +2,17 @@
 
 #import "MenzenSettings.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
-// Connected Apps: other tweaks showing activity through libmenzen
-// (Client/Menzen.h), each only once the user allows it.
-
 #define MenzenConnectedServiceName @"moe.waru.menzend.api"
-// The libSandy profile that lets sandboxed processes look the service up.
 #define MenzenConnectedSandyProfile "Menzen"
-// Posted by menzend when an app registers or changes its name.
 #define MenzenConnectedAppsChangedNotification "moe.waru.menzen.connected"
 
-// BOOL, default NO.
 #define MenzenSettingConnected @"connected"
-// Dictionary: identifier to MenzenConnectedApp*Key, every app that has
-// registered. Written by menzend only.
+// Written by menzend only.
 #define MenzenSettingConnectedApps @"connectedApps"
-// Array of the identifiers the user allows. Written by the pane only.
+// Written by the pane only.
 #define MenzenSettingConnectedAllowed @"connectedAllowed"
-// Array of MenzenConnectedRequest*Key dictionaries, oldest first: apps that
-// asked for the first time while Connected Apps was on. Written by menzend
-// only, which posts MenzenConnectedRequestNotification after; SpringBoard
-// shows each one as a notification.
+// Written by menzend only, which posts MenzenConnectedRequestNotification
+// after.
 #define MenzenSettingConnectedRequests @"connectedRequests"
 #define MenzenConnectedRequestNotification "moe.waru.menzen.connected.request"
 #define MenzenConnectedRequestIdentifierKey @"identifier"
@@ -31,21 +20,17 @@ NS_ASSUME_NONNULL_BEGIN
 #define MenzenConnectedRequestDateKey @"date"
 
 #define MenzenConnectedAppNameKey @"name"
-// The signing identifier of the process it last registered from.
 #define MenzenConnectedAppProcessKey @"process"
 
 // No more are kept, so a misbehaving client can't fill the settings.
 static NSUInteger const MenzenConnectedAppLimit = 100;
 
-// What the client sends: MenzenActivity*Key (MenzenService.h), with image
-// URLs as strings and dates in seconds since 1970.
 @protocol MenzenConnectedService
 - (void)registerWithIdentifier:(NSString *)identifier name:(NSString *)name;
-- (void)setActivity:(nullable NSDictionary<NSString *, id> *)activity;
+- (void)setActivity:(NSDictionary<NSString *, id> *)activity;
 @end
 
 @protocol MenzenConnectedClient
-// MenzenClientState.
 - (void)stateChanged:(NSInteger)state;
 @end
 
@@ -60,14 +45,13 @@ static inline NSXPCInterface *MenzenConnectedClientInterface(void) {
 	return [NSXPCInterface interfaceWithProtocol:@protocol(MenzenConnectedClient)];
 }
 
-static inline BOOL MenzenConnectedIdentifierIsValid(NSString *_Nullable identifier) {
+static inline BOOL MenzenConnectedIdentifierIsValid(NSString *identifier) {
 	if (![identifier isKindOfClass:NSString.class] || !identifier.length || identifier.length > 128) return NO;
 	NSMutableCharacterSet *allowed = [NSMutableCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_"];
 	return [identifier rangeOfCharacterFromSet:allowed.invertedSet].location == NSNotFound;
 }
 
-// The name trimmed, or nil if it's empty or too long.
-static inline NSString *_Nullable MenzenConnectedName(NSString *_Nullable name) {
+static inline NSString *MenzenConnectedName(NSString *name) {
 	if (![name isKindOfClass:NSString.class]) return nil;
 	name = [name stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 	return name.length && name.length <= 64 ? name : nil;
@@ -98,5 +82,3 @@ static inline void MenzenConnectedSetAllowed(NSString *identifier, BOOL allowed)
 	MenzenWriteSetting(MenzenSettingConnectedAllowed, identifiers);
 	MenzenPostDarwinNotification(CFSTR(MenzenSettingsChangedNotification));
 }
-
-NS_ASSUME_NONNULL_END

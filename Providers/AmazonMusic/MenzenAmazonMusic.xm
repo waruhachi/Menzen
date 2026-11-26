@@ -16,11 +16,9 @@
 static MenzenCache<NSString *, NSString *> *covers;
 static MenzenCache<NSString *, NSDictionary *> *episodes;
 
-// Main thread only. NSNull for an artist without a picture.
 static NSMutableDictionary<NSString *, id> *artistPictures;
 static NSMutableSet<NSString *> *artistPicturesLoading;
 
-// Guarded by graphQLLock.
 static NSURLRequest *graphQLRequest;
 static NSObject *graphQLLock;
 
@@ -75,8 +73,6 @@ static BOOL MenzenIsGraphQL(NSURL *url) {
 	return [url.scheme isEqualToString:@"https"] && [url.host.lowercaseString isEqualToString:@"gql.music.amazon.dev"];
 }
 
-// The smallest profile picture at least 500 wide, else the widest; else the
-// banner, the same way.
 static NSString *MenzenArtistPicture(NSArray *images) {
 	if (![images isKindOfClass:NSArray.class]) return nil;
 	for (NSString *type in @[@"PROFILE", @"BACKGROUND"]) {
@@ -122,7 +118,6 @@ static void MenzenLoadArtistPicture(NSString *artistASIN) {
 		NSString *picture = answered ? MenzenArtistPicture(artist[@"images"]) : nil;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[artistPicturesLoading removeObject:artistASIN];
-			// No answer: a later update asks again.
 			if (!answered) return;
 			if (artistPictures.count > 1000) [artistPictures removeAllObjects];
 			artistPictures[artistASIN] = picture ?: (id)NSNull.null;
@@ -139,7 +134,6 @@ static NSDictionary *MenzenEpisodeExtras(NSDictionary *info) {
 static NSDictionary *MenzenTrackExtras(NSDictionary *info) {
 	id track = MenzenGet(MenzenGet(%c(AMPlayer), @"sharedPlayer"), @"currentTrack");
 	NSDictionary *row = MenzenRow(track);
-	// Only the playing track's; else an episode's.
 	NSString *title = MenzenString(row[@"name"]);
 	if (!title || ![title isEqualToString:MenzenString(info[MPMediaItemPropertyTitle])]) return MenzenEpisodeExtras(info);
 

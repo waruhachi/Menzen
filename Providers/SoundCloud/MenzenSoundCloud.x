@@ -11,7 +11,6 @@
 - (NSString *)artistName;
 - (id)artworkURL;
 - (id)permalinkURL;
-// "soundcloud:users:<id>", the uploader's.
 - (id)artistUrn;
 // Set for private tracks; their links carry it, so they get none.
 - (id)secretToken;
@@ -30,7 +29,6 @@
 
 static NSUInteger const MenzenRememberedItems = 8;
 static NSMutableArray<MenzenSoundCloudItem *> *items;
-// Empty for an artist without an account.
 static NSMutableDictionary<NSString *, NSDictionary *> *accounts;
 
 static NSString *MenzenURLString(id value) {
@@ -50,7 +48,6 @@ static NSString *MenzenSoundCloudImageURL(NSString *string) {
 	return [[NSURL URLWithString:string].scheme isEqualToString:@"https"] ? string : nil;
 }
 
-// Lowercase letters and digits only: "Lil Tecca ✰" and "liltecca" match.
 static NSString *MenzenNormalized(NSString *name) {
 	NSMutableString *normalized = [NSMutableString string];
 	NSCharacterSet *keep = NSCharacterSet.alphanumericCharacterSet;
@@ -61,7 +58,6 @@ static NSString *MenzenNormalized(NSString *name) {
 	return normalized;
 }
 
-// The first of several credited artists: "A, B", "A & B", "A x B", "A feat. B".
 static NSString *MenzenFirstArtist(NSString *artist) {
 	for (NSString *separator in @[@", ", @" & ", @" x ", @" X ", @" feat. ", @" feat ", @" ft. ", @" ft ", @" (feat"]) {
 		NSRange range = [artist rangeOfString:separator options:NSCaseInsensitiveSearch];
@@ -76,7 +72,6 @@ static NSString *MenzenColumn(sqlite3_stmt *statement, int column) {
 	return text ? [NSString stringWithUTF8String:(const char *)text] : nil;
 }
 
-// The app's own copy of the accounts it has seen, read only.
 static sqlite3 *MenzenOpenStore(void) {
 	NSURL *group = [NSFileManager.defaultManager containerURLForSecurityApplicationGroupIdentifier:@"group.com.soundcloud.ios"];
 	NSString *path = [group URLByAppendingPathComponent:@"store.sqlite"].path;
@@ -102,8 +97,6 @@ static NSDictionary *MenzenAccountExtras(NSString *name, NSString *permalink, NS
 	return extras;
 }
 
-// The credited artist's own account when the app knows it, by name or
-// permalink; otherwise the uploader's.
 static NSDictionary *MenzenLookUpAccount(NSString *artist, NSString *uploaderURN) {
 	sqlite3 *store = MenzenOpenStore();
 	if (!store) return nil;
@@ -117,7 +110,6 @@ static NSDictionary *MenzenLookUpAccount(NSString *artist, NSString *uploaderURN
 			NSString *permalink = MenzenColumn(statement, 1);
 			if ([MenzenNormalized(name ?: @"") isEqualToString:wanted] || [permalink.lowercaseString isEqualToString:wanted]) {
 				NSMutableDictionary *extras = [MenzenAccountExtras(name, permalink, MenzenColumn(statement, 2)) mutableCopy];
-				// Their name as the track credits it, not with its decorations.
 				if (extras) extras[MenzenExtrasArtistNameKey] = MenzenFirstArtist(artist);
 				found = extras;
 			}

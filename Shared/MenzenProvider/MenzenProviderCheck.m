@@ -23,7 +23,6 @@ static NSURL *MenzenStatusURL(void) {
 	return [[NSURL fileURLWithPath:NSHomeDirectory()] URLByAppendingPathComponent:MenzenSupportStatusPath];
 }
 
-// Changes the status file with change, on the status queue.
 static void MenzenUpdateStatus(void (^change)(NSMutableDictionary *status)) {
 	dispatch_async(MenzenStatusQueue(), ^{
 		NSURL *url = MenzenStatusURL();
@@ -114,7 +113,6 @@ static void MenzenAlert(NSArray<NSString *> *missing, NSUInteger attempt) {
 	if (!app) app = bundle.bundleIdentifier;
 	NSString *version = MenzenAppVersion();
 	NSString *details = MenzenSupportDetails(app, version, bundle.bundleIdentifier, @MENZEN_VERSION, UIDevice.currentDevice.systemVersion, missing);
-	// Only once the user has seen it.
 	void (^seen)(void) = ^{
 		answered = YES;
 		MenzenUpdateStatus(^(NSMutableDictionary *status) {
@@ -145,13 +143,11 @@ static void MenzenAlert(NSArray<NSString *> *missing, NSUInteger attempt) {
 	});
 }
 
-// Runs the check and saves it, then tells menzend.
 static void MenzenRunCheck(NSArray<NSString *> *required, NSArray<NSString *> *optional, BOOL background, void (^done)(void)) {
 	NSArray *missing = MenzenMissing(required);
 	NSArray *missingOptional = MenzenMissing(optional);
 	NSString *version = MenzenAppVersion();
 	MenzenUpdateStatus(^(NSMutableDictionary *status) {
-		// Only a check says which versions the status is for.
 		status[MenzenSupportAppVersionKey] = version;
 		status[MenzenSupportMenzenVersionKey] = @MENZEN_VERSION;
 		status[MenzenSupportCheckedKey] = NSDate.date;
@@ -160,7 +156,6 @@ static void MenzenRunCheck(NSArray<NSString *> *required, NSArray<NSString *> *o
 		status[MenzenSupportBackgroundKey] = @(background);
 		BOOL alerted = [status[MenzenSupportAlertedVersionKey] isEqual:version];
 		if (!missing.count || alerted || background) return;
-		// A moment after the app's first screen is up, once per launch.
 		static BOOL scheduled;
 		if (scheduled) return;
 		scheduled = YES;
@@ -168,7 +163,6 @@ static void MenzenRunCheck(NSArray<NSString *> *required, NSArray<NSString *> *o
 			MenzenAlert(missing, 0);
 		});
 	});
-	// After the status queue has written it.
 	dispatch_async(MenzenStatusQueue(), ^{
 		NSString *name = [@MenzenSupportCheckedNotificationPrefix stringByAppendingString:NSBundle.mainBundle.bundleIdentifier ?: @""];
 		MenzenPostDarwinNotification((__bridge CFStringRef)name);
@@ -195,7 +189,6 @@ void MenzenProviderCheck(NSArray<NSString *> *required, NSArray<NSString *> *opt
 			task = UIBackgroundTaskInvalid;
 		}];
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-			// Opened in the meantime: that check counts instead.
 			if (application.applicationState != UIApplicationStateBackground) {
 				[application endBackgroundTask:task];
 				return;

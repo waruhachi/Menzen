@@ -15,7 +15,7 @@
 
 @interface RBSProcessIdentity : NSObject
 @property (nonatomic, readonly) BOOL isApplication;
-@property (nonatomic, readonly, nullable) NSString *embeddedApplicationIdentifier;
+@property (nonatomic, readonly) NSString *embeddedApplicationIdentifier;
 @end
 
 @interface RBSProcessHandle : NSObject
@@ -27,7 +27,7 @@
 @end
 
 @interface RBSProcessStateUpdate : NSObject
-@property (nonatomic, readonly, nullable) RBSProcessState *state;
+@property (nonatomic, readonly) RBSProcessState *state;
 @end
 
 @protocol MenzenProcessMonitorConfiguring
@@ -42,7 +42,6 @@
 @end
 
 static NSString *const MenzenVisibilityEndowment = @"com.apple.frontboard.visibility";
-// RBSProcessStateValueTaskState: the endowments come with the task state.
 static NSUInteger const MenzenTaskStateValue = 1;
 
 @implementation MenzenForegroundApps {
@@ -74,7 +73,6 @@ static NSUInteger const MenzenTaskStateValue = 1;
 		descriptor.values = MenzenTaskStateValue;
 		descriptor.endowmentNamespaces = @[MenzenVisibilityEndowment];
 		[configuration setStateDescriptor:descriptor];
-		// Runs on RunningBoard's queue.
 		[configuration setUpdateHandler:^(id monitor, RBSProcessHandle *process, RBSProcessStateUpdate *update) {
 			RBSProcessIdentity *identity = process.identity;
 			// Widgets and other extensions have an identity too.

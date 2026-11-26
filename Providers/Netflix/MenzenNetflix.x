@@ -52,7 +52,6 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSString *title = MenzenText(video, @"title");
 	NSString *show = MenzenText(video, @"showTitle");
 	NSString *infoTitle = MenzenString(info[MPMediaItemPropertyTitle]);
-	// Only the video's own info, which is titled after its show (or itself).
 	if (!title || center != MPNowPlayingInfoCenter.defaultCenter || ![infoTitle hasSuffix:show ?: title]) return nil;
 
 	withExtras[MPMediaItemPropertyTitle] = title;

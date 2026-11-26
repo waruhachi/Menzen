@@ -39,14 +39,10 @@ CGFloat const MenzenChoiceRowHeight = 52;
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier specifier:(PSSpecifier *)specifier {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier specifier:specifier])) {
 		self.selectionStyle = UITableViewCellSelectionStyleNone;
-		// Across the whole row, so a tap anywhere opens the menu, with the value
-		// on the right.
 		_button = [UIButton buttonWithType:UIButtonTypeSystem];
 		_button.showsMenuAsPrimaryAction = YES;
-		// The chevron after the title, on the right.
 		_button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
 		_button.semanticContentAttribute = UISemanticContentAttributeForceRightToLeft;
-		// A gap between the title and the chevron, with room for it.
 		_button.contentEdgeInsets = UIEdgeInsetsMake(0, 6, 0, 0);
 		_button.titleEdgeInsets = UIEdgeInsetsMake(0, -6, 0, 6);
 		_button.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];

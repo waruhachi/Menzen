@@ -9,10 +9,6 @@
 // and end are a live listing's time slot (seconds since 1970), for live
 // streams, whose duration and elapsed time MediaRemote drops.
 
-NS_ASSUME_NONNULL_BEGIN
-
-// Posted by menzend when the pane asks for a refresh: hooks look up what
-// they add to the playing item again.
 #define MenzenRefetchNotification "moe.waru.menzen.refetch"
 
 #define MenzenExtrasScheme @"menzen"
@@ -27,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define MenzenExtrasStartKey @"start"
 #define MenzenExtrasEndKey @"end"
 
-static inline NSURL *_Nullable MenzenExtrasURL(NSDictionary<NSString *, NSString *> *extras) {
+static inline NSURL *MenzenExtrasURL(NSDictionary<NSString *, NSString *> *extras) {
 	if (!extras.count) return nil;
 	NSURLComponents *components = [NSURLComponents new];
 	components.scheme = MenzenExtrasScheme;
@@ -42,7 +38,7 @@ static inline NSURL *_Nullable MenzenExtrasURL(NSDictionary<NSString *, NSString
 
 // nil unless ID is only letters, digits, "-", "_", ".", ":", so it can't
 // change where the link goes.
-static inline NSString *_Nullable MenzenLinkURL(NSString *format, id _Nullable ID) {
+static inline NSString *MenzenLinkURL(NSString *format, id ID) {
 	static NSCharacterSet *invalid;
 	static dispatch_once_t once;
 	dispatch_once(&once, ^{
@@ -53,7 +49,7 @@ static inline NSString *_Nullable MenzenLinkURL(NSString *format, id _Nullable I
 	return [format stringByReplacingOccurrencesOfString:@"%@" withString:ID];
 }
 
-static inline NSDictionary<NSString *, NSString *> *_Nullable MenzenExtrasFromURL(NSString *_Nullable url) {
+static inline NSDictionary<NSString *, NSString *> *MenzenExtrasFromURL(NSString *url) {
 	NSURLComponents *components = url ? [NSURLComponents componentsWithString:url] : nil;
 	if (![components.scheme isEqualToString:MenzenExtrasScheme]) return nil;
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
@@ -62,5 +58,3 @@ static inline NSDictionary<NSString *, NSString *> *_Nullable MenzenExtrasFromUR
 	}
 	return extras;
 }
-
-NS_ASSUME_NONNULL_END

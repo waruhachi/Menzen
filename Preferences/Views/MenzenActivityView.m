@@ -7,15 +7,12 @@
 static CGFloat const MenzenArtworkSize = 80;
 static CGFloat const MenzenSmallImageSize = 28;
 
-// "1:06:40", and under an hour "01:06", or "1:06" without padMinutes.
 static NSString *MenzenTimeText(NSTimeInterval seconds, BOOL padMinutes) {
 	long total = (long)MAX(0, floor(seconds));
 	if (total >= 3600) return [NSString stringWithFormat:@"%ld:%02ld:%02ld", total / 3600, total / 60 % 60, total % 60];
 	return [NSString stringWithFormat:padMinutes ? @"%02ld:%02ld" : @"%ld:%02ld", total / 60, total % 60];
 }
 
-// Discord's elapsed time: "1:06", in its positive green with the activity's
-// icon.
 static NSAttributedString *MenzenElapsedText(NSTimeInterval seconds, NSString *kind) {
 	NSString *time = MenzenTimeText(seconds, NO);
 	UIColor *green = [UIColor colorWithDynamicProvider:^UIColor *(UITraitCollection *traits) {
@@ -46,7 +43,6 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 @implementation MenzenActivityView {
 	UILabel *_headerLabel;
 	UIImageView *_artworkView;
-	// The artist's picture, in the cover's corner like Discord's small image.
 	UIImageView *_smallImageView;
 	UILabel *_detailsLabel;
 	UILabel *_stateLabel;
@@ -59,14 +55,12 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	UILabel *_emptyLabel;
 	NSDate *_start;
 	NSDate *_end;
-	// Previews of a paused song stand still at this date.
 	NSDate *_paused;
 	NSTimer *_timer;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame {
 	if ((self = [super initWithFrame:frame])) {
-		// A card inside the profile, like Discord's.
 		self.backgroundColor = UIColor.systemGroupedBackgroundColor;
 		self.layer.cornerRadius = 12;
 		self.layer.borderWidth = 1;
@@ -214,7 +208,6 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	_progressView.progress = duration > 0 ? elapsed / duration : 0;
 }
 
-// Ticks only while the card is on screen and something is playing.
 - (void)updateTimer {
 	BOOL needsTimer = self.window && _start && !_paused;
 	if (needsTimer == !!_timer) return;

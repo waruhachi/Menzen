@@ -3,9 +3,6 @@
 #import "../Shared/MenzenConnectedApps.h"
 #import "../Shared/MenzenLocalization/MenzenLocalization.h"
 
-// Connected Apps' requests (MenzenSettingConnectedRequests), shown as
-// notifications from Menzen. Tapping one opens Connected Apps.
-
 @interface BBSectionIconVariant : NSObject
 + (instancetype)variantWithFormat:(NSInteger)format imageData:(NSData *)imageData;
 @end
@@ -54,8 +51,6 @@ static dispatch_queue_t MenzenBulletinQueue;
 // MenzenBulletinQueue. Lost on a respring, while Notification Center keeps
 // the request.
 static NSMutableDictionary<NSString *, NSString *> *MenzenRequestBulletinIDs;
-// Requests from before this were shown already, or SpringBoard wasn't there
-// to show them.
 static NSDate *MenzenRequestsShownUntil;
 // Set once SpringBoard has launched: before then, BulletinBoard drops what's
 // published.
@@ -92,7 +87,6 @@ static void MenzenRemoveRequestBulletin(NSString *identifier, NSString *bulletin
 	[MenzenBulletinServer _sendRemoveBulletin:bulletin toFeeds:MenzenRequestFeeds shouldSync:NO];
 }
 
-// The request shown since SpringBoard launched, if there's one.
 static void MenzenWithdrawRequest(NSString *identifier) {
 	dispatch_async(MenzenBulletinQueue, ^{
 		NSString *bulletinID = MenzenRequestBulletinIDs[identifier];
@@ -152,7 +146,6 @@ static void MenzenRequestsChanged(CFNotificationCenterRef center, void *observer
 	MenzenShowRequests();
 }
 
-// Allowed in the settings, so nothing left to ask.
 static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef info) {
 	if (!MenzenBulletinServer) return;
 	MenzenSettingsSynchronize();
@@ -175,7 +168,6 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 
 %hook SpringBoard
 
-// Requests that came while SpringBoard was starting.
 - (void)applicationDidFinishLaunching:(id)application {
 	%orig;
 	MenzenRequestsReady = YES;

@@ -33,7 +33,6 @@ static NSString *MenzenLogin(NSString *streamURL) {
 	NSURL *url = [streamURL isKindOfClass:NSString.class] ? [NSURL URLWithString:streamURL] : nil;
 	if (![url.host isEqualToString:@"usher.ttvnw.net"]) return nil;
 	NSMutableArray<NSString *> *parts = [url.path.pathComponents mutableCopy];
-	// "/", "api", ["v2",] "channel", "hls", "<login>.m3u8"
 	if (parts.count == 6 && [parts[2] isEqualToString:@"v2"]) [parts removeObjectAtIndex:2];
 	if (parts.count != 5 || ![parts[1] isEqualToString:@"api"] || ![parts[2] isEqualToString:@"channel"] || ![parts[3] isEqualToString:@"hls"] || ![parts[4].pathExtension isEqualToString:@"m3u8"]) return nil;
 	return MenzenValidLogin(parts[4].stringByDeletingPathExtension);

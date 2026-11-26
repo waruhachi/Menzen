@@ -39,10 +39,9 @@ static BOOL MenzenIsR3v4mp(audit_token_t token) {
 	return executable && proc_pidpath_audittoken && proc_pidpath_audittoken(&token, path, sizeof(path)) > 0 && [executable isEqualToString:@(path)];
 }
 
-// The bundle ID of the app the pane is in, nil for any other process. The
-// audit token identifies the process that sent the connection, unlike its
-// pid, which can be reused. Only platform binaries and R3v4mp: App Store
-// apps never are, whatever they're signed as.
+// The bundle ID of the app the pane is in, nil for any other process. Only
+// platform binaries and R3v4mp: App Store apps never are, whatever they're
+// signed as.
 static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 	audit_token_t token = connection.auditToken;
 	if (MenzenIsR3v4mp(token)) return MenzenR3v4mpIdentifier;
@@ -65,8 +64,6 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 @implementation MenzenServiceListener {
 	MenzenDiscord *_discord;
 	NSXPCListener *_listener;
-	// The pane's wait for the code it was shown, or the result when that
-	// comes first.
 	void (^_deviceSignInWaiter)(BOOL signedIn, NSString *error);
 	BOOL _deviceSignInFinished;
 	BOOL _deviceSignInSignedIn;

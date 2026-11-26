@@ -117,7 +117,6 @@ static NSString *MenzenClientText(NSString *text) {
 	[_connection invalidate];
 }
 
-// On the queue.
 - (void)connect {
 	MenzenApplySandyProfile();
 	NSXPCConnection *connection = [[NSXPCConnection alloc] initWithMachServiceName:MenzenConnectedServiceName options:0];
@@ -157,7 +156,6 @@ static NSString *MenzenClientText(NSString *text) {
 	[self sendAll];
 }
 
-// On the queue.
 - (void)sendAll {
 	id<MenzenConnectedService> service = _connection.remoteObjectProxy;
 	[service registerWithIdentifier:_identifier name:_name];
@@ -170,7 +168,6 @@ static NSString *MenzenClientText(NSString *text) {
 	});
 }
 
-// On the queue.
 - (void)setStateOnQueue:(MenzenClientState)state {
 	if (_state == state) return;
 	_state = state;

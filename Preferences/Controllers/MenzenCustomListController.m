@@ -116,7 +116,6 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	NSString *identifier = NSUUID.UUID.UUIDString;
 	NSDictionary *preset = @{MenzenPresetIdentifierKey: identifier, MenzenPresetKindKey: @"playing", MenzenPresetTimerKey: @YES};
 	MenzenWritePresets([MenzenCustomPresets() arrayByAddingObject:preset]);
-	// The first preset is the one in use, without switching it on.
 	if (!MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil))) {
 		MenzenWriteSetting(MenzenSettingCustomPreset, identifier);
 		MenzenWriteSetting(MenzenSettingCustomStart, NSDate.date);
@@ -162,8 +161,6 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	return MenzenCustomPreset(self.identifier) ?: @{};
 }
 
-// The preset as menzend would show it (-[MenzenPresence customActivity]),
-// timed from when it was chosen, or from now when it isn't in use.
 - (NSDictionary<NSString *, id> *)previewActivity {
 	NSDictionary *preset = self.preset;
 	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
@@ -331,7 +328,6 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	}, ^{});
 }
 
-// Like Settings' own values.
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	UITableViewCell *cell = [super tableView:tableView cellForRowAtIndexPath:indexPath];
 	UITextField *field = nil;
@@ -364,7 +360,6 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 - (void)deletePreset {
 	NSString *identifier = self.identifier;
 	NSArray *presets = [MenzenCustomPresets() filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K != %@", MenzenPresetIdentifierKey, identifier]];
-	// Without the preset in use, nothing custom shows.
 	if ([identifier isEqualToString:MenzenSettingString(MenzenSettingCustomPreset, nil)]) {
 		MenzenWriteSetting(MenzenSettingCustomPreset, nil);
 		MenzenWriteSetting(MenzenSettingCustom, nil);

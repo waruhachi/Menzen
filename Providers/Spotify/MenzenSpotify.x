@@ -8,8 +8,6 @@
 
 @interface SPTPlayerTrack : NSObject
 @property (nonatomic, readonly) id URI;
-// Cover fields hold "spotify:image:<id>" or an https URL; also artist_uri,
-// artist_name and album_uri.
 @property (nonatomic, readonly) NSDictionary<NSString *, id> *metadata;
 @end
 
@@ -21,7 +19,6 @@
 @property (nonatomic, readonly) SPTPlayerState *state;
 @end
 
-// Adds the app's own sign-in to requests for its internal API.
 @interface SPTDataLoaderFactory : NSObject
 - (id)createDataLoader;
 @end
@@ -45,7 +42,6 @@ static __weak SPTEsperantoPlayer *player;
 // The app makes several factories; not all of them sign their requests.
 static NSHashTable *loaderFactories;
 static __weak id signedLoaderFactory;
-// NSNull for an artist without a picture.
 static NSMutableDictionary<NSString *, id> *artistPictures;
 static NSMutableSet<NSString *> *artistPicturesLoading;
 
@@ -77,7 +73,6 @@ static NSString *MenzenCoverURL(SPTPlayerTrack *track) {
 
 static NSString *const MenzenBase62 = @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-// The base62 ID in "spotify:<type>:<id>".
 static NSString *MenzenEntityID(NSString *uri, NSString *type) {
 	NSString *prefix = [NSString stringWithFormat:@"spotify:%@:", type];
 	if (![uri hasPrefix:prefix]) return nil;
@@ -112,7 +107,6 @@ static NSString *MenzenPortraitURL(NSDictionary *artist) {
 		NSString *fileID = image[@"file_id"];
 		if (!fileID.length || [fileID rangeOfCharacterFromSet:notHex].location != NSNotFound) continue;
 		NSString *url = [@"https://i.scdn.co/image/" stringByAppendingString:fileID];
-		// 640 px, then 320 px.
 		if ([image[@"size"] isEqual:@"LARGE"]) return url;
 		if (!best || [image[@"size"] isEqual:@"DEFAULT"]) best = url;
 	}
@@ -120,7 +114,6 @@ static NSString *MenzenPortraitURL(NSDictionary *artist) {
 	return best;
 }
 
-// Tries each factory until one is signed in; done(nil) when none is.
 static void MenzenLoadArtist(NSString *hexID, NSArray *factories, void (^done)(NSDictionary *artist)) {
 	if (!factories.count) {
 		done(nil);
@@ -148,8 +141,6 @@ static void MenzenLoadArtist(NSString *hexID, NSArray *factories, void (^done)(N
 	}];
 }
 
-// The artist's picture if it's known; otherwise starts loading it and
-// publishes the info again once it's in.
 static NSString *MenzenArtistPicture(NSString *artistURI) {
 	NSString *identifier = MenzenEntityID(artistURI, @"artist");
 	if (!identifier) return nil;
@@ -171,7 +162,6 @@ static NSString *MenzenArtistPicture(NSString *artistURI) {
 	[artistPicturesLoading addObject:artistURI];
 	MenzenLoadArtist(MenzenHexID(identifier), factories, ^(NSDictionary *artist) {
 		[artistPicturesLoading removeObject:artistURI];
-		// No signed factory yet: a later track tries again.
 		if (!artist) return;
 		artistPictures[artistURI] = MenzenPortraitURL(artist) ?: (id)NSNull.null;
 		MenzenRepublish();

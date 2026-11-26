@@ -29,18 +29,14 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 @implementation MenzenPresence {
 	MenzenDiscord *_discord;
 	MenzenAppCatalog *_appCatalog;
-	// Each source's activity; publish shows the first in MenzenPriority().
 	MenzenActivity *_media;
 	MenzenActivity *_connected;
 	NSArray<NSString *> *_visibleApps;
-	// The game, since it came on screen. Once it's left (_gameLeft) it ends
-	// when the grace period runs out or something starts playing.
 	NSString *_game;
 	NSDate *_gameStart;
 	BOOL _gameLeft;
 	NSUInteger _gameEndGeneration;
 	MenzenTrack *_lastTrack;
-	// Kept after playback stops, for the preview.
 	MenzenTrack *_lastPlayed;
 	NSDate *_lastPlayedStopped;
 	BOOL _clearPending;
@@ -139,7 +135,6 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	_lastTrack = track;
 	[self updatePreviewWithTrack:track];
 
-	// Stopped, closed, or a source that's switched off took over: clear now.
 	if (!track || !MenzenSourceEnabled(track.bundleIdentifier)) {
 		[self cancelClear];
 		if (_media) [self showMedia:nil];
@@ -152,7 +147,6 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	if (track.duration <= 0 && activity.startDate && !activity.endDate && _media.startDate && !_media.endDate && [_media.details isEqualToString:activity.details]) activity.startDate = _media.startDate;
 	if (track.playing && activity) {
 		[self cancelClear];
-		// Playing something after leaving a game takes over from it.
 		if (_gameLeft) [self endGame];
 		[self showMedia:activity];
 		return;
@@ -161,8 +155,6 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	if (_media) [self showPaused:activity];
 }
 
-// Paused (or a Spotify ad): stop the progress bar, then clear if playback
-// doesn't resume within the grace period.
 - (void)showPaused:(MenzenActivity *)activity {
 	NSTimeInterval grace = MenzenStopGrace();
 	if (grace == 0) {
@@ -180,7 +172,6 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 		[self showMedia:paused];
 	}
 
-	// Negative: keep showing until playback stops.
 	if (_clearPending || grace < 0) return;
 	_clearPending = YES;
 	NSUInteger generation = ++_clearGeneration;
@@ -223,7 +214,6 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	}
 
 	if (!_game) return;
-	// Switched off: at once.
 	NSTimeInterval grace = MenzenStopGrace();
 	if (!MenzenGameEnabled(_game) || grace == 0) {
 		[self endGame];
@@ -270,11 +260,9 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 
 - (void)settingsChanged {
 	[self cancelClear];
-	// Restarts a left game's countdown with the new grace period.
 	_gameLeft = NO;
 	[self updateGame];
 	[self handleTrack:_lastTrack];
-	// A preset switched on or off, or edited, with nothing else changing.
 	[self publish];
 }
 

@@ -11,7 +11,6 @@
 
 static MenzenCache<NSString *, NSString *> *covers;
 
-// The largest https picture with a URL Discord takes.
 static NSString *MenzenCover(NSDictionary *thumbnails) {
 	NSString *cover = nil;
 	CGFloat coverWidth = 0;

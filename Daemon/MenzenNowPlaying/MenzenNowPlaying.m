@@ -25,7 +25,6 @@ static NSString *MenzenString(id value) {
 	return [value isKindOfClass:NSString.class] && [value length] ? value : nil;
 }
 
-// A positive number, as a string; 0 means none.
 static NSString *MenzenIdentifier(id value) {
 	long long identifier = [value isKindOfClass:NSNumber.class] || [value isKindOfClass:NSString.class] ? [value longLongValue] : 0;
 	return identifier > 0 ? @(identifier).stringValue : nil;
@@ -68,7 +67,6 @@ static MenzenTrack *MenzenTrackFromInfo(NSDictionary *info, NSString *bundleIden
 	track.playbackRate = MenzenDouble(info[MenzenInfoPlaybackRate]);
 	track.playing = playing;
 
-	// A live stream's time comes from its listing's slot.
 	NSDictionary *extras = MenzenExtrasFromURL(track.assetURL);
 	double start = [extras[MenzenExtrasStartKey] doubleValue], end = [extras[MenzenExtrasEndKey] doubleValue];
 	if (track.duration <= 0 && start > 0 && end > start) {

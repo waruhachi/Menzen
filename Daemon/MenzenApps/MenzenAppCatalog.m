@@ -5,7 +5,6 @@
 #import "MenzenAppInfo.h"
 
 static NSString *const MenzenCatalogURL = @"https://raw.githubusercontent.com/waruhachi/Menzen/catalog/";
-// What counts as a game; the other files only add icons.
 static NSString *const MenzenGamesFile = @"games.json";
 // The lists change about once a day.
 static NSTimeInterval const MenzenCheckInterval = 6 * 60 * 60;
@@ -40,7 +39,6 @@ static NSString *MenzenETagKey(NSString *file) {
 	return [@"catalogETag." stringByAppendingString:file];
 }
 
-// The apps on the home screen that aren't Apple's.
 static NSSet<NSString *> *MenzenInstalledApps(void) {
 	NSMutableSet *apps = [NSMutableSet set];
 	@autoreleasepool {
@@ -53,11 +51,10 @@ static NSSet<NSString *> *MenzenInstalledApps(void) {
 	return apps;
 }
 
-// A file's entries for the given apps, bundle ID to {icon, appStoreId};
-// nil when the file isn't the list. iOS 14 gives a daemon 6 MB, and the list
-// parsed whole takes several times that, so the file is mapped rather than
-// read, and only the lines of the apps asked about are parsed: the catalog
-// writes one app per line (.github/scripts/catalog.py).
+// iOS 14 gives a daemon 6 MB, and the list parsed whole takes several times
+// that, so the file is mapped rather than read, and only the lines of the apps
+// asked about are parsed: the catalog writes one app per line
+// (.github/scripts/catalog.py).
 static NSDictionary<NSString *, NSDictionary *> *MenzenReadCatalog(NSString *path, NSSet<NSString *> *apps) {
 	NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedAlways error:NULL];
 	if (data.length < 2 || ((const char *)data.bytes)[0] != '{') return nil;
@@ -67,7 +64,6 @@ static NSDictionary<NSString *, NSDictionary *> *MenzenReadCatalog(NSString *pat
 	for (const char *line = bytes; line < end;) {
 		const char *lineEnd = memchr(line, '\n', end - line) ?: end;
 		@autoreleasepool {
-			// \t"<bundle ID>": {...},
 			const char *keyStart = memchr(line, '"', lineEnd - line);
 			const char *keyEnd = keyStart ? memchr(keyStart + 1, '"', lineEnd - keyStart - 1) : NULL;
 			const char *object = keyEnd ? memchr(keyEnd, '{', lineEnd - keyEnd) : NULL;
@@ -167,7 +163,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 }
 
 - (void)check {
-	// Any check scheduled before is replaced by the one this schedules.
 	_checkGeneration++;
 	_lastCheck = NSDate.date;
 	dispatch_group_t group = dispatch_group_create();
@@ -188,8 +183,6 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	});
 }
 
-// Calls back on the main queue: saved when a new copy replaced the old one,
-// current when the copy on disk is the latest (saved, or unchanged).
 - (void)download:(NSString *)file completion:(void (^)(BOOL saved, BOOL current))completion {
 	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[MenzenCatalogURL stringByAppendingString:file]]];
 	NSString *path = MenzenCachePath(file);

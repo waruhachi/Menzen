@@ -23,8 +23,10 @@ It runs on iOS 14 through 26, on rootful, rootless and RootHide jailbreaks.
 - With Other Apps turned on, anything in the Now Playing controls can show up too, with less detail. Browsers, chat apps and social networking apps are always left out.
 - Shows the game on screen with its App Store icon, without touching the game itself.
 - You pick what each line and picture of your activity shows, and what shows in member lists.
-- Custom statuses with your own text, pictures and a timer.
-- Privacy Mode shows only the app's name and icon. You can turn it on from Settings or from Control Center, which also has a toggle to turn Menzen on and off.
+- Custom statuses with your own text, pictures, a timer, a party size like "(2 of 4)" and up to two link buttons. Each one can also set your Discord status, such as Idle or Do Not Disturb, while it shows.
+- Your Discord status can follow Do Not Disturb and Focus on your iPhone.
+- Songs can get an "Open in" button that links to the track.
+- Privacy Mode shows only the app's name and icon, for every app or just the ones you pick. You can turn it on from Settings or from Control Center, where a second module handles a single app of your choice. Control Center also has a toggle to turn Menzen on and off.
 - You choose which apps and games can show up, and which comes first when more than one has something to show.
 - Other tweaks can show their own activity through Menzen once you allow them, and each one gets its own page where you can remove it again. Developers can find how in [docs/API.md](docs/API.md).
 - You sign in on Discord's own page, on the iPhone or from another device with a code. Menzen never asks for your Discord token and keeps the sign-in in the iPhone's Keychain. If Discord stops connecting, Settings asks you to sign in again.
@@ -81,6 +83,6 @@ Menzen is open source under the [GNU GPLv3 license](LICENSE). You can explore th
 
 ## Support development
 
-Menzen is free on [GitHub](https://github.com/waruhachi/Menzen/releases). If you'd like to support me and Menzen's development, you can buy it on [Havoc](https://havoc.app/package/menzen). **The paid and free versions will always have the same features and functionality, with no paid-exclusive features.**
+Menzen is free on [GitHub](https://github.com/waruhachi/Menzen/releases). If you'd like to support me and Menzen's development, you can buy it on [Havoc](https://havoc.app/package/menzen). **The paid and free versions will always have the same features.**
 
 Menzen is not affiliated with or endorsed by Discord or Apple.

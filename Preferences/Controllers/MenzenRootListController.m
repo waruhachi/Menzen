@@ -4,6 +4,7 @@
 #import <Preferences/PSTableCell.h>
 #import <UIKit/UIKit.h>
 
+#import "../../Shared/MenzenAppPrivacy.h"
 #import "../../Shared/MenzenCustomActivity.h"
 #import "../../Shared/MenzenLocalization/MenzenLocalization.h"
 #import "../../Shared/MenzenSettings.h"
@@ -79,6 +80,12 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 		}
 		[self applyStatusToSpecifiers:specifiers];
 		[self makeMenu:MenzenSpecifier(specifiers, MenzenSettingPauseGrace)];
+		PSSpecifier *moduleApp = MenzenSpecifier(specifiers, MenzenSettingPrivacyModuleApp);
+		NSMutableArray *moduleApps = [NSMutableArray arrayWithObject:@[@"", MenzenLocalizedString(@"module.all_apps", @"All Apps")]];
+		[moduleApps addObjectsFromArray:MenzenInstalledProviderApps()];
+		[moduleApp setProperty:moduleApps forKey:@"choices"];
+		[moduleApp setProperty:[self readPreferenceValue:moduleApp] ?: @"" forKey:@"choice"];
+		[moduleApp setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
 		_specifiers = specifiers;
 	}
 
@@ -120,6 +127,9 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	MenzenSettingsSynchronize();
 	[self reloadSpecifierID:@"enabled" animated:NO];
 	[self reloadSpecifierID:@"privacy" animated:NO];
+	PSSpecifier *moduleApp = [self specifierForID:MenzenSettingPrivacyModuleApp];
+	[moduleApp setProperty:[self readPreferenceValue:moduleApp] ?: @"" forKey:@"choice"];
+	[self reloadSpecifier:moduleApp animated:NO];
 }
 
 - (id<MenzenService>)service {

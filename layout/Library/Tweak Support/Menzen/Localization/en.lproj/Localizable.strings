@@ -198,6 +198,9 @@
 /* Problem with a picture link. %ld is an HTTP status code, such as 404. */
 "image.the_server_answered_with_error_x" = "The server answered with error %ld.";
 
+/* Control Center module and its settings row: the module controls Privacy Mode for every app, not one. */
+"module.all_apps" = "All Apps";
+
 /* Name on the preview card when the person's Discord name isn't known yet. */
 "preview.you" = "You";
 
@@ -259,6 +262,8 @@
 "root.clear_activity" = "Clear Activity";
 /* Shown over the profile card while Menzen connects. */
 "root.connecting_to_discord" = "Connecting to Discord…";
+/* Row: which app the Privacy Mode Control Center module controls. */
+"root.control_center_module" = "Control Center Module";
 /* Settings row and Priority page row. */
 "root.custom_activity" = "Custom Activity";
 /* Shown over the profile card when Menzen can't reach Discord. */

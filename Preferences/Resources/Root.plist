@@ -227,6 +227,24 @@
 			<string>root.privacy_mode</string>
 		</dict>
 		<dict>
+			<key>PostNotification</key>
+			<string>moe.waru.menzen.settings</string>
+			<key>cell</key>
+			<string>PSStaticTextCell</string>
+			<key>default</key>
+			<string></string>
+			<key>defaults</key>
+			<string>moe.waru.menzen</string>
+			<key>id</key>
+			<string>privacyModuleApp</string>
+			<key>key</key>
+			<string>privacyModuleApp</string>
+			<key>label</key>
+			<string>Control Center Module</string>
+			<key>labelKey</key>
+			<string>root.control_center_module</string>
+		</dict>
+		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>id</key>

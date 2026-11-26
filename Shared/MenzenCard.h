@@ -29,7 +29,7 @@ static inline NSArray<NSArray<NSString *> *> *MenzenPartChoices(NSString *part) 
 			MenzenPartSmallPicture: @[@[@"artistImage", MenzenLocalizedString(@"card.artist_or_show_picture", @"Artist or Show Picture")], @[@"logo", MenzenLocalizedString(@"card.app_logo", @"App Logo")], @[@"cover", MenzenLocalizedString(@"card.artwork", @"Artwork")], @[@"none", MenzenLocalizedString(@"common.none", @"None")]],
 			MenzenPartSmallPictureText: @[@[@"artist", MenzenLocalizedString(@"card.artist_or_show", @"Artist or Show")], @[@"app", MenzenLocalizedString(@"card.app_name", @"App Name")], @[@"none", MenzenLocalizedString(@"common.none", @"None")]],
 			MenzenPartTime: @[@[@"progress", MenzenLocalizedString(@"card.progress_bar", @"Progress Bar")], @[@"elapsed", MenzenLocalizedString(@"common.time_elapsed", @"Time Elapsed")]],
-			MenzenPartMemberList: @[@[@"title", MenzenLocalizedString(@"common.title", @"Title")], @[@"artist", MenzenLocalizedString(@"card.artist_or_show", @"Artist or Show")], @[@"album", MenzenLocalizedString(@"card.album_or_episode", @"Album or Episode")], @[@"name", MenzenLocalizedString(@"common.heading", @"Heading")]],
+			MenzenPartMemberList: @[@[@"details", MenzenLocalizedString(@"common.first_line", @"First Line")], @[@"state", MenzenLocalizedString(@"common.second_line", @"Second Line")], @[@"name", MenzenLocalizedString(@"common.heading", @"Heading")]],
 		};
 	});
 	return choices[part] ?: @[];
@@ -45,32 +45,22 @@ static inline NSString *MenzenPart(NSString *part) {
 		if ([part isEqualToString:MenzenPartTime]) value = MenzenSettingBool(MenzenSettingShowProgress, YES) ? @"progress" : @"elapsed";
 	}
 	if ([part isEqualToString:MenzenPartTime] && [value isEqualToString:@"none"]) value = @"elapsed";
-	// Member lists were briefly set by line, and before that "app" was the
-	// heading.
+	// Member lists were briefly set by what they showed, and before that "app"
+	// was the heading.
 	if ([part isEqualToString:MenzenPartMemberList]) {
-		if ([value isEqualToString:@"details"]) value = MenzenPart(MenzenPartFirstLine);
-		else if ([value isEqualToString:@"state"]) value = MenzenPart(MenzenPartSecondLine);
-		else if ([value isEqualToString:@"app"]) value = @"name";
+		if ([value isEqualToString:@"title"] || [value isEqualToString:@"artist"] || [value isEqualToString:@"album"]) {
+			if ([MenzenPart(MenzenPartSecondLine) isEqualToString:value]) value = @"state";
+			else if ([MenzenPart(MenzenPartHeading) isEqualToString:value]) value = @"name";
+			else value = @"details";
+		} else if ([value isEqualToString:@"app"]) {
+			value = @"name";
+		}
 	}
 	NSArray *choices = MenzenPartChoices(part);
 	for (NSArray<NSString *> *choice in choices) {
 		if ([choice.firstObject isEqualToString:value]) return value;
 	}
 	return [choices.firstObject firstObject] ?: @"";
-}
-
-// Where the member list choice is on the card: details, state or name, or
-// nil when it isn't on the heading, first or second line.
-static inline NSString *_Nullable MenzenMemberListDisplayFor(NSString *content) {
-	if ([content isEqualToString:@"name"]) return @"name";
-	if ([MenzenPart(MenzenPartFirstLine) isEqualToString:content]) return @"details";
-	if ([MenzenPart(MenzenPartSecondLine) isEqualToString:content]) return @"state";
-	if ([MenzenPart(MenzenPartHeading) isEqualToString:content]) return @"name";
-	return nil;
-}
-
-static inline NSString *_Nullable MenzenMemberListDisplay(void) {
-	return MenzenMemberListDisplayFor(MenzenPart(MenzenPartMemberList));
 }
 
 static inline NSString *MenzenPartTitle(NSString *part, NSString *value) {

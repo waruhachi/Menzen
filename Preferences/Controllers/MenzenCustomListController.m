@@ -164,9 +164,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 - (NSDictionary<NSString *, id> *)previewActivity {
 	NSDictionary *preset = self.preset;
 	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
-	NSString *kind = MenzenPresetString(preset, MenzenPresetKindKey);
-	activity[MenzenActivityKindKey] = [kind isEqualToString:@"listening"] || [kind isEqualToString:@"watching"] ? kind : @"playing";
-	activity[MenzenActivityStatusDisplayKey] = @"name";
+	activity[MenzenActivityKindKey] = MenzenPresetKind(preset);
 	activity[MenzenActivityNameKey] = MenzenPresetString(preset, MenzenPresetNameKey);
 	NSString *largeImage = MenzenPresetString(preset, MenzenPresetLargeImageKey);
 	if (MenzenCustomURLIsAllowed(largeImage)) activity[MenzenActivityImageURLKey] = largeImage;

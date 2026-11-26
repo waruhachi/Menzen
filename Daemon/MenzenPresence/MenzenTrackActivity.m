@@ -156,6 +156,13 @@ BOOL MenzenTrackIsShowable(MenzenTrack *track) {
 	return track.title.length && ![track.contentIdentifier hasPrefix:@"spotify:ad:"];
 }
 
+void MenzenApplyMemberList(MenzenActivity *activity) {
+	NSString *line = MenzenPart(MenzenPartMemberList);
+	if ([line isEqualToString:@"state"] && activity.state) activity.statusDisplay = MenzenStatusDisplayState;
+	else if (![line isEqualToString:@"name"] && activity.details) activity.statusDisplay = MenzenStatusDisplayDetails;
+	else activity.statusDisplay = MenzenStatusDisplayName;
+}
+
 MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 	if (!MenzenTrackIsShowable(track)) return nil;
 
@@ -237,10 +244,7 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 		}
 	}
 
-	// The first line when the choice isn't on the card (or its line was left out).
-	NSString *memberList = MenzenMemberListDisplay();
-	if ([memberList isEqualToString:@"state"] && activity.state) activity.statusDisplay = MenzenStatusDisplayState;
-	if ([memberList isEqualToString:@"name"]) activity.statusDisplay = MenzenStatusDisplayName;
+	MenzenApplyMemberList(activity);
 
 	if (track.playing) {
 		NSDate *now = NSDate.date;

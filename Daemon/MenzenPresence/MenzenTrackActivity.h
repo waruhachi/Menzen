@@ -3,10 +3,10 @@
 #import "../MenzenDiscord/MenzenDiscord.h"
 #import "../MenzenNowPlaying/MenzenNowPlaying.h"
 
-NS_ASSUME_NONNULL_BEGIN
+FOUNDATION_EXPORT BOOL MenzenTrackIsShowable(MenzenTrack *track);
 
-// Whether track has anything to show: a title, and isn't an ad.
-FOUNDATION_EXPORT BOOL MenzenTrackIsShowable(MenzenTrack *_Nullable track);
+// The line the user picked for member lists, the first one when it's empty.
+FOUNDATION_EXPORT void MenzenApplyMemberList(MenzenActivity *activity);
 
 // Timestamps only while playing: Discord can't show a stopped clock.
 FOUNDATION_EXPORT MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo);

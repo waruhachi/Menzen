@@ -70,6 +70,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 
 	activity.details = MenzenPresetString(preset, MenzenPresetDetailsKey);
 	activity.state = MenzenPresetString(preset, MenzenPresetStateKey);
+	MenzenApplyMemberList(activity);
 	// Discord only shows the texts and the small picture with a big one.
 	if (activity.largeImageURL) {
 		activity.largeText = MenzenPresetString(preset, MenzenPresetLargeTextKey);

@@ -11,10 +11,10 @@
 /* Activity preview. %@ is an app name. */
 "activity.watching_x" = "Watching %@";
 
+/* Member List settings, footer. */
+"appearance.games_always_show_their_name" = "Games always show their name. When the line you pick is empty, the first line or the heading shows instead.";
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "Links";
-/* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
-"appearance.member_lists_can_only_show_the" = "Member lists can only show the heading, first line or second line. To pick something greyed out, put it on one of those lines on the Activity page.";
 /* Activity settings: section header for the big and small pictures. */
 "appearance.pictures" = "Pictures";
 /* Activity settings: row for the text shown when hovering the small picture on Discord. */

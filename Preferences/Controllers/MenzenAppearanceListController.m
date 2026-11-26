@@ -38,8 +38,8 @@ static NSDictionary<NSString *, id> *MenzenSampleActivity(NSDictionary<NSString 
 		if (thirdLine && ![thirdLine isEqualToString:activity[MenzenActivityDetailsKey]] && ![thirdLine isEqualToString:state]) activity[MenzenActivityLargeTextKey] = thirdLine;
 	}
 
-	NSString *memberList = MenzenMemberListDisplay();
-	activity[MenzenActivityStatusDisplayKey] = !memberList || ([memberList isEqualToString:@"state"] && !activity[MenzenActivityStateKey]) ? @"details" : memberList;
+	NSString *memberList = MenzenPart(MenzenPartMemberList);
+	activity[MenzenActivityStatusDisplayKey] = [memberList isEqualToString:@"state"] && !activity[MenzenActivityStateKey] ? @"details" : memberList;
 
 	NSTimeInterval now = NSDate.date.timeIntervalSince1970;
 	activity[MenzenActivityStartKey] = @(now - 72);
@@ -283,25 +283,17 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 	if (!_specifiers) {
 		NSMutableArray *specifiers = [self.previewSpecifiers mutableCopy];
 		PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
-		[group setProperty:MenzenLocalizedString(@"appearance.member_lists_can_only_show_the", @"Member lists can only show the heading, first line or second line. To pick something greyed out, put it on one of those lines on the Activity page.") forKey:@"footerText"];
+		[group setProperty:MenzenLocalizedString(@"appearance.games_always_show_their_name", @"Games always show their name. When the line you pick is empty, the first line or the heading shows instead.") forKey:@"footerText"];
 		[specifiers addObject:group];
 
 		NSString *current = MenzenPart(MenzenPartMemberList);
-		NSString *heading = MenzenPart(MenzenPartHeading);
 		for (NSArray<NSString *> *choice in MenzenPartChoices(MenzenPartMemberList)) {
 			NSString *name = choice[1];
-			if ([choice[0] isEqualToString:@"name"]) {
-				// A heading of Artist or Album is already offered as that.
-				if ([heading isEqualToString:@"artist"] || [heading isEqualToString:@"album"]) continue;
-				NSString *text = MenzenTrimmed(MenzenSettingString(MenzenSettingHeadingText, @""));
-				name = [heading isEqualToString:@"custom"] ? (text.length ? text : MenzenLocalizedString(@"common.custom_heading", @"Custom Heading")) : MenzenPartTitle(MenzenPartHeading, heading);
-			}
 			PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:name target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 			specifier.buttonAction = @selector(choose:);
 			[specifier setProperty:MenzenCheckCell.class forKey:@"cellClass"];
 			[specifier setProperty:choice[0] forKey:@"value"];
 			[specifier setProperty:@([choice[0] isEqualToString:current]) forKey:@"checked"];
-			[specifier setProperty:@(!!MenzenMemberListDisplayFor(choice[0])) forKey:@"enabled"];
 			[specifiers addObject:specifier];
 		}
 		_specifiers = specifiers;
@@ -324,7 +316,7 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 	PSSpecifier *setting = [PSSpecifier preferenceSpecifierNamed:nil target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
 	[setting setProperty:MenzenSettingMemberList forKey:@"key"];
 	[setting setProperty:MenzenSettingsDomain forKey:@"defaults"];
-	[setting setProperty:@"title" forKey:@"default"];
+	[setting setProperty:@"details" forKey:@"default"];
 	[setting setProperty:@MenzenSettingsChangedNotification forKey:@"PostNotification"];
 	[self setPreferenceValue:[choice propertyForKey:@"value"] specifier:setting];
 	[self reloadSpecifiers];

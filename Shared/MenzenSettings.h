@@ -18,6 +18,7 @@
 #define MenzenSettingShowProgress @"showProgress"
 #define MenzenSettingShowArtistPicture @"showArtistPicture"
 #define MenzenSettingLinks @"links"
+#define MenzenSettingOpenButton @"openButton"
 #define MenzenSettingHeading @"heading"
 #define MenzenSettingHeadingText @"headingText"
 #define MenzenSettingMemberList @"memberList"

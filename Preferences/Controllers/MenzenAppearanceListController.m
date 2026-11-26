@@ -44,6 +44,7 @@ static NSDictionary<NSString *, id> *MenzenSampleActivity(NSDictionary<NSString 
 	NSTimeInterval now = NSDate.date.timeIntervalSince1970;
 	activity[MenzenActivityStartKey] = @(now - 72);
 	if ([MenzenPart(MenzenPartTime) isEqualToString:@"progress"]) activity[MenzenActivityEndKey] = @(now - 72 + 201);
+	if (MenzenSettingBool(MenzenSettingLinks, YES) && MenzenSettingBool(MenzenSettingOpenButton, NO)) activity[MenzenActivityButtonsKey] = @[@[[NSString stringWithFormat:MenzenLocalizedString(@"activity.open_in_x", @"Open in %@"), @"Apple Music"], @"https://music.apple.com"]];
 	activity[MenzenActivityPausedKey] = @(now);
 	return activity;
 }
@@ -220,6 +221,14 @@ static BOOL MenzenPartAllows(NSString *part, NSString *value) {
 		[links setProperty:@[@[@YES, MenzenLocalizedString(@"common.on", @"On")], @[@NO, MenzenLocalizedString(@"common.off", @"Off")]] forKey:@"choices"];
 		[links setProperty:@(MenzenSettingBool(MenzenSettingLinks, YES)) forKey:@"choice"];
 		[specifiers addObject:links];
+		BOOL linksOn = MenzenSettingBool(MenzenSettingLinks, YES);
+		PSSpecifier *openButton = MenzenSettingSpecifier(self, MenzenLocalizedString(@"appearance.open_button", @"Open Button"), MenzenSettingOpenButton, PSStaticTextCell);
+		[openButton setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
+		[openButton setProperty:@[@[@YES, MenzenLocalizedString(@"common.on", @"On")], @[@NO, MenzenLocalizedString(@"common.off", @"Off")]] forKey:@"choices"];
+		[openButton setProperty:@(linksOn && MenzenSettingBool(MenzenSettingOpenButton, NO)) forKey:@"choice"];
+		// It opens the song's link.
+		[openButton setProperty:@(linksOn) forKey:@"enabled"];
+		[specifiers addObject:openButton];
 		_specifiers = specifiers;
 	}
 

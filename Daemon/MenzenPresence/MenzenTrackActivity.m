@@ -1,4 +1,5 @@
 #import "../../Shared/MenzenCard.h"
+#import "../../Shared/MenzenLocalization/MenzenLocalization.h"
 #import "../../Shared/MenzenProviders.h"
 #import "../../Shared/MenzenTrackExtras.h"
 #import "../MenzenApps/MenzenAppInfo.h"
@@ -244,6 +245,8 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 		}
 	}
 
+	NSString *openURL = links[@"title"] ?: links[@"album"];
+	if (openURL && MenzenSettingBool(MenzenSettingOpenButton, NO)) activity.buttons = @[@[[NSString stringWithFormat:MenzenLocalizedString(@"activity.open_in_x", @"Open in %@"), appName], openURL]];
 	MenzenApplyMemberList(activity);
 
 	if (track.playing) {

@@ -18,6 +18,12 @@
 #define MenzenPresetSmallImageKey @"smallImage"
 #define MenzenPresetSmallTextKey @"smallText"
 #define MenzenPresetTimerKey @"timer"
+#define MenzenPresetPartySizeKey @"partySize"
+#define MenzenPresetPartyMaxKey @"partyMax"
+#define MenzenPresetButton1LabelKey @"button1Label"
+#define MenzenPresetButton1LinkKey @"button1Link"
+#define MenzenPresetButton2LabelKey @"button2Label"
+#define MenzenPresetButton2LinkKey @"button2Link"
 
 static inline NSArray<NSDictionary *> *MenzenCustomPresets(void) {
 	NSArray *presets = MenzenSettingValue(MenzenSettingCustomPresets);
@@ -60,4 +66,22 @@ static inline BOOL MenzenCustomURLIsAllowed(NSString *string) {
 static inline NSString *MenzenPresetKind(NSDictionary *preset) {
 	NSString *kind = MenzenPresetString(preset, MenzenPresetKindKey);
 	return [@[@"listening", @"watching"] containsObject:kind] ? kind : @"playing";
+}
+
+// Discord wants at least 1 in the party, and no more than the most.
+static inline void MenzenPresetParty(NSDictionary *preset, NSInteger *size, NSInteger *max) {
+	*size = MAX(0, MIN([MenzenPresetString(preset, MenzenPresetPartySizeKey) integerValue], 9999));
+	*max = MAX(0, MIN([MenzenPresetString(preset, MenzenPresetPartyMaxKey) integerValue], 9999));
+	if (*max && *size > *max) *size = *max;
+	if (!*size) *max = 0;
+}
+
+static inline NSArray<NSArray<NSString *> *> *MenzenPresetButtons(NSDictionary *preset) {
+	NSMutableArray *buttons = [NSMutableArray array];
+	for (NSArray<NSString *> *keys in @[@[MenzenPresetButton1LabelKey, MenzenPresetButton1LinkKey], @[MenzenPresetButton2LabelKey, MenzenPresetButton2LinkKey]]) {
+		NSString *label = MenzenPresetString(preset, keys[0]);
+		NSString *link = MenzenPresetString(preset, keys[1]);
+		if (label && MenzenCustomURLIsAllowed(link)) [buttons addObject:@[label, link]];
+	}
+	return buttons;
 }

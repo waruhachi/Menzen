@@ -86,7 +86,19 @@ static NSString *MenzenQueryValue(NSURLComponents *components, NSString *name) {
 	return nil;
 }
 
-// As sent to Discord, for the settings pane.
+// Discord takes two at most, with labels of 1...32 characters and links up to
+// 512.
+static NSArray<NSArray<NSString *> *> *MenzenActivityButtons(NSArray<NSArray<NSString *> *> *buttons) {
+	NSMutableArray *valid = [NSMutableArray array];
+	for (NSArray<NSString *> *button in buttons) {
+		if (valid.count == 2) break;
+		NSString *label = button[0];
+		if (label.length > 32) label = [label substringWithRange:[label rangeOfComposedCharacterSequencesForRange:NSMakeRange(0, 31)]];
+		if (label.length && button[1].length <= 512) [valid addObject:@[label, button[1]]];
+	}
+	return valid;
+}
+
 static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSMutableDictionary *info = [NSMutableDictionary dictionary];
 	switch (activity.kind) {
@@ -117,6 +129,11 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	info[MenzenActivityDetailsURLKey] = activity.detailsURL;
 	info[MenzenActivityStateURLKey] = activity.stateURL;
 	info[MenzenActivityLargeURLKey] = activity.largeURL;
+	if (activity.partySize > 0) {
+		info[MenzenActivityPartySizeKey] = @(activity.partySize);
+		info[MenzenActivityPartyMaxKey] = @(activity.partyMax);
+	}
+	if (activity.buttons.count) info[MenzenActivityButtonsKey] = MenzenActivityButtons(activity.buttons);
 	if (activity.startDate) info[MenzenActivityStartKey] = @(activity.startDate.timeIntervalSince1970);
 	if (activity.endDate) info[MenzenActivityEndKey] = @(activity.endDate.timeIntervalSince1970);
 	return info;
@@ -139,6 +156,9 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	copy.stateURL = self.stateURL;
 	copy.largeURL = self.largeURL;
 	copy.smallURL = self.smallURL;
+	copy.buttons = self.buttons;
+	copy.partySize = self.partySize;
+	copy.partyMax = self.partyMax;
 	copy.startDate = self.startDate;
 	copy.endDate = self.endDate;
 	return copy;
@@ -151,6 +171,8 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	if (!MenzenSameString(self.smallImageURL, activity.smallImageURL) || !MenzenSameString(self.smallText, activity.smallText)) return NO;
 	if (!MenzenSameString(self.detailsURL, activity.detailsURL) || !MenzenSameString(self.stateURL, activity.stateURL)) return NO;
 	if (!MenzenSameString(self.largeURL, activity.largeURL) || !MenzenSameString(self.smallURL, activity.smallURL)) return NO;
+	if (self.partySize != activity.partySize || self.partyMax != activity.partyMax) return NO;
+	if (!(self.buttons.count == 0 && activity.buttons.count == 0) && ![self.buttons isEqualToArray:activity.buttons]) return NO;
 	return MenzenSameDate(self.startDate, activity.startDate) && MenzenSameDate(self.endDate, activity.endDate);
 }
 
@@ -811,6 +833,22 @@ static NSString *MenzenAssetPath(id value) {
 			if (activity.smallURL) assets.SetSmallUrl(MenzenStdString(activity.smallURL));
 		}
 		richPresence.SetAssets(assets);
+	}
+
+	if (activity.partySize > 0) {
+		discordpp::ActivityParty party;
+		// Discord ignores a party without an id.
+		party.SetId("menzen");
+		party.SetCurrentSize((int32_t)activity.partySize);
+		party.SetMaxSize((int32_t)activity.partyMax);
+		richPresence.SetParty(party);
+	}
+
+	for (NSArray<NSString *> *button in MenzenActivityButtons(activity.buttons)) {
+		discordpp::ActivityButton activityButton;
+		activityButton.SetLabel(MenzenStdString(button[0]));
+		activityButton.SetUrl(MenzenStdString(button[1]));
+		richPresence.AddButton(activityButton);
 	}
 
 	if (activity.startDate) {

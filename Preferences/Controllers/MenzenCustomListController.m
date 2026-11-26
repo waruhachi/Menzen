@@ -172,6 +172,13 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 
 	activity[MenzenActivityDetailsKey] = MenzenPresetString(preset, MenzenPresetDetailsKey);
 	activity[MenzenActivityStateKey] = MenzenPresetString(preset, MenzenPresetStateKey);
+	activity[MenzenActivityButtonsKey] = MenzenPresetButtons(preset);
+	NSInteger partySize, partyMax;
+	MenzenPresetParty(preset, &partySize, &partyMax);
+	if (partySize) {
+		activity[MenzenActivityPartySizeKey] = @(partySize);
+		activity[MenzenActivityPartyMaxKey] = @(partyMax);
+	}
 	if (activity[MenzenActivityImageURLKey]) {
 		activity[MenzenActivityLargeTextKey] = MenzenPresetString(preset, MenzenPresetLargeTextKey);
 		NSString *smallImage = MenzenPresetString(preset, MenzenPresetSmallImageKey);
@@ -224,6 +231,12 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	return specifier;
 }
 
+- (PSSpecifier *)numberFieldNamed:(NSString *)name key:(NSString *)key {
+	PSSpecifier *specifier = [self textFieldNamed:name key:key placeholder:MenzenLocalizedString(@"common.none", @"None")];
+	[specifier setProperty:@"UIKeyboardTypeNumberPad" forKey:@"keyboard"];
+	return specifier;
+}
+
 - (NSArray *)specifiers {
 	if (!_specifiers) {
 		NSDictionary *preset = self.preset;
@@ -258,6 +271,20 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.image_link", @"Image Link") key:MenzenPresetSmallImageKey]];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.text", @"Text") key:MenzenPresetSmallTextKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
 
+		PSSpecifier *party = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.party", @"Party")];
+		[party setProperty:MenzenLocalizedString(@"custom.shows_after_the_second_line", @"Shows after the second line, like \"(2 of 4)\". Leave Max Size empty for no limit.") forKey:@"footerText"];
+		[specifiers addObject:party];
+		[specifiers addObject:[self numberFieldNamed:MenzenLocalizedString(@"custom.size", @"Size") key:MenzenPresetPartySizeKey]];
+		[specifiers addObject:[self numberFieldNamed:MenzenLocalizedString(@"custom.max_size", @"Max Size") key:MenzenPresetPartyMaxKey]];
+
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.button_1", @"Button 1")]];
+		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.label", @"Label") key:MenzenPresetButton1LabelKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
+		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.link", @"Link") key:MenzenPresetButton1LinkKey]];
+		PSSpecifier *secondButton = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.button_2", @"Button 2")];
+		[secondButton setProperty:MenzenLocalizedString(@"custom.buttons_footer", @"A button needs a label and an https link. Discord shows buttons to everyone but you.") forKey:@"footerText"];
+		[specifiers addObject:secondButton];
+		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.label", @"Label") key:MenzenPresetButton2LabelKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
+		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.link", @"Link") key:MenzenPresetButton2LinkKey]];
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		PSSpecifier *timer = [self fieldNamed:MenzenLocalizedString(@"common.time_elapsed", @"Time Elapsed") key:MenzenPresetTimerKey cell:PSSwitchCell];
 		[specifiers addObject:timer];

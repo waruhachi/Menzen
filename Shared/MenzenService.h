@@ -31,7 +31,10 @@ static uint64_t const MenzenApplicationId = 1564329461036617748ULL;
 #define MenzenActivityStartKey @"start"
 #define MenzenActivityEndKey @"end"
 #define MenzenActivityPausedKey @"paused"
-// details, state or name: the line next to the name in member lists.
+// [label, link] pairs.
+#define MenzenActivityButtonsKey @"buttons"
+#define MenzenActivityPartySizeKey @"partySize"
+#define MenzenActivityPartyMaxKey @"partyMax"
 #define MenzenActivityStatusDisplayKey @"statusDisplay"
 
 #define MenzenProfileIdKey @"id"

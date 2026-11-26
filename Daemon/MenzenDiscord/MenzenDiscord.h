@@ -30,12 +30,18 @@ typedef NS_ENUM(NSInteger, MenzenStatusDisplay) {
 @property (nonatomic, copy) NSString *smallText;
 // Links on the details (track), state (artist), large image (album) and
 // small image (artist).
-@property (nonatomic, copy, nullable) NSString *detailsURL;
-@property (nonatomic, copy, nullable) NSString *stateURL;
-@property (nonatomic, copy, nullable) NSString *largeURL;
-@property (nonatomic, copy, nullable) NSString *smallURL;
-@property (nonatomic, strong, nullable) NSDate *startDate;
-@property (nonatomic, strong, nullable) NSDate *endDate;
+@property (nonatomic, copy) NSString *detailsURL;
+@property (nonatomic, copy) NSString *stateURL;
+@property (nonatomic, copy) NSString *largeURL;
+@property (nonatomic, copy) NSString *smallURL;
+// [label, link] pairs.
+@property (nonatomic, copy) NSArray<NSArray<NSString *> *> *buttons;
+// "(2 of 4)" after the state; no party when the size is 0, no limit when the
+// max is 0.
+@property (nonatomic) NSInteger partySize;
+@property (nonatomic) NSInteger partyMax;
+@property (nonatomic, strong) NSDate *startDate;
+@property (nonatomic, strong) NSDate *endDate;
 
 - (BOOL)isEquivalentToActivity:(MenzenActivity *)activity;
 @end

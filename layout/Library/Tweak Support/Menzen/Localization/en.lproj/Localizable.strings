@@ -6,6 +6,8 @@
 "activity.listening_to_x" = "Listening to %@";
 /* Activity preview, shown when nothing is playing. */
 "activity.nothing_is_showing_right_now_open" = "Nothing is showing right now. Open a game or play something in a supported app, and it shows here and on your profile.";
+/* Activity preview, after the second line: how many people are in the party out of the most it takes. The first %ld is the size, the second the maximum. */
+"activity.party_x_of_y" = "(%ld of %ld)";
 /* Activity preview. %@ is an app name. */
 "activity.watching_x" = "Watching %@";
 
@@ -61,6 +63,10 @@
 "common.heading" = "Heading";
 /* Custom activity: field for a picture's web address. */
 "common.image_link" = "Image Link";
+/* Custom activity: field for a button's text. */
+"common.label" = "Label";
+/* Custom activity: field for the web address a button opens. */
+"common.link" = "Link";
 /* Activity type (as in "Listening to Spotify"), used as a section header and a picker option. */
 "common.listening" = "Listening";
 /* App status: Menzen supports the app, but this version of it may not work fully. Keep it short. */
@@ -123,6 +129,12 @@
 
 /* Custom Activity page: button that adds a new preset (a saved custom status). */
 "custom.add_preset" = "Add Preset";
+/* Custom activity: heading of the first button's fields. */
+"custom.button_1" = "Button 1";
+/* Custom activity: heading of the second button's fields. */
+"custom.button_2" = "Button 2";
+/* Custom activity: footer under the button fields. */
+"custom.buttons_footer" = "A button needs a label and an https link. Discord shows buttons to everyone but you.";
 /* Custom Activity page title and its on/off switch. */
 "custom.custom_activity" = "Custom Activity";
 /* Button that deletes the preset being edited. */
@@ -131,8 +143,16 @@
 "custom.delete_x" = "Delete “%@”?";
 /* Shown next to the preset that's in use. Keep it short. */
 "custom.in_use" = "In Use";
+/* Custom activity: field for the most people the party takes. */
+"custom.max_size" = "Max Size";
+/* Custom activity: heading of the party size fields. */
+"custom.party" = "Party";
 /* Section header for the list of saved custom statuses. */
 "custom.presets" = "Presets";
+/* Custom activity: footer under the party fields. Keep "Max Size" the same as that field's name. */
+"custom.shows_after_the_second_line" = "Shows after the second line, like \"(2 of 4)\". Leave Max Size empty for no limit.";
+/* Custom activity: field for how many people are in the party. */
+"custom.size" = "Size";
 /* Alert title when more than one picture link can't be used. */
 "custom.these_images_won_t_work" = "These Images Won't Work";
 /* Row picking Playing, Listening or Watching. */

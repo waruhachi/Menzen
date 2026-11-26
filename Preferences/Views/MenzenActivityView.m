@@ -53,6 +53,7 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	UIProgressView *_progressView;
 	UILabel *_durationLabel;
 	UIStackView *_card;
+	UIStackView *_buttons;
 	UILabel *_emptyLabel;
 	NSDate *_start;
 	NSDate *_end;
@@ -112,7 +113,11 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 		body.spacing = 12;
 		body.alignment = UIStackViewAlignmentCenter;
 
-		_card = [[UIStackView alloc] initWithArrangedSubviews:@[_headerLabel, body]];
+		_buttons = [UIStackView new];
+		_buttons.axis = UILayoutConstraintAxisVertical;
+		_buttons.spacing = 8;
+
+		_card = [[UIStackView alloc] initWithArrangedSubviews:@[_headerLabel, body, _buttons]];
 		_card.axis = UILayoutConstraintAxisVertical;
 		_card.spacing = 10;
 
@@ -177,6 +182,11 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	_detailsLabel.font = playing ? _stateLabel.font : _nameLabel.font;
 	_detailsLabel.hidden = !_detailsLabel.text.length;
 	_stateLabel.text = activity[MenzenActivityStateKey];
+	NSInteger partySize = [activity[MenzenActivityPartySizeKey] integerValue], partyMax = [activity[MenzenActivityPartyMaxKey] integerValue];
+	if (partySize > 0) {
+		NSString *party = partyMax > 0 ? [NSString stringWithFormat:MenzenLocalizedString(@"activity.party_x_of_y", @"(%ld of %ld)"), (long)partySize, (long)partyMax] : [NSString stringWithFormat:@"(%ld)", (long)partySize];
+		_stateLabel.text = _stateLabel.text.length ? [NSString stringWithFormat:@"%@ %@", _stateLabel.text, party] : party;
+	}
 	_stateLabel.hidden = !_stateLabel.text.length;
 	_largeTextLabel.text = activity[MenzenActivityLargeTextKey];
 	_largeTextLabel.hidden = !_largeTextLabel.text.length;
@@ -187,6 +197,8 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	NSString *smallImageURL = imageURL ? activity[MenzenActivitySmallImageURLKey] : nil;
 	_smallImageView.hidden = !smallImageURL;
 	MenzenSetImage(_smallImageView, smallImageURL);
+
+	[self setButtons:activity[MenzenActivityButtonsKey]];
 
 	NSNumber *start = activity[MenzenActivityStartKey];
 	NSNumber *end = activity[MenzenActivityEndKey];
@@ -200,6 +212,22 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	_durationLabel.hidden = !_end;
 	[self updateProgress];
 	[self updateTimer];
+}
+
+- (void)setButtons:(NSArray<NSArray<NSString *> *> *)buttons {
+	for (UIView *view in _buttons.arrangedSubviews) [view removeFromSuperview];
+	for (NSArray<NSString *> *button in [buttons isKindOfClass:NSArray.class] ? buttons : @[]) {
+		if (![button isKindOfClass:NSArray.class] || ![button.firstObject isKindOfClass:NSString.class]) continue;
+		UILabel *label = MenzenLabel(UIFontTextStyleSubheadline, UIFontDescriptorTraitBold, UIColor.labelColor);
+		label.text = button.firstObject;
+		label.textAlignment = NSTextAlignmentCenter;
+		label.backgroundColor = UIColor.tertiarySystemFillColor;
+		label.layer.cornerRadius = 8;
+		label.clipsToBounds = YES;
+		[label.heightAnchor constraintEqualToConstant:34].active = YES;
+		[_buttons addArrangedSubview:label];
+	}
+	_buttons.hidden = !_buttons.arrangedSubviews.count;
 }
 
 // Discord counts up from the start date; paused activities have none.

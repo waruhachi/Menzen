@@ -57,7 +57,7 @@ static inline NSString *_Nullable MenzenPresetString(NSDictionary *preset, NSStr
 
 // A link that can go in the activity: https, and nothing in it that looks
 // like a credential, since Discord shows the activity to everyone.
-static inline BOOL MenzenCustomImageURLIsAllowed(NSString *_Nullable string) {
+static inline BOOL MenzenCustomURLIsAllowed(NSString *string) {
 	if (!string.length) return NO;
 	NSURLComponents *components = [NSURLComponents componentsWithString:string];
 	if (![components.scheme.lowercaseString isEqualToString:@"https"] || !components.host.length || components.user || components.password) return NO;
@@ -70,4 +70,7 @@ static inline BOOL MenzenCustomImageURLIsAllowed(NSString *_Nullable string) {
 	return YES;
 }
 
-NS_ASSUME_NONNULL_END
+static inline NSString *MenzenPresetKind(NSDictionary *preset) {
+	NSString *kind = MenzenPresetString(preset, MenzenPresetKindKey);
+	return [@[@"listening", @"watching"] containsObject:kind] ? kind : @"playing";
+}

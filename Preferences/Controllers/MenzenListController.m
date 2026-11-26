@@ -24,7 +24,7 @@ static BOOL MenzenSpecifierIsMenzenSetting(PSSpecifier *specifier) {
 
 	MenzenWriteSetting([specifier propertyForKey:@"key"], value);
 	NSString *notification = [specifier propertyForKey:@"PostNotification"];
-	if (notification.length) CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge CFStringRef)notification, NULL, NULL, YES);
+	if (notification.length) MenzenPostDarwinNotification((__bridge CFStringRef)notification);
 }
 
 @end

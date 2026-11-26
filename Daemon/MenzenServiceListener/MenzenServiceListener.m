@@ -8,19 +8,9 @@
 #import "../MenzenApps/MenzenAppCatalog.h"
 #import "../MenzenApps/MenzenAppChecker.h"
 #import "../MenzenApps/MenzenAppInfo.h"
+#import "../MenzenCodeSigning/MenzenCodeSigning.h"
 #import "../MenzenDiscord/MenzenDiscord.h"
 #import "MenzenServiceListener.h"
-
-// Private, but present on iOS.
-@interface NSXPCConnection (MenzenAuditToken)
-@property (nonatomic, readonly) audit_token_t auditToken;
-@end
-
-typedef struct __SecTask *SecTaskRef;
-extern SecTaskRef SecTaskCreateWithAuditToken(CFAllocatorRef allocator, audit_token_t token);
-extern CFStringRef SecTaskCopySigningIdentifier(SecTaskRef task, CFErrorRef *error);
-extern CFTypeRef SecTaskCopyValueForEntitlement(SecTaskRef task, CFStringRef entitlement, CFErrorRef *error);
-extern uint32_t SecTaskGetCodeSignStatus(SecTaskRef task);
 
 // Weak, as it's newer than proc_pidpath.
 extern int proc_pidpath_audittoken(audit_token_t *token, void *buffer, uint32_t size) __attribute__((weak_import));

@@ -50,10 +50,7 @@ static inline NSString *_Nullable MenzenLinkURL(NSString *format, id _Nullable I
 	});
 	if ([ID isKindOfClass:NSNumber.class]) ID = [ID stringValue];
 	if (![ID isKindOfClass:NSString.class] || ![ID length] || [ID length] > 100 || [ID rangeOfCharacterFromSet:invalid].location != NSNotFound || [ID containsString:@".."]) return nil;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
-	return [NSString stringWithFormat:format, ID];
-#pragma clang diagnostic pop
+	return [format stringByReplacingOccurrencesOfString:@"%@" withString:ID];
 }
 
 static inline NSDictionary<NSString *, NSString *> *_Nullable MenzenExtrasFromURL(NSString *_Nullable url) {

@@ -9,7 +9,7 @@ NS_ASSUME_NONNULL_BEGIN
 static uint64_t const MenzenApplicationId = 1564329461036617748ULL;
 
 #define MenzenServiceName @"moe.waru.menzend"
-// Posted by menzend whenever what -statusWithReply: returns changes.
+#define MenzenDaemonDomain CFSTR("moe.waru.menzend")
 #define MenzenStatusChangedNotification "moe.waru.menzen.status"
 
 // -statusWithReply: keys.

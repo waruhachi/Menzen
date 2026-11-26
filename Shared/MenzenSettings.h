@@ -59,6 +59,10 @@ static inline void MenzenWriteSetting(NSString *key, id value) {
 	MenzenSettingsSynchronize();
 }
 
+static inline void MenzenPostDarwinNotification(CFStringRef name) {
+	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), name, NULL, NULL, true);
+}
+
 static inline BOOL MenzenSettingBool(NSString *key, BOOL fallback) {
 	id value = MenzenSettingValue(key);
 	return [value respondsToSelector:@selector(boolValue)] ? [value boolValue] : fallback;

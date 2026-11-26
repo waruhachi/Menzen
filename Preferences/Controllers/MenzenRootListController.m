@@ -428,7 +428,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	[keys removeObject:MenzenSettingCustomPresets];
 	if (keys.count) CFPreferencesSetMultiple(NULL, (__bridge CFArrayRef)keys, domain, MenzenSettingsUser(), kCFPreferencesAnyHost);
 	CFPreferencesSynchronize(domain, MenzenSettingsUser(), kCFPreferencesAnyHost);
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
+	MenzenPostDarwinNotification(CFSTR(MenzenSettingsChangedNotification));
 	[self reloadSpecifiers];
 }
 

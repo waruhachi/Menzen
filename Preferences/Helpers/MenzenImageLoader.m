@@ -48,7 +48,7 @@ void MenzenLoadImage(NSString *urlString, void (^completion)(UIImage *image)) {
 		cache = [NSCache new];
 	});
 
-	NSURL *url = MenzenCustomImageURLIsAllowed(urlString) ? [NSURL URLWithString:urlString] : nil;
+	NSURL *url = MenzenCustomURLIsAllowed(urlString) ? [NSURL URLWithString:urlString] : nil;
 	if (!url) {
 		completion(nil);
 		return;

@@ -68,14 +68,13 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 
 - (BOOL)isSelected {
 	// Settings writes from another process.
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	MenzenSettingsSynchronize();
 	return MenzenSettingBool(self.class.settingKey, self.class.settingDefault);
 }
 
 - (void)setSelected:(BOOL)selected {
-	CFPreferencesSetAppValue((__bridge CFStringRef)self.class.settingKey, (__bridge CFPropertyListRef) @(selected), (__bridge CFStringRef)MenzenSettingsDomain);
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, true);
+	MenzenWriteSetting(self.class.settingKey, @(selected));
+	MenzenPostDarwinNotification(CFSTR(MenzenSettingsChangedNotification));
 	[super refreshState];
 }
 

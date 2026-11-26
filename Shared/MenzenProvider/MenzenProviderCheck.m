@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
+#import "../MenzenSettings.h"
 #import "../MenzenSupport.h"
 #import "MenzenProvider.h"
 
@@ -170,7 +171,7 @@ static void MenzenRunCheck(NSArray<NSString *> *required, NSArray<NSString *> *o
 	// After the status queue has written it.
 	dispatch_async(MenzenStatusQueue(), ^{
 		NSString *name = [@MenzenSupportCheckedNotificationPrefix stringByAppendingString:NSBundle.mainBundle.bundleIdentifier ?: @""];
-		CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge CFStringRef)name, NULL, NULL, true);
+		MenzenPostDarwinNotification((__bridge CFStringRef)name);
 		if (done) dispatch_async(dispatch_get_main_queue(), done);
 	});
 }

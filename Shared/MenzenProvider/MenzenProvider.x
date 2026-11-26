@@ -43,6 +43,10 @@ NSString *MenzenImageURL(id value, NSArray<NSString *> *hosts) {
 	return nil;
 }
 
+BOOL MenzenIsBetterWidth(double width, double bestWidth, double target) {
+	return bestWidth < target ? width > bestWidth : width >= target && width < bestWidth;
+}
+
 NSString *MenzenPairKey(NSString *first, NSString *second) {
 	return first && second ? [NSString stringWithFormat:@"%@\n%@", first, second] : nil;
 }

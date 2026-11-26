@@ -75,7 +75,7 @@ static NSString *MenzenSourceSymbol(NSString *source) {
 	}
 
 	MenzenWriteSetting(MenzenSettingPriority, order);
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
+	MenzenPostDarwinNotification(CFSTR(MenzenSettingsChangedNotification));
 }
 
 @end

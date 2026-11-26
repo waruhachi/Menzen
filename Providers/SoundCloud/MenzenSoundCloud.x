@@ -16,7 +16,7 @@
 // Set for private tracks; their links carry it, so they get none.
 - (id)secretToken;
 - (BOOL)menzen_recorded;
-- (void)setMz_recorded:(BOOL)recorded;
+- (void)setMenzen_recorded:(BOOL)recorded;
 @end
 
 @interface MenzenSoundCloudItem : NSObject
@@ -205,7 +205,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 
 - (id)artworkURL {
 	id artworkURL = %orig;
-	[self setMz_recorded:YES];
+	[self setMenzen_recorded:YES];
 	MenzenRemember(self, artworkURL);
 	return artworkURL;
 }
@@ -215,7 +215,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 - (NSString *)title {
 	NSString *title = %orig;
 	if (![self menzen_recorded]) {
-		[self setMz_recorded:YES];
+		[self setMenzen_recorded:YES];
 		[self artworkURL];
 	}
 

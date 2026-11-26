@@ -16,7 +16,7 @@
 @end
 
 static void MenzenPostSettingsChanged(void) {
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
+	MenzenPostDarwinNotification(CFSTR(MenzenSettingsChangedNotification));
 }
 
 static void MenzenWritePresets(NSArray<NSDictionary *> *presets) {
@@ -172,7 +172,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	activity[MenzenActivityStatusDisplayKey] = @"name";
 	activity[MenzenActivityNameKey] = MenzenPresetString(preset, MenzenPresetNameKey);
 	NSString *largeImage = MenzenPresetString(preset, MenzenPresetLargeImageKey);
-	if (MenzenCustomImageURLIsAllowed(largeImage)) activity[MenzenActivityImageURLKey] = largeImage;
+	if (MenzenCustomURLIsAllowed(largeImage)) activity[MenzenActivityImageURLKey] = largeImage;
 	if (MenzenSettingBool(MenzenSettingPrivacy, NO)) return activity;
 
 	activity[MenzenActivityDetailsKey] = MenzenPresetString(preset, MenzenPresetDetailsKey);
@@ -180,7 +180,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	if (activity[MenzenActivityImageURLKey]) {
 		activity[MenzenActivityLargeTextKey] = MenzenPresetString(preset, MenzenPresetLargeTextKey);
 		NSString *smallImage = MenzenPresetString(preset, MenzenPresetSmallImageKey);
-		if (MenzenCustomImageURLIsAllowed(smallImage)) {
+		if (MenzenCustomURLIsAllowed(smallImage)) {
 			activity[MenzenActivitySmallImageURLKey] = smallImage;
 			activity[MenzenActivitySmallTextKey] = MenzenPresetString(preset, MenzenPresetSmallTextKey);
 		}
@@ -249,7 +249,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		PSSpecifier *kind = [self fieldNamed:MenzenLocalizedString(@"custom.type", @"Type") key:MenzenPresetKindKey cell:PSStaticTextCell];
 		[kind setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
 		[kind setProperty:@[@[@"playing", MenzenLocalizedString(@"common.playing", @"Playing")], @[@"listening", MenzenLocalizedString(@"common.listening", @"Listening")], @[@"watching", MenzenLocalizedString(@"common.watching", @"Watching")]] forKey:@"choices"];
-		[kind setProperty:MenzenPresetString(preset, MenzenPresetKindKey) ?: @"playing" forKey:@"choice"];
+		[kind setProperty:MenzenPresetKind(preset) forKey:@"choice"];
 		[specifiers addObject:kind];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.name", @"Name") key:MenzenPresetNameKey placeholder:@"Menzen"]];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.first_line", @"First Line") key:MenzenPresetDetailsKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];

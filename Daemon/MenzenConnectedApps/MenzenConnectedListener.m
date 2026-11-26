@@ -2,18 +2,10 @@
 #import "../../Shared/MenzenConnectedApps.h"
 #import "../../Shared/MenzenCustomActivity.h"
 #import "../../Shared/MenzenService.h"
+#import "../MenzenCodeSigning/MenzenCodeSigning.h"
 #import "../MenzenDiscord/MenzenDiscord.h"
 #import "../MenzenPresence/MenzenPresence.h"
 #import "MenzenConnectedListener.h"
-
-// Private, but present on iOS.
-@interface NSXPCConnection (MenzenConnectedAuditToken)
-@property (nonatomic, readonly) audit_token_t auditToken;
-@end
-
-typedef struct __SecTask *SecTaskRef;
-extern SecTaskRef SecTaskCreateWithAuditToken(CFAllocatorRef allocator, audit_token_t token);
-extern CFStringRef SecTaskCopySigningIdentifier(SecTaskRef task, CFErrorRef *error);
 
 // More at once than any device runs; the rest are turned away.
 static NSUInteger const MenzenConnectedConnectionLimit = 64;
@@ -21,14 +13,6 @@ static NSUInteger const MenzenConnectedTextLimit = 128;
 static NSUInteger const MenzenConnectedURLLimit = 512;
 // Requests SpringBoard hasn't shown by then never will be (it restarted).
 static NSTimeInterval const MenzenConnectedRequestAge = 60;
-
-static NSString *MenzenConnectedProcess(NSXPCConnection *connection) {
-	SecTaskRef task = SecTaskCreateWithAuditToken(kCFAllocatorDefault, connection.auditToken);
-	if (!task) return nil;
-	NSString *identifier = CFBridgingRelease(SecTaskCopySigningIdentifier(task, NULL));
-	CFRelease(task);
-	return identifier;
-}
 
 static NSString *MenzenConnectedText(id text) {
 	if (![text isKindOfClass:NSString.class]) return nil;
@@ -40,7 +24,7 @@ static NSString *MenzenConnectedText(id text) {
 
 static NSString *MenzenConnectedImage(id url) {
 	if (![url isKindOfClass:NSString.class] || [url length] > MenzenConnectedURLLimit) return nil;
-	return MenzenCustomImageURLIsAllowed(url) ? url : nil;
+	return MenzenCustomURLIsAllowed(url) ? url : nil;
 }
 
 static NSDate *MenzenConnectedDate(id seconds) {
@@ -150,7 +134,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	MenzenConnectedSession *session = [MenzenConnectedSession new];
 	session.listener = self;
 	session.connection = connection;
-	session.process = MenzenConnectedProcess(connection);
+	session.process = MenzenSigningIdentifier(connection.auditToken);
 	connection.exportedInterface = MenzenConnectedServiceInterface();
 	connection.exportedObject = session;
 	connection.remoteObjectInterface = MenzenConnectedClientInterface();
@@ -200,9 +184,8 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	}
 
 	[requests addObject:@{MenzenConnectedRequestIdentifierKey: identifier, MenzenConnectedRequestNameKey: name, MenzenConnectedRequestDateKey: now}];
-	CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingConnectedRequests, (__bridge CFArrayRef)requests, (__bridge CFStringRef)MenzenSettingsDomain);
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenConnectedRequestNotification), NULL, NULL, YES);
+	MenzenWriteSetting(MenzenSettingConnectedRequests, requests);
+	MenzenPostDarwinNotification(CFSTR(MenzenConnectedRequestNotification));
 }
 
 // Lists the app in the settings. NO when there's no room for another.
@@ -214,21 +197,19 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	if ([apps[identifier] isEqualToDictionary:app]) return YES;
 	if (!apps[identifier] && apps.count >= MenzenConnectedAppLimit) return NO;
 	apps[identifier] = app;
-	CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingConnectedApps, (__bridge CFDictionaryRef)apps, (__bridge CFStringRef)MenzenSettingsDomain);
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenConnectedAppsChangedNotification), NULL, NULL, YES);
+	MenzenWriteSetting(MenzenSettingConnectedApps, apps);
+	MenzenPostDarwinNotification(CFSTR(MenzenConnectedAppsChangedNotification));
 	return YES;
 }
 
 - (void)removeApp:(NSString *)identifier {
 	// The pane has just taken it off the allowed list.
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	MenzenSettingsSynchronize();
 	NSMutableDictionary *apps = [MenzenConnectedApps() mutableCopy];
 	if (apps[identifier]) {
 		[apps removeObjectForKey:identifier];
-		CFPreferencesSetAppValue((__bridge CFStringRef)MenzenSettingConnectedApps, (__bridge CFDictionaryRef)apps, (__bridge CFStringRef)MenzenSettingsDomain);
-		CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
-		CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenConnectedAppsChangedNotification), NULL, NULL, YES);
+		MenzenWriteSetting(MenzenSettingConnectedApps, apps);
+		MenzenPostDarwinNotification(CFSTR(MenzenConnectedAppsChangedNotification));
 	}
 
 	// Ending the connection would have the client register again right

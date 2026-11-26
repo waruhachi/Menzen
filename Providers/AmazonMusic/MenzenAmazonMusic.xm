@@ -86,7 +86,7 @@ static NSString *MenzenArtistPicture(NSArray *images) {
 			if (![image isKindOfClass:NSDictionary.class] || ![MenzenString(image[@"imageType"]) isEqualToString:type]) continue;
 			NSString *url = MenzenAmazonImageURL(image[@"url"]);
 			double width = [image[@"width"] isKindOfClass:NSNumber.class] ? [image[@"width"] doubleValue] : 0;
-			BOOL better = !found || (foundWidth < 500 ? width > foundWidth : width >= 500 && width < foundWidth);
+			BOOL better = !found || MenzenIsBetterWidth(width, foundWidth, 500);
 			if (url && better) {
 				found = url;
 				foundWidth = width;

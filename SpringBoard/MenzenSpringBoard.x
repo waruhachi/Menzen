@@ -129,7 +129,7 @@ static void MenzenShowRequest(NSString *identifier, NSString *name) {
 
 static void MenzenShowRequests(void) {
 	if (!MenzenRequestsReady || !MenzenBulletinServer) return;
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	MenzenSettingsSynchronize();
 	NSArray *requests = MenzenSettingValue(MenzenSettingConnectedRequests);
 	if (![requests isKindOfClass:NSArray.class]) return;
 	NSArray *allowed = MenzenConnectedAllowed();
@@ -155,7 +155,7 @@ static void MenzenRequestsChanged(CFNotificationCenterRef center, void *observer
 // Allowed in the settings, so nothing left to ask.
 static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef info) {
 	if (!MenzenBulletinServer) return;
-	CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+	MenzenSettingsSynchronize();
 	for (NSString *identifier in MenzenConnectedAllowed()) MenzenWithdrawRequest(identifier);
 }
 

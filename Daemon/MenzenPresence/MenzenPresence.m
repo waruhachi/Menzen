@@ -62,14 +62,14 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	NSDictionary *preset = MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil));
 	if (!preset) return nil;
 	MenzenActivity *activity = [MenzenActivity new];
-	NSString *kind = MenzenPresetString(preset, MenzenPresetKindKey);
+	NSString *kind = MenzenPresetKind(preset);
 	activity.kind = [kind isEqualToString:@"listening"] ? MenzenActivityKindListening : [kind isEqualToString:@"watching"] ? MenzenActivityKindWatching
 																														   : MenzenActivityKindPlaying;
 	activity.statusDisplay = MenzenStatusDisplayName;
 	// Without a name, Discord uses the application's: "Menzen".
 	activity.name = MenzenPresetString(preset, MenzenPresetNameKey);
 	NSString *largeImage = MenzenPresetString(preset, MenzenPresetLargeImageKey);
-	if (MenzenCustomImageURLIsAllowed(largeImage)) activity.largeImageURL = largeImage;
+	if (MenzenCustomURLIsAllowed(largeImage)) activity.largeImageURL = largeImage;
 	if (MenzenSettingBool(MenzenSettingPrivacy, NO)) return activity;
 
 	activity.details = MenzenPresetString(preset, MenzenPresetDetailsKey);
@@ -78,7 +78,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	if (activity.largeImageURL) {
 		activity.largeText = MenzenPresetString(preset, MenzenPresetLargeTextKey);
 		NSString *smallImage = MenzenPresetString(preset, MenzenPresetSmallImageKey);
-		if (MenzenCustomImageURLIsAllowed(smallImage)) {
+		if (MenzenCustomURLIsAllowed(smallImage)) {
 			activity.smallImageURL = smallImage;
 			activity.smallText = MenzenPresetString(preset, MenzenPresetSmallTextKey);
 		}

@@ -52,11 +52,11 @@ static NSString *MenzenImage(NSDictionary *artwork) {
 	NSString *found = nil;
 	double foundWidth = 0;
 	for (id file in files) {
-		NSString *href = MenzenString(MenzenDictionary(file)[@"href"]);
+		NSString *href = MenzenImageURL(MenzenDictionary(file)[@"href"], @[@"resources.tidal.com"]);
 		id width = MenzenDictionary(MenzenDictionary(file)[@"meta"])[@"width"];
-		if (![href hasPrefix:@"https://resources.tidal.com/"] || href.length > 256 || ![width isKindOfClass:NSNumber.class]) continue;
+		if (!href || ![width isKindOfClass:NSNumber.class]) continue;
 		double w = [width doubleValue];
-		BOOL better = !found || (foundWidth < 600 ? w > foundWidth : w >= 600 && w < foundWidth);
+		BOOL better = !found || MenzenIsBetterWidth(w, foundWidth, 600);
 		if (better) {
 			found = href;
 			foundWidth = w;

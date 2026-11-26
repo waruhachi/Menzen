@@ -23,11 +23,11 @@ static NSString *MenzenThumbnail(id images) {
 		NSArray *pictures = [image isKindOfClass:NSArray.class] ? image : @[image];
 		for (NSDictionary *picture in pictures) {
 			if (![picture isKindOfClass:NSDictionary.class]) continue;
-			NSString *source = MenzenString(picture[@"source"]);
+			NSString *source = MenzenImageURL(picture[@"source"], @[@"imgsrv.crunchyroll.com"]);
 			id width = picture[@"width"];
-			if (![source hasPrefix:@"https://imgsrv.crunchyroll.com/"] || source.length > 256 || ![width isKindOfClass:NSNumber.class]) continue;
+			if (!source || ![width isKindOfClass:NSNumber.class]) continue;
 			double w = [width doubleValue];
-			BOOL better = !found || (foundWidth < 600 ? w > foundWidth : w >= 600 && w < foundWidth);
+			BOOL better = !found || MenzenIsBetterWidth(w, foundWidth, 600);
 			if (better) {
 				found = source;
 				foundWidth = w;

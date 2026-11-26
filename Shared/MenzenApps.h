@@ -5,7 +5,7 @@
 
 #import "MenzenSupport.h"
 
-NS_ASSUME_NONNULL_BEGIN
+#define MenzenApplicationsChangedNotification CFSTR("com.apple.LaunchServices.ApplicationsChanged")
 
 @interface LSApplicationProxy : NSObject
 + (instancetype)applicationProxyForIdentifier:(NSString *)bundleIdentifier;

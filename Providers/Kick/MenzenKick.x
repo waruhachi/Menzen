@@ -18,8 +18,8 @@ static NSString *MenzenThumbnail(NSDictionary *thumbnail) {
 	if (![thumbnail isKindOfClass:NSDictionary.class]) return nil;
 	NSString *found = nil;
 	for (id value in thumbnail.allValues) {
-		NSString *url = MenzenString(value);
-		if (![url hasPrefix:@"https://images.kick.com/"] || [url rangeOfString:@" "].location != NSNotFound || url.length > 256) continue;
+		NSString *url = MenzenImageURL(value, @[@"images.kick.com"]);
+		if (!url || [url containsString:@" "]) continue;
 		if ([url containsString:@"/720."]) return url;
 		found = found ?: url;
 	}

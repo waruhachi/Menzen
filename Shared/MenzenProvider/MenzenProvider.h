@@ -3,22 +3,16 @@
 
 #import "../MenzenTrackExtras.h"
 
-NS_ASSUME_NONNULL_BEGIN
+FOUNDATION_EXPORT NSString *MenzenString(id value);
+FOUNDATION_EXPORT NSDictionary *MenzenDictionary(id value);
+FOUNDATION_EXPORT NSArray *MenzenArray(id value);
+FOUNDATION_EXPORT id MenzenPath(id object, NSArray<NSString *> *keys);
+FOUNDATION_EXPORT id MenzenGet(id object, NSString *name);
+// Discord rejects URLs over 256 characters.
+FOUNDATION_EXPORT NSString *MenzenImageURL(id value, NSArray<NSString *> *hosts);
+FOUNDATION_EXPORT BOOL MenzenIsBetterWidth(double width, double bestWidth, double target);
+FOUNDATION_EXPORT NSString *MenzenPairKey(NSString *first, NSString *second);
 
-// A non-empty string, or a number as a string.
-FOUNDATION_EXPORT NSString *_Nullable MenzenString(id _Nullable value);
-FOUNDATION_EXPORT NSDictionary *_Nullable MenzenDictionary(id _Nullable value);
-FOUNDATION_EXPORT NSArray *_Nullable MenzenArray(id _Nullable value);
-FOUNDATION_EXPORT id _Nullable MenzenPath(id _Nullable object, NSArray<NSString *> *keys);
-// The getter's value, numbers boxed; nil when object doesn't have it.
-FOUNDATION_EXPORT id _Nullable MenzenGet(id _Nullable object, NSString *name);
-// An https URL on one of hosts ("example.com", or ".example.com" for any
-// subdomain), at most 256 characters: Discord rejects longer ones.
-FOUNDATION_EXPORT NSString *_Nullable MenzenImageURL(id _Nullable value, NSArray<NSString *> *hosts);
-// For caches keyed by two names; nil without both.
-FOUNDATION_EXPORT NSString *_Nullable MenzenPairKey(NSString *_Nullable first, NSString *_Nullable second);
-
-// Thread safe, dropping its oldest entries past limit.
 @interface MenzenCache<KeyType, ObjectType> : NSObject
 - (instancetype)initWithLimit:(NSUInteger)limit;
 - (nullable ObjectType)objectForKeyedSubscript:(KeyType)key;

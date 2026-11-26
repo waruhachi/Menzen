@@ -12,7 +12,7 @@ void MenzenCheckImageLink(NSString *link, void (^completion)(NSString *problem))
 			completion(problem);
 		});
 	};
-	if (!MenzenCustomImageURLIsAllowed(link)) {
+	if (!MenzenCustomURLIsAllowed(link)) {
 		finish(MenzenLocalizedString(@"image.the_link_has_to_start_with", @"The link has to start with https:// and can't contain a token, key or password."));
 		return;
 	}

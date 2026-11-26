@@ -28,11 +28,6 @@ static void MenzenForwardSettingsChanged(CFNotificationCenterRef center, void *o
 	});
 }
 
-static void MenzenPostDarwinNotification(CFStringRef name) {
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), name, NULL, NULL, true);
-}
-
-// How long removing the package waits for Discord to revoke the tokens.
 static NSTimeInterval const MenzenSignOutTimeout = 10;
 
 // prerm runs this as root; the tokens are the mobile user's, as when the
@@ -94,7 +89,7 @@ int main(int argc, char *argv[]) {
 		};
 
 		[NSNotificationCenter.defaultCenter addObserverForName:@MenzenSettingsChangedNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *notification) {
-			CFPreferencesAppSynchronize((__bridge CFStringRef)MenzenSettingsDomain);
+			MenzenSettingsSynchronize();
 			[presence settingsChanged];
 			[connected settingsChanged];
 		}];

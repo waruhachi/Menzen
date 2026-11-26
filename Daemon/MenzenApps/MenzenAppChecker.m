@@ -3,6 +3,7 @@
 #import <signal.h>
 
 #import "../../Shared/MenzenApps.h"
+#import "../../Shared/MenzenService.h"
 #import "MenzenAppChecker.h"
 
 @interface FBSSystemService : NSObject
@@ -18,14 +19,10 @@ static NSTimeInterval const MenzenOpenTimeout = 120;
 static NSTimeInterval const MenzenScanDelay = 15;
 static NSTimeInterval const MenzenNextDelay = 2;
 
-// Bundle ID to "<app version>|<Menzen version>" already launched in the
-// background, so an app whose check never finishes isn't launched again on
-// every start. The pane's button is for those.
-static CFStringRef const MenzenCheckerDomain = CFSTR("moe.waru.menzend");
+// So an app whose check never finishes isn't launched again on every start.
 static CFStringRef const MenzenTriedKey = CFSTR("backgroundChecks");
 
 static char const *const MenzenLockStateNotification = "com.apple.springboard.lockstate";
-static CFStringRef const MenzenApplicationsChangedNotification = CFSTR("com.apple.LaunchServices.ApplicationsChanged");
 
 static void *MenzenFrontBoardServices(void) {
 	static void *handle;
@@ -111,16 +108,16 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 }
 
 - (NSDictionary<NSString *, NSString *> *)tried {
-	CFPreferencesAppSynchronize(MenzenCheckerDomain);
-	NSDictionary *tried = CFBridgingRelease(CFPreferencesCopyAppValue(MenzenTriedKey, MenzenCheckerDomain));
+	CFPreferencesAppSynchronize(MenzenDaemonDomain);
+	NSDictionary *tried = CFBridgingRelease(CFPreferencesCopyAppValue(MenzenTriedKey, MenzenDaemonDomain));
 	return [tried isKindOfClass:NSDictionary.class] ? tried : @{};
 }
 
 - (void)setTried:(NSString *)bundleIdentifier version:(NSString *)version {
 	NSMutableDictionary *tried = [self.tried mutableCopy];
 	tried[bundleIdentifier] = MenzenTriedValue(version);
-	CFPreferencesSetAppValue(MenzenTriedKey, (__bridge CFDictionaryRef)tried, MenzenCheckerDomain);
-	CFPreferencesAppSynchronize(MenzenCheckerDomain);
+	CFPreferencesSetAppValue(MenzenTriedKey, (__bridge CFDictionaryRef)tried, MenzenDaemonDomain);
+	CFPreferencesAppSynchronize(MenzenDaemonDomain);
 }
 
 - (void)scheduleScan {

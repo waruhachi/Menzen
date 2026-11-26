@@ -96,7 +96,7 @@ static inline void MenzenConnectedSetAllowed(NSString *identifier, BOOL allowed)
 	[identifiers removeObject:identifier];
 	if (allowed) [identifiers addObject:identifier];
 	MenzenWriteSetting(MenzenSettingConnectedAllowed, identifiers);
-	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR(MenzenSettingsChangedNotification), NULL, NULL, YES);
+	MenzenPostDarwinNotification(CFSTR(MenzenSettingsChangedNotification));
 }
 
 NS_ASSUME_NONNULL_END

@@ -1,5 +1,6 @@
 #import "../../Shared/MenzenApps.h"
 #import "../../Shared/MenzenProviders.h"
+#import "../../Shared/MenzenService.h"
 #import "MenzenAppCatalog.h"
 #import "MenzenAppInfo.h"
 
@@ -14,10 +15,8 @@ static NSTimeInterval const MenzenFirstCheckDelay = 20;
 // GitHub caches the file for 5 minutes anyway.
 static NSTimeInterval const MenzenStaleAge = 10 * 60;
 
-static CFStringRef const MenzenDaemonDomain = CFSTR("moe.waru.menzend");
 // Before the catalog had a file per kind of app.
 static CFStringRef const MenzenOldETagKey = CFSTR("gameCatalogETag");
-static CFStringRef const MenzenApplicationsChangedNotification = CFSTR("com.apple.LaunchServices.ApplicationsChanged");
 
 // Only links to Apple's artwork servers are sent to Discord, whatever the
 // list says.

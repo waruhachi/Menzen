@@ -307,6 +307,10 @@
 "root.signing_in" = "Signing In…";
 /* Settings section header for where activity comes from. */
 "root.sources" = "Sources";
+/* Switch: set the Discord status to Do Not Disturb while the iPhone is in Do Not Disturb or a Focus. */
+"root.sync_do_not_disturb" = "Sync Do Not Disturb";
+/* Footer under the Behavior section, explaining Sync Do Not Disturb. */
+"root.sync_do_not_disturb_footer" = "Sync Do Not Disturb sets your Discord status to Do Not Disturb while a Focus is on. A custom preset's own status comes first.";
 /* Error under the sign-in button. */
 "root.the_sign_in_page_couldn_t" = "The sign-in page couldn't be opened. Try again.";
 /* Note under the sign-in button. */

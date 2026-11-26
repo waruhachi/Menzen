@@ -46,6 +46,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	BOOL _lastWasOther;
 	BOOL _clearPending;
 	NSUInteger _clearGeneration;
+	BOOL _doNotDisturb;
 }
 
 - (instancetype)initWithDiscord:(MenzenDiscord *)discord appCatalog:(MenzenAppCatalog *)appCatalog {
@@ -130,13 +131,20 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	[self updatePreview];
 }
 
+// A preset's own status comes first, then Do Not Disturb.
 - (void)updateStatus:(NSString *)shown {
 	NSString *status;
 	if (MenzenSettingBool(MenzenSettingEnabled, YES)) {
 		if ([shown isEqualToString:MenzenSourceCustom]) status = MenzenPresetStatus(MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil)));
+		if (!status && _doNotDisturb && MenzenSettingBool(MenzenSettingSyncDoNotDisturb, NO)) status = @"dnd";
 	}
 
 	[_discord setStatusOverride:status];
+}
+
+- (void)setDoNotDisturb:(BOOL)active {
+	_doNotDisturb = active;
+	[self publish];
 }
 
 - (void)showMedia:(MenzenActivity *)activity {

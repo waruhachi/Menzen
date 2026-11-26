@@ -11,9 +11,9 @@
 - (instancetype)initWithDiscord:(MenzenDiscord *)discord appCatalog:(MenzenAppCatalog *)appCatalog;
 - (void)handleTrack:(MenzenTrack *)track;
 - (void)handleVisibleApps:(NSArray<NSString *> *)visibleApps;
-// What the connected app that updated last wants shown; nil when none does.
-- (void)setConnectedActivity:(nullable MenzenActivity *)activity;
-// The game list changed, so a game's icon may have arrived.
+- (void)setConnectedActivity:(MenzenActivity *)activity;
+// Do Not Disturb or a Focus, for MenzenSettingSyncDoNotDisturb.
+- (void)setDoNotDisturb:(BOOL)active;
 - (void)appCatalogChanged;
 - (void)settingsChanged;
 @end

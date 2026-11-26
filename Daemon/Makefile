@@ -8,7 +8,7 @@ DISCORD_SDK_DIR = Library/Tweak Support/Menzen/DiscordSDK
 
 TOOL_NAME = menzend
 
-$(TOOL_NAME)_FILES = main.m $(wildcard MenzenDiscord/*.m MenzenDiscord/*.mm) $(wildcard MenzenPresence/*.m) $(wildcard MenzenNowPlaying/*.m) $(wildcard MenzenForegroundApps/*.m) $(wildcard MenzenApps/*.m) $(wildcard MenzenServiceListener/*.m) $(wildcard MenzenConnectedApps/*.m) $(wildcard ../Shared/MenzenLocalization/*.m)
+$(TOOL_NAME)_FILES = main.m $(wildcard MenzenDiscord/*.m MenzenDiscord/*.mm) $(wildcard MenzenPresence/*.m) $(wildcard MenzenNowPlaying/*.m) $(wildcard MenzenForegroundApps/*.m) $(wildcard MenzenDoNotDisturb/*.m) $(wildcard MenzenApps/*.m) $(wildcard MenzenServiceListener/*.m) $(wildcard MenzenConnectedApps/*.m) $(wildcard ../Shared/MenzenLocalization/*.m)
 MENZEN_VERSION := $(shell sed -n 's/^Version: *//p' ../layout/DEBIAN/control)
 
 $(TOOL_NAME)_CFLAGS = -fobjc-arc -IDiscordSDK/Headers -DMENZEN_VERSION='"$(MENZEN_VERSION)"'
@@ -18,6 +18,7 @@ $(TOOL_NAME)_LDFLAGS = "-F../layout/$(DISCORD_SDK_DIR)" -framework discord_partn
 # whatever kind of jailbreak it is.
 $(TOOL_NAME)_LDFLAGS += -Xlinker -rpath -Xlinker "@executable_path/../../$(DISCORD_SDK_DIR)"
 $(TOOL_NAME)_FRAMEWORKS = Foundation Security MobileCoreServices
+$(TOOL_NAME)_PRIVATE_FRAMEWORKS = DoNotDisturb
 $(TOOL_NAME)_CODESIGN_FLAGS = -Sentitlements.plist
 $(TOOL_NAME)_INSTALL_PATH = /usr/libexec
 

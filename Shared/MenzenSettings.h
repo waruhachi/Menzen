@@ -27,6 +27,7 @@
 #define MenzenSettingPriority @"priority"
 #define MenzenSettingPrivacy @"privacy"
 #define MenzenSettingPrivatePrefix @"private."
+#define MenzenSettingSyncDoNotDisturb @"syncDoNotDisturb"
 
 static inline CFStringRef MenzenSettingsUser(void) {
 	return geteuid() == 0 ? CFSTR("mobile") : kCFPreferencesCurrentUser;

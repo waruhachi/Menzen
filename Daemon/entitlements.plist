@@ -16,6 +16,15 @@
 	<!-- Launching apps for MenzenAppChecker. -->
 	<key>com.apple.frontboard.launchapplications</key>
 	<true/>
+	<!-- Do Not Disturb and Focus, for MenzenDoNotDisturb. -->
+	<key>com.apple.private.donotdisturb.state.request.client-identifiers</key>
+	<array>
+		<string>moe.waru.menzend</string>
+	</array>
+	<key>com.apple.private.donotdisturb.state.updates.client-identifiers</key>
+	<array>
+		<string>moe.waru.menzend</string>
+	</array>
 	<key>keychain-access-groups</key>
 	<array>
 		<string>moe.waru.menzend</string>

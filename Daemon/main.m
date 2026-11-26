@@ -10,6 +10,7 @@
 #import "MenzenApps/MenzenAppChecker.h"
 #import "MenzenConnectedApps/MenzenConnectedListener.h"
 #import "MenzenDiscord/MenzenDiscord.h"
+#import "MenzenDoNotDisturb/MenzenDoNotDisturb.h"
 #import "MenzenForegroundApps/MenzenForegroundApps.h"
 #import "MenzenNowPlaying/MenzenNowPlaying.h"
 #import "MenzenPresence/MenzenPresence.h"
@@ -93,8 +94,13 @@ int main(int argc, char *argv[]) {
 		}];
 		CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, MenzenForwardSettingsChanged, CFSTR(MenzenSettingsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 
+		MenzenDoNotDisturb *doNotDisturb = [[MenzenDoNotDisturb alloc] initWithHandler:^(BOOL active) {
+			[presence setDoNotDisturb:active];
+		}];
+
 		[nowPlaying start];
 		[foregroundApps start];
+		[doNotDisturb start];
 		[NSRunLoop.mainRunLoop run];
 	}
 

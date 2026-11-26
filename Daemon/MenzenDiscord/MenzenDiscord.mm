@@ -37,6 +37,10 @@ static NSTimeInterval const MenzenProfileMinAge = 10;
 static NSTimeInterval const MenzenFastCallbackInterval = 0.05;
 static NSTimeInterval const MenzenBusyCallbackTime = 10;
 static NSTimeInterval const MenzenIdleCallbackInterval = 1;
+// The status from before Menzen changed it, and what Menzen set, kept so it
+// can be put back after a restart.
+static CFStringRef const MenzenStatusBeforeKey = CFSTR("statusBefore");
+static CFStringRef const MenzenStatusSetKey = CFSTR("statusSet");
 
 static std::string MenzenStdString(NSString *string) {
 	return string.UTF8String ?: "";
@@ -76,6 +80,23 @@ static NSString *MenzenRandomString(void) {
 	string = [string stringByReplacingOccurrencesOfString:@"+" withString:@"-"];
 	string = [string stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
 	return [string stringByReplacingOccurrencesOfString:@"=" withString:@""];
+}
+
+static NSString *MenzenDaemonString(CFStringRef key) {
+	id value = CFBridgingRelease(CFPreferencesCopyAppValue(key, MenzenDaemonDomain));
+	return [value isKindOfClass:NSString.class] ? value : nil;
+}
+
+static void MenzenSetDaemonString(CFStringRef key, NSString *value) {
+	CFPreferencesSetAppValue(key, (__bridge CFStringRef)value, MenzenDaemonDomain);
+	CFPreferencesAppSynchronize(MenzenDaemonDomain);
+}
+
+static discordpp::StatusType MenzenStatusType(NSString *name) {
+	if ([name isEqualToString:@"idle"]) return discordpp::StatusType::Idle;
+	if ([name isEqualToString:@"dnd"]) return discordpp::StatusType::Dnd;
+	if ([name isEqualToString:@"invisible"]) return discordpp::StatusType::Invisible;
+	return discordpp::StatusType::Online;
 }
 
 static NSString *MenzenQueryValue(NSURLComponents *components, NSString *name) {
@@ -214,6 +235,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSString *_pendingState;
 	MenzenDeviceSignIn *_deviceSignIn;
 	NSDate *_pendingExpiry;
+	NSString *_statusOverride;
 }
 
 - (instancetype)initWithApplicationId:(uint64_t)applicationId {
@@ -407,6 +429,8 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	_ready = NO;
 	_connectingSince = nil;
 	_publishedKnown = NO;
+	MenzenSetDaemonString(MenzenStatusBeforeKey, nil);
+	MenzenSetDaemonString(MenzenStatusSetKey, nil);
 	[self expectCallbacks];
 	_client->Disconnect();
 
@@ -522,6 +546,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 		[_missingAssets removeAllObjects];
 		[self schedulePublishAfter:MenzenNewTrackPublishDelay];
 		[self updateProfile];
+		[self applyStatus];
 	}
 
 	if (_ready != wasReady) [self accountStatusChanged];
@@ -576,7 +601,39 @@ static NSString *MenzenStatusName(discordpp::StatusType status) {
 	}
 }
 
-// What the SDK knows, which it keeps current by itself.
+- (void)setStatusOverride:(NSString *)status {
+	if (MenzenSameString(_statusOverride, status)) return;
+	_statusOverride = [status copy];
+	[self applyStatus];
+}
+
+- (void)applyStatus {
+	if (!_ready) return;
+	std::optional<discordpp::UserHandle> user = _client->GetCurrentUserV2();
+	if (!user) return;
+	NSString *current = MenzenStatusName(user->Status());
+	if (![@[@"online", @"idle", @"dnd", @"invisible"] containsObject:current]) current = nil;
+	NSString *before = MenzenDaemonString(MenzenStatusBeforeKey);
+	NSString *target;
+	if (_statusOverride) {
+		if (!before) MenzenSetDaemonString(MenzenStatusBeforeKey, current ?: @"online");
+		MenzenSetDaemonString(MenzenStatusSetKey, _statusOverride);
+		target = _statusOverride;
+	} else {
+		if (!before) return;
+		NSString *set = MenzenDaemonString(MenzenStatusSetKey);
+		MenzenSetDaemonString(MenzenStatusBeforeKey, nil);
+		MenzenSetDaemonString(MenzenStatusSetKey, nil);
+		// Changed by hand since: that one stays.
+		if (set && current && ![current isEqualToString:set]) return;
+		target = before;
+	}
+
+	if ([current isEqualToString:target]) return;
+	[self expectCallbacks];
+	_client->SetOnlineStatus(MenzenStatusType(target), [](discordpp::ClientResult) {});
+}
+
 - (BOOL)updateProfileFromClient {
 	std::optional<discordpp::UserHandle> user = _client->GetCurrentUserV2();
 	if (!user) return NO;

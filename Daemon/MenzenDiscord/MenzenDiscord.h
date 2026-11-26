@@ -61,6 +61,9 @@ typedef NS_ENUM(NSInteger, MenzenStatusDisplay) {
 // Sends the latest activity again shortly, even if Discord should already
 // have it.
 - (void)republish;
+// "online", "idle", "dnd" or "invisible" while Menzen wants one. nil puts
+// back the status from before, unless it was changed by hand since.
+- (void)setStatusOverride:(NSString *)status;
 
 // OAuth authorization code flow with PKCE. The verifier stays here; only the
 // authorize URL goes out, and only the redirect comes back.

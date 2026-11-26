@@ -59,6 +59,8 @@
 "common.copy_details" = "Copy Details";
 /* Activity settings: row and field for heading text the person types. */
 "common.custom_heading" = "Custom Heading";
+/* Choice: leave the Discord status as it is. */
+"common.default" = "Default";
 /* Alert button that deletes a custom activity preset. */
 "common.delete" = "Delete";
 /* Row: the first line of text under the heading of a Discord activity. */
@@ -145,6 +147,10 @@
 "custom.delete_preset" = "Delete Preset";
 /* Alert title. %@ is the preset's name. */
 "custom.delete_x" = "Delete “%@”?";
+/* Custom preset: row choosing the Discord online status while the preset shows. */
+"custom.discord_status" = "Discord Status";
+/* Footer under the Discord Status row of a custom preset. */
+"custom.discord_status_footer" = "Your status goes back once the preset stops showing, unless you changed it yourself.";
 /* Shown next to the preset that's in use. Keep it short. */
 "custom.in_use" = "In Use";
 /* Custom activity: field for the most people the party takes. */
@@ -377,3 +383,12 @@
 "sources.shows_unsupported_apps_with_less_information" = "Shows unsupported apps, with less information. Browsers, chat and social networking apps are skipped.";
 /* App details footer. %@ is the app's name. */
 "sources.some_parts_of_x_only_load" = "Some parts of %@ only load once it's open. Opening it lets Menzen finish checking, then brings you back here.";
+
+/* Discord online status. */
+"status.dnd" = "Do Not Disturb";
+/* Discord online status: away. */
+"status.idle" = "Idle";
+/* Discord online status: shown as offline to others. */
+"status.invisible" = "Invisible";
+/* Discord online status. */
+"status.online" = "Online";

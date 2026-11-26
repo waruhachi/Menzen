@@ -285,6 +285,16 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		[specifiers addObject:secondButton];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.label", @"Label") key:MenzenPresetButton2LabelKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
 		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.link", @"Link") key:MenzenPresetButton2LinkKey]];
+
+		PSSpecifier *statusGroup = [PSSpecifier emptyGroupSpecifier];
+		[statusGroup setProperty:MenzenLocalizedString(@"custom.discord_status_footer", @"Your status goes back once the preset stops showing, unless you changed it yourself.") forKey:@"footerText"];
+		[specifiers addObject:statusGroup];
+		PSSpecifier *status = [self fieldNamed:MenzenLocalizedString(@"custom.discord_status", @"Discord Status") key:MenzenPresetStatusKey cell:PSStaticTextCell];
+		[status setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
+		[status setProperty:@[@[@"", MenzenLocalizedString(@"common.default", @"Default")], @[@"online", MenzenLocalizedString(@"status.online", @"Online")], @[@"idle", MenzenLocalizedString(@"status.idle", @"Idle")], @[@"dnd", MenzenLocalizedString(@"status.dnd", @"Do Not Disturb")], @[@"invisible", MenzenLocalizedString(@"status.invisible", @"Invisible")]] forKey:@"choices"];
+		[status setProperty:MenzenPresetStatus(preset) ?: @"" forKey:@"choice"];
+		[specifiers addObject:status];
+
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		PSSpecifier *timer = [self fieldNamed:MenzenLocalizedString(@"common.time_elapsed", @"Time Elapsed") key:MenzenPresetTimerKey cell:PSSwitchCell];
 		[specifiers addObject:timer];
@@ -325,7 +335,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 
 	MenzenWritePresets(presets);
 	if ([key isEqualToString:MenzenPresetNameKey]) self.title = MenzenPresetTitle(self.preset);
-	if ([key isEqualToString:MenzenPresetKindKey]) [self reloadSpecifiers];
+	if ([key isEqualToString:MenzenPresetKindKey] || [key isEqualToString:MenzenPresetStatusKey]) [self reloadSpecifiers];
 	else [self reloadPreview];
 	if (([key isEqualToString:MenzenPresetLargeImageKey] || [key isEqualToString:MenzenPresetSmallImageKey]) && [value isKindOfClass:NSString.class]) [self checkLink:value];
 }

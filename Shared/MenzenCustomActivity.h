@@ -24,6 +24,7 @@
 #define MenzenPresetButton1LinkKey @"button1Link"
 #define MenzenPresetButton2LabelKey @"button2Label"
 #define MenzenPresetButton2LinkKey @"button2Link"
+#define MenzenPresetStatusKey @"status"
 
 static inline NSArray<NSDictionary *> *MenzenCustomPresets(void) {
 	NSArray *presets = MenzenSettingValue(MenzenSettingCustomPresets);
@@ -84,4 +85,10 @@ static inline NSArray<NSArray<NSString *> *> *MenzenPresetButtons(NSDictionary *
 		if (label && MenzenCustomURLIsAllowed(link)) [buttons addObject:@[label, link]];
 	}
 	return buttons;
+}
+
+// The Discord status while the preset shows; nil leaves it alone.
+static inline NSString *MenzenPresetStatus(NSDictionary *preset) {
+	NSString *status = MenzenPresetString(preset, MenzenPresetStatusKey);
+	return [@[@"online", @"idle", @"dnd", @"invisible"] containsObject:status] ? status : nil;
 }

@@ -116,6 +116,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	}
 
 	[_discord setActivity:activity];
+	[self updateStatus:shown];
 	if (activity && ![shown isEqualToString:MenzenSourceMedia]) {
 		_lastOther = activity;
 		_lastOtherEnded = nil;
@@ -127,6 +128,15 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	}
 
 	[self updatePreview];
+}
+
+- (void)updateStatus:(NSString *)shown {
+	NSString *status;
+	if (MenzenSettingBool(MenzenSettingEnabled, YES)) {
+		if ([shown isEqualToString:MenzenSourceCustom]) status = MenzenPresetStatus(MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil)));
+	}
+
+	[_discord setStatusOverride:status];
 }
 
 - (void)showMedia:(MenzenActivity *)activity {

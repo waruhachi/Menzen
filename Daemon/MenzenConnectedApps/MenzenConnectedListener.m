@@ -159,17 +159,25 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	if (!MenzenConnectedIdentifierIsValid(identifier) || !name) return;
 	// One app per connection, for as long as it lasts.
 	if (session.identifier && ![session.identifier isEqualToString:identifier]) return;
-	BOOL isNew = !MenzenConnectedApps()[identifier];
 	if (![self rememberApp:identifier name:name process:session.process]) return;
 	session.identifier = identifier;
 	session.name = name;
 	[self updateSession:session];
-	if (isNew && session.state == MenzenClientStateNotAllowed) [self askToAllow:identifier name:name];
+	[self askToAllowIfNeeded:session];
 	[self showLatest];
 }
 
-// Once, when a new app asks while Connected Apps is on: SpringBoard shows it
-// as a notification (MenzenSettingConnectedRequests).
+- (void)askToAllowIfNeeded:(MenzenConnectedSession *)session {
+	if (session.state != MenzenClientStateNotAllowed) return;
+	NSMutableDictionary *apps = [MenzenConnectedApps() mutableCopy];
+	NSMutableDictionary *app = [apps[session.identifier] mutableCopy];
+	if (!app || [app[MenzenConnectedAppAskedKey] boolValue]) return;
+	app[MenzenConnectedAppAskedKey] = @YES;
+	apps[session.identifier] = app;
+	MenzenWriteSetting(MenzenSettingConnectedApps, apps);
+	[self askToAllow:session.identifier name:session.name];
+}
+
 - (void)askToAllow:(NSString *)identifier name:(NSString *)name {
 	NSDate *now = NSDate.date;
 	NSMutableArray *requests = [NSMutableArray array];
@@ -189,6 +197,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	NSMutableDictionary *app = [NSMutableDictionary dictionary];
 	app[MenzenConnectedAppNameKey] = name;
 	app[MenzenConnectedAppProcessKey] = process;
+	app[MenzenConnectedAppAskedKey] = apps[identifier][MenzenConnectedAppAskedKey];
 	if ([apps[identifier] isEqualToDictionary:app]) return YES;
 	if (!apps[identifier] && apps.count >= MenzenConnectedAppLimit) return NO;
 	apps[identifier] = app;
@@ -258,7 +267,9 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 
 - (void)settingsChanged {
 	for (MenzenConnectedSession *session in _sessions) {
-		if (session.identifier) [self updateSession:session];
+		if (!session.identifier) continue;
+		[self updateSession:session];
+		[self askToAllowIfNeeded:session];
 	}
 
 	[self showLatestAgain:YES];

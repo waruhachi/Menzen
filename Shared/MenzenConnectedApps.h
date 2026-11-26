@@ -21,6 +21,7 @@
 
 #define MenzenConnectedAppNameKey @"name"
 #define MenzenConnectedAppProcessKey @"process"
+#define MenzenConnectedAppAskedKey @"asked"
 
 // No more are kept, so a misbehaving client can't fill the settings.
 static NSUInteger const MenzenConnectedAppLimit = 100;

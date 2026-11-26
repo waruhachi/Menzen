@@ -91,7 +91,7 @@ static NSDictionary<NSString *, id> *MenzenSampleActivity(NSDictionary<NSString 
 
 - (NSDictionary<NSString *, id> *)previewActivity {
 	NSDictionary *preview = _status[MenzenStatusPreviewKey];
-	if ([preview isKindOfClass:NSDictionary.class] && ([preview[MenzenActivityKindKey] isEqual:@"listening"] || [preview[MenzenActivityKindKey] isEqual:@"watching"])) return preview;
+	if ([preview isKindOfClass:NSDictionary.class]) return preview;
 	return MenzenSampleActivity(_icons);
 }
 

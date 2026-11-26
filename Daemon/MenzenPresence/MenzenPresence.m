@@ -39,6 +39,11 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	MenzenTrack *_lastTrack;
 	MenzenTrack *_lastPlayed;
 	NSDate *_lastPlayedStopped;
+	// The last game, custom or connected activity shown, for the preview when
+	// it came after the last song.
+	MenzenActivity *_lastOther;
+	NSDate *_lastOtherEnded;
+	BOOL _lastWasOther;
 	BOOL _clearPending;
 	NSUInteger _clearGeneration;
 }
@@ -96,12 +101,27 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 
 - (void)publish {
 	MenzenActivity *activity;
+	NSString *shown;
 	for (NSString *source in MenzenPriority()) {
 		activity = [self activityForSource:source];
-		if (activity) break;
+		if (activity) {
+			shown = source;
+			break;
+		}
 	}
 
 	[_discord setActivity:activity];
+	if (activity && ![shown isEqualToString:MenzenSourceMedia]) {
+		_lastOther = activity;
+		_lastOtherEnded = nil;
+		_lastWasOther = YES;
+	} else if (activity) {
+		_lastWasOther = NO;
+	} else if (_lastWasOther && !_lastOtherEnded) {
+		_lastOtherEnded = NSDate.date;
+	}
+
+	[self updatePreview];
 }
 
 - (void)showMedia:(MenzenActivity *)activity {
@@ -125,6 +145,17 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 		_lastPlayedStopped = nil;
 	} else if (!track && !_lastPlayedStopped) {
 		_lastPlayedStopped = NSDate.date;
+	}
+
+	[self updatePreview];
+}
+
+// The settings' previews show what's on Discord, or what was last, a song as
+// the settings would show it.
+- (void)updatePreview {
+	if (_lastWasOther) {
+		[_discord setPreviewActivity:_lastOther pausedDate:_lastOtherEnded];
+		return;
 	}
 
 	NSDate *pausedDate;

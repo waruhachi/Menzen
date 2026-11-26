@@ -44,6 +44,7 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	UILabel *_headerLabel;
 	UIImageView *_artworkView;
 	UIImageView *_smallImageView;
+	UILabel *_nameLabel;
 	UILabel *_detailsLabel;
 	UILabel *_stateLabel;
 	UILabel *_largeTextLabel;
@@ -82,6 +83,7 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 		_smallImageView.backgroundColor = UIColor.tertiarySystemFillColor;
 		_smallImageView.translatesAutoresizingMaskIntoConstraints = NO;
 
+		_nameLabel = MenzenLabel(UIFontTextStyleHeadline, 0, UIColor.labelColor);
 		_detailsLabel = MenzenLabel(UIFontTextStyleHeadline, 0, UIColor.labelColor);
 		_stateLabel = MenzenLabel(UIFontTextStyleSubheadline, 0, UIColor.labelColor);
 		_largeTextLabel = MenzenLabel(UIFontTextStyleSubheadline, 0, UIColor.secondaryLabelColor);
@@ -101,7 +103,7 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 		_progressRow.spacing = 8;
 		_progressRow.alignment = UIStackViewAlignmentCenter;
 
-		UIStackView *text = [[UIStackView alloc] initWithArrangedSubviews:@[_detailsLabel, _stateLabel, _largeTextLabel, _progressRow]];
+		UIStackView *text = [[UIStackView alloc] initWithArrangedSubviews:@[_nameLabel, _detailsLabel, _stateLabel, _largeTextLabel, _progressRow]];
 		text.axis = UILayoutConstraintAxisVertical;
 		text.spacing = 2;
 		[text setCustomSpacing:6 afterView:_largeTextLabel];
@@ -162,11 +164,18 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 
 	// Without a name, Discord uses the application's.
 	NSString *name = [activity[MenzenActivityNameKey] length] ? activity[MenzenActivityNameKey] : @"Menzen";
+	NSString *kind = activity[MenzenActivityKindKey];
+	// Discord heads a game with just "Playing" and puts its name above the
+	// details.
+	BOOL playing = [kind isEqualToString:@"playing"];
 	NSString *format = MenzenLocalizedString(@"activity.listening_to_x", @"Listening to %@");
-	if ([activity[MenzenActivityKindKey] isEqualToString:@"watching"]) format = MenzenLocalizedString(@"activity.watching_x", @"Watching %@");
-	if ([activity[MenzenActivityKindKey] isEqualToString:@"playing"]) format = MenzenLocalizedString(@"activity.playing_x", @"Playing %@");
-	_headerLabel.text = [NSString stringWithFormat:format, name];
+	if ([kind isEqualToString:@"watching"]) format = MenzenLocalizedString(@"activity.watching_x", @"Watching %@");
+	_headerLabel.text = playing ? MenzenLocalizedString(@"common.playing", @"Playing") : [NSString stringWithFormat:format, name];
+	_nameLabel.text = name;
+	_nameLabel.hidden = !playing;
 	_detailsLabel.text = activity[MenzenActivityDetailsKey];
+	_detailsLabel.font = playing ? _stateLabel.font : _nameLabel.font;
+	_detailsLabel.hidden = !_detailsLabel.text.length;
 	_stateLabel.text = activity[MenzenActivityStateKey];
 	_stateLabel.hidden = !_stateLabel.text.length;
 	_largeTextLabel.text = activity[MenzenActivityLargeTextKey];

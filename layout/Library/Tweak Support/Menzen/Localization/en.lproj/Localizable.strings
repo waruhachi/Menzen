@@ -6,8 +6,6 @@
 "activity.listening_to_x" = "Listening to %@";
 /* Activity preview, shown when nothing is playing. */
 "activity.nothing_is_showing_right_now_open" = "Nothing is showing right now. Open a game or play something in a supported app, and it shows here and on your profile.";
-/* Activity preview. %@ is a game name. */
-"activity.playing_x" = "Playing %@";
 /* Activity preview. %@ is an app name. */
 "activity.watching_x" = "Watching %@";
 

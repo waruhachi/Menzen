@@ -17,12 +17,16 @@ static CGFloat const MenzenMemberStatusSize = 14;
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier specifier:(PSSpecifier *)specifier {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier specifier:specifier])) {
 		self.selectionStyle = UITableViewCellSelectionStyleNone;
+
 		_activityView = [MenzenActivityView new];
 		_activityView.translatesAutoresizingMaskIntoConstraints = NO;
 		[self.contentView addSubview:_activityView];
+
 		UILayoutGuide *margins = self.contentView.layoutMarginsGuide;
+
 		NSLayoutConstraint *bottom = [_activityView.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-16];
 		bottom.priority = UILayoutPriorityDefaultHigh;
+
 		[NSLayoutConstraint activateConstraints:@[
 			[_activityView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:16],
 			[_activityView.leadingAnchor constraintEqualToAnchor:margins.leadingAnchor],
@@ -84,16 +88,21 @@ static CGFloat const MenzenMemberStatusSize = 14;
 
 		_tagBadgeView = [UIImageView new];
 		_tagBadgeView.contentMode = UIViewContentModeScaleAspectFit;
+
 		_tagLabel = [UILabel new];
+
 		UIFontDescriptor *caption = [UIFontDescriptor preferredFontDescriptorWithTextStyle:UIFontTextStyleCaption1];
 		_tagLabel.font = [UIFont fontWithDescriptor:[caption fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:0];
+
 		UIStackView *tagStack = [[UIStackView alloc] initWithArrangedSubviews:@[_tagBadgeView, _tagLabel]];
 		tagStack.spacing = 3;
 		tagStack.alignment = UIStackViewAlignmentCenter;
 		tagStack.translatesAutoresizingMaskIntoConstraints = NO;
+
 		_tagChip = [UIView new];
 		_tagChip.backgroundColor = UIColor.tertiarySystemFillColor;
 		_tagChip.layer.cornerRadius = 4;
+
 		[_tagChip addSubview:tagStack];
 		[_tagChip setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
 
@@ -112,6 +121,7 @@ static CGFloat const MenzenMemberStatusSize = 14;
 			view.translatesAutoresizingMaskIntoConstraints = NO;
 			[self.contentView addSubview:view];
 		}
+
 		UILayoutGuide *margins = self.contentView.layoutMarginsGuide;
 		[NSLayoutConstraint activateConstraints:@[
 			[_nameplateView.leadingAnchor constraintEqualToAnchor:margins.leadingAnchor],
@@ -160,8 +170,10 @@ static CGFloat const MenzenMemberStatusSize = 14;
 
 	NSDictionary *profile = [specifier propertyForKey:@"profile"];
 	NSString *globalName = profile[MenzenProfileGlobalNameKey];
+
 	NSString *username = profile[MenzenProfileUsernameKey];
 	_nameLabel.text = globalName.length ? globalName : (username.length ? username : MenzenLocalizedString(@"preview.you", @"You"));
+
 	_nameColors = profile[MenzenProfileNameColorsKey];
 	_nameLabel.textColor = MenzenNameColor(_nameColors, _nameLabel.bounds.size);
 	[self setNeedsLayout];
@@ -177,6 +189,7 @@ static CGFloat const MenzenMemberStatusSize = 14;
 	MenzenSetImage(_nameplateView, profile[MenzenProfileNameplateURLKey]);
 	UIColor *statusColor = MenzenStatusColor(profile[MenzenProfileStatusKey]);
 	_statusView.hidden = !statusColor;
+
 	_statusView.backgroundColor = statusColor;
 
 	NSDictionary *activity = [specifier propertyForKey:@"activity"];
@@ -187,6 +200,7 @@ static CGFloat const MenzenMemberStatusSize = 14;
 	UIFont *font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
 	UIImage *icon = [UIImage systemImageNamed:MenzenActivitySymbolName(activity[MenzenActivityKindKey]) withConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]];
 	NSMutableAttributedString *text = [NSMutableAttributedString new];
+
 	if (icon) {
 		NSTextAttachment *attachment = [NSTextAttachment new];
 		attachment.image = [icon imageWithTintColor:MenzenStatusColor(@"online") renderingMode:UIImageRenderingModeAlwaysOriginal];

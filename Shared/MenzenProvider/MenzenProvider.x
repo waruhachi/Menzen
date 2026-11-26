@@ -18,6 +18,7 @@ NSArray *MenzenArray(id value) {
 id MenzenPath(id object, NSArray<NSString *> *keys) {
 	for (NSString *key in keys) {
 		if (![object isKindOfClass:NSDictionary.class]) return nil;
+
 		object = object[key];
 	}
 
@@ -71,19 +72,24 @@ NSString *MenzenPairKey(NSString *first, NSString *second) {
 
 - (id)objectForKeyedSubscript:(id)key {
 	if (!key) return nil;
+
 	os_unfair_lock_lock(&_lock);
 	id object = _objects[key];
 	os_unfair_lock_unlock(&_lock);
+
 	return object;
 }
 
 - (void)setObject:(id)object forKeyedSubscript:(id<NSCopying>)key {
 	if (!key) return;
+
 	os_unfair_lock_lock(&_lock);
 	[_keys removeObject:key];
+
 	if (object) {
 		_objects[key] = object;
 		[_keys addObject:key];
+
 		while (_keys.count > _limit) {
 			[_objects removeObjectForKey:_keys.firstObject];
 			[_keys removeObjectAtIndex:0];
@@ -127,6 +133,7 @@ static BOOL MenzenIsExtras(id assetURL) {
 
 	NSDictionary *extras = extrasFunction(self, info, withExtras);
 	NSURL *extrasURL = extras.count ? MenzenExtrasURL(extras) : nil;
+
 	if (extrasURL) {
 		withExtras[MPNowPlayingInfoPropertyAssetURL] = extrasURL;
 		MenzenProviderWorked();

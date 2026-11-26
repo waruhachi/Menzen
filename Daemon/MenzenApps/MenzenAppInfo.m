@@ -20,6 +20,7 @@ static NSRange const MenzenGameSubgenres = {7001, 19};
 static NSInteger MenzenAppGenre(NSString *bundleIdentifier) {
 	static NSMutableDictionary<NSString *, NSNumber *> *genres;
 	if (!genres) genres = [NSMutableDictionary dictionary];
+
 	if (!genres[bundleIdentifier]) {
 		// Boxed either way, whatever type this iOS version declares.
 		id genre = [MenzenAppProxy(bundleIdentifier) valueForKey:@"genreID"];
@@ -32,8 +33,10 @@ static NSInteger MenzenAppGenre(NSString *bundleIdentifier) {
 NSString *MenzenAppName(NSString *bundleIdentifier) {
 	NSDictionary *provider = MenzenProviderForBundleIdentifier(bundleIdentifier);
 	if (provider) return provider[MenzenProviderNameKey];
+
 	static NSMutableDictionary<NSString *, NSString *> *names;
 	if (!names) names = [NSMutableDictionary dictionary];
+
 	if (!names[bundleIdentifier]) {
 		NSString *name = MenzenAppProxy(bundleIdentifier).localizedName;
 		names[bundleIdentifier] = [name isKindOfClass:NSString.class] && name.length ? name : bundleIdentifier;
@@ -45,12 +48,14 @@ NSString *MenzenAppName(NSString *bundleIdentifier) {
 BOOL MenzenIsChatApp(NSString *bundleIdentifier) {
 	static NSSet<NSString *> *apple;
 	if (!apple) apple = [NSSet setWithArray:@[@"com.apple.MobileSMS", @"com.apple.facetime", @"com.apple.mobilephone", @"com.apple.VoiceMemos"]];
+
 	return [apple containsObject:bundleIdentifier] || MenzenAppGenre(bundleIdentifier) == MenzenGenreSocialNetworking;
 }
 
 BOOL MenzenIsBrowserApp(NSString *bundleIdentifier) {
 	static NSMutableDictionary<NSString *, NSNumber *> *browsers;
 	if (!browsers) browsers = [NSMutableDictionary dictionary];
+
 	if (!browsers[bundleIdentifier]) {
 		// Safari's views in other apps play under their own name.
 		BOOL browser = [bundleIdentifier isEqualToString:@"com.apple.SafariViewService"];
@@ -70,8 +75,11 @@ BOOL MenzenIsVideoApp(NSString *bundleIdentifier) {
 		id list = [[NSClassFromString(@"AVSystemController") sharedAVSystemController] attributeForKey:@"AVSystemController_LongFormVideoAppsAttribute"];
 		streamingApps = [list isKindOfClass:NSArray.class] ? list : @[];
 	});
+
 	if ([streamingApps containsObject:bundleIdentifier]) return YES;
+
 	NSInteger genre = MenzenAppGenre(bundleIdentifier);
+
 	return genre == MenzenGenrePhotoAndVideo || genre == MenzenGenreEntertainment;
 }
 

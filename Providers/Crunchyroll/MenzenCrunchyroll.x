@@ -15,17 +15,23 @@ static BOOL MenzenIsContent(NSURL *url) {
 // Episodes nest their pictures in one more array than music.
 static NSString *MenzenThumbnail(id images) {
 	if (![images isKindOfClass:NSArray.class]) return nil;
+
 	NSString *found = nil;
 	double foundWidth = 0;
+
 	for (id image in images) {
 		NSArray *pictures = [image isKindOfClass:NSArray.class] ? image : @[image];
+
 		for (NSDictionary *picture in pictures) {
 			if (![picture isKindOfClass:NSDictionary.class]) continue;
+
 			NSString *source = MenzenImageURL(picture[@"source"], @[@"imgsrv.crunchyroll.com"]);
 			id width = picture[@"width"];
 			if (!source || ![width isKindOfClass:NSNumber.class]) continue;
+
 			double w = [width doubleValue];
 			BOOL better = !found || MenzenIsBetterWidth(w, foundWidth, 600);
+
 			if (better) {
 				found = source;
 				foundWidth = w;
@@ -38,19 +44,24 @@ static NSString *MenzenThumbnail(id images) {
 
 static void MenzenRemember(id object, NSUInteger depth) {
 	if (depth > 8) return;
+
 	if ([object isKindOfClass:NSArray.class]) {
 		for (id item in object) MenzenRemember(item, depth + 1);
 		return;
 	}
 
 	if (![object isKindOfClass:NSDictionary.class]) return;
+
 	NSDictionary *images = object[@"images"];
 	NSString *thumbnail = [images isKindOfClass:NSDictionary.class] ? MenzenThumbnail(images[@"thumbnail"]) : nil;
+
 	if (thumbnail) {
 		NSString *ID = MenzenString(object[@"id"]);
 		NSString *title = MenzenString(object[@"title"]);
+
 		NSDictionary *episode = object[@"episode_metadata"];
 		NSString *series = MenzenString([episode isKindOfClass:NSDictionary.class] ? episode[@"series_title"] : nil);
+
 		NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 		extras[MenzenExtrasCoverKey] = thumbnail;
 		extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://www.crunchyroll.com/watch/%@", ID);
@@ -66,8 +77,10 @@ static void MenzenRemember(id object, NSUInteger depth) {
 
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
+
 	NSString *ID = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
 	NSString *key = MenzenPairKey(MenzenString(info[MPMediaItemPropertyTitle]), MenzenString(info[MPMediaItemPropertyAlbumTitle]));
+
 	return (ID ? items[ID] : nil) ?: (key ? items[key] : nil);
 }
 
@@ -75,6 +88,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	items = [[MenzenCache alloc] initWithLimit:2000];
 	MenzenProviderCheck(@[@"NSURLSession -_dataTaskWithRequest:delegate:completionHandler:"], @[]);
 	MenzenAddExtras(MenzenExtras);
+
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		return MenzenIsContent(url);
 	}, ^(NSURL *url, NSData *body) {

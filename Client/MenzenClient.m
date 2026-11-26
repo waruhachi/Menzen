@@ -13,6 +13,7 @@ static void MenzenApplySandyProfile(void) {
 	dispatch_once(&once, ^{
 		void *sandy = dlopen(jbroot("/usr/lib/libsandy.dylib"), RTLD_LAZY);
 		if (!sandy) return;
+
 		int (*applyProfile)(const char *) = dlsym(sandy, "libSandy_applyProfile");
 		if (applyProfile) applyProfile(MenzenConnectedSandyProfile);
 	});
@@ -22,6 +23,7 @@ static NSString *MenzenClientText(NSString *text) {
 	text = [text stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 	if (!text.length) return nil;
 	if (text.length <= 128) return text;
+
 	return [text substringToIndex:[text rangeOfComposedCharacterSequenceAtIndex:127].location];
 }
 
@@ -44,11 +46,13 @@ static NSString *MenzenClientText(NSString *text) {
 	copy.smallText = self.smallText;
 	copy.startDate = self.startDate;
 	copy.endDate = self.endDate;
+
 	return copy;
 }
 
 - (NSDictionary<NSString *, id> *)menzenDictionary {
 	NSMutableDictionary *activity = [NSMutableDictionary dictionary];
+
 	switch (self.type) {
 		case MenzenClientActivityTypeListening: activity[MenzenActivityKindKey] = @"listening"; break;
 		case MenzenClientActivityTypeWatching: activity[MenzenActivityKindKey] = @"watching"; break;
@@ -70,6 +74,7 @@ static NSString *MenzenClientText(NSString *text) {
 	activity[MenzenActivitySmallTextKey] = MenzenClientText(self.smallText);
 	if (self.startDate) activity[MenzenActivityStartKey] = @(self.startDate.timeIntervalSince1970);
 	if (self.endDate) activity[MenzenActivityEndKey] = @(self.endDate.timeIntervalSince1970);
+
 	return activity;
 }
 
@@ -104,12 +109,15 @@ static NSString *MenzenClientText(NSString *text) {
 - (instancetype)initWithIdentifier:(NSString *)identifier name:(NSString *)name {
 	name = MenzenConnectedName(name);
 	if (!MenzenConnectedIdentifierIsValid(identifier) || !name || !(self = [super init])) return nil;
+
 	_identifier = [identifier copy];
 	_name = [name copy];
 	_queue = dispatch_queue_create("moe.waru.menzen.client", DISPATCH_QUEUE_SERIAL);
+
 	dispatch_async(_queue, ^{
 		[self connect];
 	});
+
 	return self;
 }
 
@@ -122,8 +130,10 @@ static NSString *MenzenClientText(NSString *text) {
 	NSXPCConnection *connection = [[NSXPCConnection alloc] initWithMachServiceName:MenzenConnectedServiceName options:0];
 	connection.remoteObjectInterface = MenzenConnectedServiceInterface();
 	connection.exportedInterface = MenzenConnectedClientInterface();
+
 	MenzenClientReceiver *receiver = [MenzenClientReceiver new];
 	receiver.client = self;
+
 	connection.exportedObject = receiver;
 
 	__weak typeof(self) weakSelf = self;
@@ -133,8 +143,10 @@ static NSString *MenzenClientText(NSString *text) {
 	connection.interruptionHandler = ^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf) return;
+
 		dispatch_async(strongSelf->_queue, ^{
 			if (strongSelf->_connection != weakConnection) return;
+
 			[strongSelf setStateOnQueue:MenzenClientStateUnavailable];
 			[strongSelf sendAll];
 		});
@@ -144,8 +156,10 @@ static NSString *MenzenClientText(NSString *text) {
 	connection.invalidationHandler = ^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf) return;
+
 		dispatch_async(strongSelf->_queue, ^{
 			if (strongSelf->_connection != weakConnection) return;
+
 			strongSelf->_connection = nil;
 			[strongSelf setStateOnQueue:MenzenClientStateUnavailable];
 		});
@@ -170,9 +184,11 @@ static NSString *MenzenClientText(NSString *text) {
 
 - (void)setStateOnQueue:(MenzenClientState)state {
 	if (_state == state) return;
+
 	_state = state;
 	void (^handler)(MenzenClientState) = _stateChangedHandler;
 	if (!handler) return;
+
 	dispatch_async(dispatch_get_main_queue(), ^{
 		handler(state);
 	});
@@ -183,6 +199,7 @@ static NSString *MenzenClientText(NSString *text) {
 	dispatch_sync(_queue, ^{
 		state = _state;
 	});
+
 	return state;
 }
 
@@ -191,6 +208,7 @@ static NSString *MenzenClientText(NSString *text) {
 	dispatch_sync(_queue, ^{
 		handler = _stateChangedHandler;
 	});
+
 	return handler;
 }
 
@@ -206,6 +224,7 @@ static NSString *MenzenClientText(NSString *text) {
 	dispatch_sync(_queue, ^{
 		activity = [_activity copy];
 	});
+
 	return activity;
 }
 

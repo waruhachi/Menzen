@@ -20,6 +20,7 @@ static NSXPCConnection *MenzenConnection(void) {
 	dispatch_once(&once, ^{
 		CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, MenzenForwardStatusChanged, CFSTR(MenzenStatusChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	});
+
 	if (!connection) {
 		connection = [[NSXPCConnection alloc] initWithMachServiceName:MenzenServiceName options:0];
 		connection.remoteObjectInterface = MenzenServiceInterface();
@@ -28,6 +29,7 @@ static NSXPCConnection *MenzenConnection(void) {
 				connection = nil;
 			});
 		};
+
 		[connection resume];
 	}
 

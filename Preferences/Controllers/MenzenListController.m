@@ -12,7 +12,9 @@ static BOOL MenzenSpecifierIsMenzenSetting(PSSpecifier *specifier) {
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
 	if (!MenzenSpecifierIsMenzenSetting(specifier)) return [super readPreferenceValue:specifier];
+
 	MenzenSettingsSynchronize();
+
 	return MenzenSettingValue([specifier propertyForKey:@"key"]) ?: [specifier propertyForKey:@"default"];
 }
 

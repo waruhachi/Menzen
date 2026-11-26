@@ -10,6 +10,7 @@ static CGFloat const MenzenSmallImageSize = 28;
 static NSString *MenzenTimeText(NSTimeInterval seconds, BOOL padMinutes) {
 	long total = (long)MAX(0, floor(seconds));
 	if (total >= 3600) return [NSString stringWithFormat:@"%ld:%02ld:%02ld", total / 3600, total / 60 % 60, total % 60];
+
 	return [NSString stringWithFormat:padMinutes ? @"%02ld:%02ld" : @"%ld:%02ld", total / 60, total % 60];
 }
 
@@ -18,9 +19,11 @@ static NSAttributedString *MenzenElapsedText(NSTimeInterval seconds, NSString *k
 	UIColor *green = [UIColor colorWithDynamicProvider:^UIColor *(UITraitCollection *traits) {
 		return MenzenColorFromRGB(traits.userInterfaceStyle == UIUserInterfaceStyleDark ? 0x2DC770 : 0x248046);
 	}];
+
 	UIFont *font = [UIFont monospacedSystemFontOfSize:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline].pointSize weight:UIFontWeightRegular];
 	NSMutableAttributedString *text = [NSMutableAttributedString new];
 	UIImage *icon = [UIImage systemImageNamed:MenzenActivitySymbolName(kind) withConfiguration:[UIImageSymbolConfiguration configurationWithFont:font]];
+
 	if (icon) {
 		NSTextAttachment *attachment = [NSTextAttachment new];
 		attachment.image = [icon imageWithTintColor:green renderingMode:UIImageRenderingModeAlwaysOriginal];
@@ -37,6 +40,7 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	UIFontDescriptor *descriptor = [UIFontDescriptor preferredFontDescriptorWithTextStyle:style];
 	label.font = [UIFont fontWithDescriptor:[descriptor fontDescriptorWithSymbolicTraits:traits] size:0];
 	label.textColor = color;
+
 	return label;
 }
 
@@ -90,16 +94,21 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 		_largeTextLabel = MenzenLabel(UIFontTextStyleSubheadline, 0, UIColor.secondaryLabelColor);
 
 		UIFont *timeFont = [UIFont monospacedDigitSystemFontOfSize:[UIFont preferredFontForTextStyle:UIFontTextStyleCaption1].pointSize weight:UIFontWeightRegular];
+
 		_elapsedLabel = MenzenLabel(UIFontTextStyleCaption1, 0, UIColor.secondaryLabelColor);
 		_elapsedLabel.font = timeFont;
+
 		_durationLabel = MenzenLabel(UIFontTextStyleCaption1, 0, UIColor.secondaryLabelColor);
 		_durationLabel.font = timeFont;
+
 		_progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
 		_progressView.progressTintColor = UIColor.labelColor;
+
 		for (UILabel *label in @[_elapsedLabel, _durationLabel]) {
 			[label setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
 			[label setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
 		}
+
 		_progressRow = [[UIStackView alloc] initWithArrangedSubviews:@[_elapsedLabel, _progressView, _durationLabel]];
 		_progressRow.spacing = 8;
 		_progressRow.alignment = UIStackViewAlignmentCenter;
@@ -161,9 +170,11 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	_card.hidden = !activity;
 	_emptyLabel.hidden = !!activity;
 	_smallImageView.hidden = YES;
+
 	if (!activity) {
 		_start = nil;
 		[self updateTimer];
+
 		return;
 	}
 
@@ -176,17 +187,22 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	NSString *format = MenzenLocalizedString(@"activity.listening_to_x", @"Listening to %@");
 	if ([kind isEqualToString:@"watching"]) format = MenzenLocalizedString(@"activity.watching_x", @"Watching %@");
 	_headerLabel.text = playing ? MenzenLocalizedString(@"common.playing", @"Playing") : [NSString stringWithFormat:format, name];
+
 	_nameLabel.text = name;
 	_nameLabel.hidden = !playing;
+
 	_detailsLabel.text = activity[MenzenActivityDetailsKey];
 	_detailsLabel.font = playing ? _stateLabel.font : _nameLabel.font;
 	_detailsLabel.hidden = !_detailsLabel.text.length;
+
 	_stateLabel.text = activity[MenzenActivityStateKey];
 	NSInteger partySize = [activity[MenzenActivityPartySizeKey] integerValue], partyMax = [activity[MenzenActivityPartyMaxKey] integerValue];
+
 	if (partySize > 0) {
 		NSString *party = partyMax > 0 ? [NSString stringWithFormat:MenzenLocalizedString(@"activity.party_x_of_y", @"(%ld of %ld)"), (long)partySize, (long)partyMax] : [NSString stringWithFormat:@"(%ld)", (long)partySize];
 		_stateLabel.text = _stateLabel.text.length ? [NSString stringWithFormat:@"%@ %@", _stateLabel.text, party] : party;
 	}
+
 	_stateLabel.hidden = !_stateLabel.text.length;
 	_largeTextLabel.text = activity[MenzenActivityLargeTextKey];
 	_largeTextLabel.hidden = !_largeTextLabel.text.length;
@@ -204,6 +220,7 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 	NSNumber *end = activity[MenzenActivityEndKey];
 	_start = start ? [NSDate dateWithTimeIntervalSince1970:start.doubleValue] : nil;
 	_end = end ? [NSDate dateWithTimeIntervalSince1970:end.doubleValue] : nil;
+
 	NSNumber *paused = activity[MenzenActivityPausedKey];
 	_paused = paused ? [NSDate dateWithTimeIntervalSince1970:paused.doubleValue] : nil;
 	// Without an end, Discord shows only the time elapsed.
@@ -216,8 +233,10 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 
 - (void)setButtons:(NSArray<NSArray<NSString *> *> *)buttons {
 	for (UIView *view in _buttons.arrangedSubviews) [view removeFromSuperview];
+
 	for (NSArray<NSString *> *button in [buttons isKindOfClass:NSArray.class] ? buttons : @[]) {
 		if (![button isKindOfClass:NSArray.class] || ![button.firstObject isKindOfClass:NSString.class]) continue;
+
 		UILabel *label = MenzenLabel(UIFontTextStyleSubheadline, UIFontDescriptorTraitBold, UIColor.labelColor);
 		label.text = button.firstObject;
 		label.textAlignment = NSTextAlignmentCenter;
@@ -227,12 +246,14 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 		[label.heightAnchor constraintEqualToConstant:34].active = YES;
 		[_buttons addArrangedSubview:label];
 	}
+
 	_buttons.hidden = !_buttons.arrangedSubviews.count;
 }
 
 // Discord counts up from the start date; paused activities have none.
 - (void)updateProgress {
 	if (!_start) return;
+
 	if (!_end) {
 		_elapsedLabel.attributedText = MenzenElapsedText([_paused ?: NSDate.date timeIntervalSinceDate:_start], _activity[MenzenActivityKindKey]);
 		return;
@@ -248,9 +269,11 @@ static UILabel *MenzenLabel(UIFontTextStyle style, UIFontDescriptorSymbolicTrait
 - (void)updateTimer {
 	BOOL needsTimer = self.window && _start && !_paused;
 	if (needsTimer == !!_timer) return;
+
 	[_timer invalidate];
 	_timer = nil;
 	if (!needsTimer) return;
+
 	__weak typeof(self) weakSelf = self;
 	_timer = [NSTimer scheduledTimerWithTimeInterval:1 repeats:YES block:^(NSTimer *timer) {
 		[weakSelf updateProgress];

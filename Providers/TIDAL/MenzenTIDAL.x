@@ -9,21 +9,27 @@ static MenzenCache<NSString *, NSDictionary *> *items;
 
 static BOOL MenzenIsTrack(NSURL *url) {
 	if (![url.scheme isEqualToString:@"https"] || ![url.host.lowercaseString isEqualToString:@"openapi.tidal.com"]) return NO;
+
 	NSArray *components = url.path.pathComponents;
+
 	return components.count == 4 && [components[1] isEqualToString:@"v2"] && [components[2] isEqualToString:@"tracks"];
 }
 
 static NSURL *MenzenWithArtists(NSURL *url) {
 	NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO];
 	NSMutableArray<NSURLQueryItem *> *query = [components.queryItems mutableCopy];
+
 	for (NSUInteger i = 0; i < query.count; i++) {
 		NSURLQueryItem *item = query[i];
 		if (![item.name isEqualToString:@"include"]) continue;
+
 		NSArray *included = [item.value componentsSeparatedByString:@","];
 		if (![included containsObject:@"albums.coverArt"]) return nil;
 		if ([included containsObject:@"artists.profileArt"]) return url;
+
 		query[i] = [NSURLQueryItem queryItemWithName:@"include" value:[item.value stringByAppendingString:@",artists.profileArt"]];
 		components.queryItems = query;
+
 		return components.URL;
 	}
 
@@ -33,7 +39,9 @@ static NSURL *MenzenWithArtists(NSURL *url) {
 static NSArray<NSString *> *MenzenRelated(NSDictionary *resource, NSString *relationship) {
 	NSArray *data = MenzenDictionary(MenzenDictionary(MenzenDictionary(resource[@"relationships"])[relationship]))[@"data"];
 	if (![data isKindOfClass:NSArray.class]) return @[];
+
 	NSMutableArray *IDs = [NSMutableArray array];
+
 	for (id reference in data) {
 		NSString *ID = MenzenString(MenzenDictionary(reference)[@"id"]);
 		if (ID) [IDs addObject:ID];
@@ -45,14 +53,18 @@ static NSArray<NSString *> *MenzenRelated(NSDictionary *resource, NSString *rela
 static NSString *MenzenImage(NSDictionary *artwork) {
 	NSArray *files = MenzenDictionary(artwork[@"attributes"])[@"files"];
 	if (![files isKindOfClass:NSArray.class]) return nil;
+
 	NSString *found = nil;
 	double foundWidth = 0;
+
 	for (id file in files) {
 		NSString *href = MenzenImageURL(MenzenDictionary(file)[@"href"], @[@"resources.tidal.com"]);
 		id width = MenzenDictionary(MenzenDictionary(file)[@"meta"])[@"width"];
 		if (!href || ![width isKindOfClass:NSNumber.class]) continue;
+
 		double w = [width doubleValue];
 		BOOL better = !found || MenzenIsBetterWidth(w, foundWidth, 600);
+
 		if (better) {
 			found = href;
 			foundWidth = w;
@@ -65,6 +77,7 @@ static NSString *MenzenImage(NSDictionary *artwork) {
 static void MenzenRemember(NSDictionary *document) {
 	NSMutableDictionary<NSString *, NSDictionary *> *included = [NSMutableDictionary dictionary];
 	NSArray *resources = document[@"included"];
+
 	if ([resources isKindOfClass:NSArray.class]) {
 		for (id resource in resources) {
 			NSString *type = MenzenString(MenzenDictionary(resource)[@"type"]);
@@ -81,10 +94,13 @@ static void MenzenRemember(NSDictionary *document) {
 
 	NSString *albumID = MenzenRelated(track, @"albums").firstObject;
 	NSDictionary *album = albumID ? included[[@"albums/" stringByAppendingString:albumID]] : nil;
+
 	NSString *albumTitle = MenzenString(MenzenDictionary(album[@"attributes"])[@"title"]);
 	NSString *coverID = MenzenRelated(album, @"coverArt").firstObject;
+
 	NSString *artistID = MenzenRelated(track, @"artists").firstObject;
 	NSDictionary *artist = artistID ? included[[@"artists/" stringByAppendingString:artistID]] : nil;
+
 	NSString *pictureID = MenzenRelated(artist, @"profileArt").firstObject;
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
@@ -104,7 +120,9 @@ static void MenzenRemember(NSDictionary *document) {
 
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
+
 	NSString *key = MenzenPairKey(MenzenString(info[MPMediaItemPropertyTitle]), MenzenString(info[MPMediaItemPropertyAlbumTitle]));
+
 	return key ? items[key] : nil;
 }
 
@@ -112,13 +130,16 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	items = [[MenzenCache alloc] initWithLimit:2000];
 	MenzenProviderCheck(@[], @[]);
 	MenzenAddExtras(MenzenExtras);
+
 	MenzenModifyRequests(^NSURLRequest *(NSURLRequest *request) {
 		NSURL *url = MenzenIsTrack(request.URL) ? MenzenWithArtists(request.URL) : nil;
 		if (!url || [url isEqual:request.URL]) return request;
+
 		NSMutableURLRequest *withArtists = [request mutableCopy];
 		withArtists.URL = url;
 		return withArtists;
 	});
+
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		return MenzenIsTrack(url);
 	}, ^(NSURL *url, NSData *body) {

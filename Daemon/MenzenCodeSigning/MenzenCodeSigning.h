@@ -16,7 +16,9 @@ extern uint32_t SecTaskGetCodeSignStatus(SecTaskRef task);
 static inline NSString *MenzenSigningIdentifier(audit_token_t token) {
 	SecTaskRef task = SecTaskCreateWithAuditToken(kCFAllocatorDefault, token);
 	if (!task) return nil;
+
 	NSString *identifier = CFBridgingRelease(SecTaskCopySigningIdentifier(task, NULL));
 	CFRelease(task);
+
 	return identifier;
 }

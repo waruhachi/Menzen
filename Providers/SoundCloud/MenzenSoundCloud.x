@@ -43,8 +43,10 @@ static id MenzenItemValue(SCPlayerItem *item, SEL selector) {
 // 100x100, templates say "{size}"); ask for the 500x500 rendition.
 static NSString *MenzenSoundCloudImageURL(NSString *string) {
 	if (!string.length) return nil;
+
 	string = [string stringByReplacingOccurrencesOfString:@"{size}" withString:@"t500x500"];
 	string = [string stringByReplacingOccurrencesOfString:@"-large." withString:@"-t500x500."];
+
 	return [[NSURL URLWithString:string].scheme isEqualToString:@"https"] ? string : nil;
 }
 
@@ -55,6 +57,7 @@ static NSString *MenzenNormalized(NSString *name) {
 	[folded enumerateSubstringsInRange:NSMakeRange(0, folded.length) options:NSStringEnumerationByComposedCharacterSequences usingBlock:^(NSString *character, NSRange range, NSRange enclosing, BOOL *stop) {
 		if ([character rangeOfCharacterFromSet:keep.invertedSet].location == NSNotFound) [normalized appendString:character];
 	}];
+
 	return normalized;
 }
 
@@ -76,7 +79,9 @@ static sqlite3 *MenzenOpenStore(void) {
 	NSURL *group = [NSFileManager.defaultManager containerURLForSecurityApplicationGroupIdentifier:@"group.com.soundcloud.ios"];
 	NSString *path = [group URLByAppendingPathComponent:@"store.sqlite"].path;
 	if (!path || ![NSFileManager.defaultManager fileExistsAtPath:path]) return NULL;
+
 	sqlite3 *store = NULL;
+
 	if (sqlite3_open_v2(path.fileSystemRepresentation, &store, SQLITE_OPEN_READONLY, NULL) != SQLITE_OK) {
 		sqlite3_close(store);
 		return NULL;
@@ -89,25 +94,30 @@ static sqlite3 *MenzenOpenStore(void) {
 static NSDictionary *MenzenAccountExtras(NSString *name, NSString *permalink, NSString *avatar) {
 	NSCharacterSet *invalid = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"].invertedSet;
 	if (!permalink.length || [permalink rangeOfCharacterFromSet:invalid].location != NSNotFound) return nil;
+
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	extras[MenzenExtrasArtistURLKey] = [@"https://soundcloud.com/" stringByAppendingString:permalink];
 	// Everyone without a picture has the same placeholder.
 	if (![avatar containsString:@"default_avatar"]) extras[MenzenExtrasArtistImageKey] = MenzenSoundCloudImageURL(avatar);
 	extras[MenzenExtrasArtistNameKey] = name;
+
 	return extras;
 }
 
 static NSDictionary *MenzenLookUpAccount(NSString *artist, NSString *uploaderURN) {
 	sqlite3 *store = MenzenOpenStore();
 	if (!store) return nil;
+
 	NSDictionary *found;
 	sqlite3_stmt *statement = NULL;
 
 	NSString *wanted = MenzenNormalized(MenzenFirstArtist(artist ?: @""));
+
 	if (wanted.length && sqlite3_prepare_v2(store, "SELECT ZNAME, ZPERMALINK, ZAVATARURLTEMPLATE FROM ZCDUSER WHERE ZPERMALINK IS NOT NULL", -1, &statement, NULL) == SQLITE_OK) {
 		while (!found && sqlite3_step(statement) == SQLITE_ROW) {
 			NSString *name = MenzenColumn(statement, 0);
 			NSString *permalink = MenzenColumn(statement, 1);
+
 			if ([MenzenNormalized(name ?: @"") isEqualToString:wanted] || [permalink.lowercaseString isEqualToString:wanted]) {
 				NSMutableDictionary *extras = [MenzenAccountExtras(name, permalink, MenzenColumn(statement, 2)) mutableCopy];
 				if (extras) extras[MenzenExtrasArtistNameKey] = MenzenFirstArtist(artist);
@@ -126,17 +136,20 @@ static NSDictionary *MenzenLookUpAccount(NSString *artist, NSString *uploaderURN
 
 	sqlite3_finalize(statement);
 	sqlite3_close(store);
+
 	return found;
 }
 
 static NSDictionary *MenzenAccount(NSString *artist, NSString *uploaderURN) {
 	NSString *key = [NSString stringWithFormat:@"%@\n%@", artist ?: @"", uploaderURN ?: @""];
+
 	@synchronized(accounts) {
 		NSDictionary *known = accounts[key];
 		if (known) return known;
 	}
 
 	NSDictionary *account = MenzenLookUpAccount(artist, uploaderURN) ?: @{};
+
 	@synchronized(accounts) {
 		accounts[key] = account;
 	}
@@ -147,6 +160,7 @@ static NSDictionary *MenzenAccount(NSString *artist, NSString *uploaderURN) {
 static void MenzenRemember(SCPlayerItem *item, id artworkURL) {
 	NSString *title = MenzenString(MenzenItemValue(item, @selector(title)));
 	if (!title.length) return;
+
 	NSString *artist = MenzenString(MenzenItemValue(item, @selector(artistName)));
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
@@ -170,6 +184,7 @@ static void MenzenRemember(SCPlayerItem *item, id artworkURL) {
 		[items filterUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(MenzenSoundCloudItem *existing, NSDictionary *bindings) {
 			return !([existing.title isEqualToString:remembered.title] && (existing.artist == remembered.artist || [existing.artist isEqualToString:remembered.artist]));
 		}]];
+
 		[items addObject:remembered];
 		if (items.count > MenzenRememberedItems) [items removeObjectAtIndex:0];
 	}
@@ -179,6 +194,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSString *title = MenzenString(info[MPMediaItemPropertyTitle]);
 	NSString *artist = MenzenString(info[MPMediaItemPropertyArtist]);
 	NSDictionary *extras = nil;
+
 	@synchronized(items) {
 		for (MenzenSoundCloudItem *item in items.reverseObjectEnumerator) {
 			if (title.length && [item.title isEqualToString:title] && (!artist.length || !item.artist.length || [item.artist isEqualToString:artist])) {
@@ -199,6 +215,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	id artworkURL = %orig;
 	[self setMenzen_recorded:YES];
 	MenzenRemember(self, artworkURL);
+
 	return artworkURL;
 }
 
@@ -206,6 +223,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 // always reads the title.
 - (NSString *)title {
 	NSString *title = %orig;
+
 	if (![self menzen_recorded]) {
 		[self setMenzen_recorded:YES];
 		[self artworkURL];
@@ -223,8 +241,10 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 		@"_TtC8Playback10PlayerItem -artistUrn",
 		@"_TtC8Playback10PlayerItem -secretToken",
 	]);
+
 	Class playerItem = %c(_TtC8Playback10PlayerItem);
 	if (!playerItem) return;
+
 	MenzenAddExtras(MenzenExtras);
 	items = [NSMutableArray array];
 	accounts = [NSMutableDictionary dictionary];

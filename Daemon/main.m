@@ -35,8 +35,10 @@ static NSTimeInterval const MenzenSignOutTimeout = 10;
 // daemon runs.
 static int MenzenSignOutForRemoval(void) {
 	struct passwd *mobile = getpwnam("mobile");
+
 	if (getuid() == 0 && mobile) {
 		if (setgid(mobile->pw_gid) != 0 || setuid(mobile->pw_uid) != 0) return 1;
+
 		setenv("HOME", mobile->pw_dir, 1);
 	}
 
@@ -52,6 +54,7 @@ int main(int argc, char *argv[]) {
 		discord.accountStatusChangedHandler = ^{
 			MenzenPostDarwinNotification(CFSTR(MenzenStatusChangedNotification));
 		};
+
 		[discord start];
 
 		MenzenAppChecker *appChecker = [MenzenAppChecker new];
@@ -68,17 +71,22 @@ int main(int argc, char *argv[]) {
 		MenzenNowPlaying *nowPlaying = [[MenzenNowPlaying alloc] initWithHandler:^(MenzenTrack *track) {
 			[presence handleTrack:track];
 		}];
+
 		MenzenForegroundApps *foregroundApps = [[MenzenForegroundApps alloc] initWithHandler:^(NSArray<NSString *> *visible) {
 			[presence handleVisibleApps:visible];
 		}];
+
 		MenzenConnectedListener *connected = [[MenzenConnectedListener alloc] initWithPresence:presence];
 		[connected start];
+
 		service.removeConnectedAppHandler = ^(NSString *identifier) {
 			[connected removeApp:identifier];
 		};
+
 		appCatalog.changedHandler = ^{
 			[presence appCatalogChanged];
 		};
+
 		[appCatalog start];
 
 		service.refreshHandler = ^{
@@ -92,6 +100,7 @@ int main(int argc, char *argv[]) {
 			[presence settingsChanged];
 			[connected settingsChanged];
 		}];
+
 		CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, MenzenForwardSettingsChanged, CFSTR(MenzenSettingsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 
 		MenzenDoNotDisturb *doNotDisturb = [[MenzenDoNotDisturb alloc] initWithHandler:^(BOOL active) {

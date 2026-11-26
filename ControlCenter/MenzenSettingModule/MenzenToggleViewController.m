@@ -25,12 +25,14 @@
 	UIControl *button = self.buttonView;
 	Ivar ivar = class_getInstanceVariable(object_getClass(button), "_glyphImageView");
 	id view = ivar ? object_getIvar(button, ivar) : nil;
+
 	return [view isKindOfClass:UIImageView.class] ? view : nil;
 }
 
 - (void)viewDidLayoutSubviews {
 	[super viewDidLayoutSubviews];
 	UIImageView *glyphView = self.glyphImageView;
+
 	if ([glyphView isMemberOfClass:UIImageView.class]) {
 		object_setClass(glyphView, MenzenGlyphImageView.class);
 		// Through the subclass, for the image already there.

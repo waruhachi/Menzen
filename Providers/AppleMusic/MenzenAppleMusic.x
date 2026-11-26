@@ -50,8 +50,10 @@ static NSHashTable *items;
 
 static void MenzenSetAssetURL(MRContentItem *contentItem, NSURL *url) {
 	if (![contentItem respondsToSelector:@selector(metadata)] || ![contentItem respondsToSelector:@selector(setMetadata:)]) return;
+
 	MRContentItemMetadata *metadata = [contentItem.metadata copy] ?: [%c(MRContentItemMetadata) new];
 	if (![metadata respondsToSelector:@selector(setAssetURL:)] || (metadata.assetURL && ![metadata.assetURL.scheme isEqualToString:MenzenExtrasScheme])) return;
+
 	metadata.assetURL = url;
 	contentItem.metadata = metadata;
 }
@@ -62,12 +64,15 @@ static void MenzenSetAssetURL(MRContentItem *contentItem, NSURL *url) {
 // the app's own asset URL is never replaced.
 static void MenzenPostAssetURL(MPNowPlayingContentItem *item, NSURL *url) {
 	if (![item respondsToSelector:@selector(_postItemChangedNotificationWithDeltaBlock:)]) return;
+
 	MRContentItem *contentItem = (__bridge MRContentItem *)[item _mediaRemoteContentItem];
 	NSURL *current = [contentItem respondsToSelector:@selector(metadata)] ? contentItem.metadata.assetURL : nil;
 	if (current && (![current.scheme isEqualToString:MenzenExtrasScheme] || [current isEqual:url])) return;
+
 	[item _postItemChangedNotificationWithDeltaBlock:^(void *delta) {
 		MenzenSetAssetURL((__bridge MRContentItem *)delta, url);
 	}];
+
 	MenzenProviderWorked();
 }
 
@@ -79,10 +84,12 @@ static NSString *MenzenArtworkURL(NSDictionary *artist) {
 	NSDictionary *artwork = [artist isKindOfClass:NSDictionary.class] ? artist[@"artwork"] : nil;
 	NSString *url = [artwork isKindOfClass:NSDictionary.class] ? artwork[@"url"] : nil;
 	if (![url isKindOfClass:NSString.class]) return nil;
+
 	url = [url stringByReplacingOccurrencesOfString:@"{w}" withString:@"512"];
 	url = [url stringByReplacingOccurrencesOfString:@"{h}" withString:@"512"];
 	url = [url stringByReplacingOccurrencesOfString:@"{c}" withString:@"bb"];
 	url = [url stringByReplacingOccurrencesOfString:@"{f}" withString:@"jpg"];
+
 	return [url hasPrefix:@"https://"] && ![url containsString:@"{"] ? url : nil;
 }
 
@@ -97,21 +104,27 @@ static void MenzenLoadArtist(NSString *artistID) {
 		extras[MenzenExtrasArtistNameKey] = [metadata respondsToSelector:@selector(name)] && [metadata.name isKindOfClass:NSString.class] ? metadata.name : nil;
 
 		NSArray *waiting;
+
 		@synchronized(artists) {
 			// The handler can run more than once, as better answers come in:
 			// one without a picture (a cached one) doesn't stop a later one.
 			if (!artistsLoading[artistID]) return;
+
 			if (!picture) {
 				if (!metadata && !artists[artistID]) [artistsLoading removeObjectForKey:artistID];
 				else if (metadata) artists[artistID] = NSNull.null;
+
 				return;
 			}
+
 			waiting = artistsLoading[artistID].allObjects;
 			[artistsLoading removeObjectForKey:artistID];
 			artists[artistID] = extras;
 		}
+
 		NSURL *url = MenzenExtrasURLForArtist(artists[artistID]);
 		if (!url) return;
+
 		dispatch_async(dispatch_get_main_queue(), ^{
 			for (MPNowPlayingContentItem *item in waiting) MenzenPostAssetURL(item, url);
 		});
@@ -120,22 +133,28 @@ static void MenzenLoadArtist(NSString *artistID) {
 
 static void MenzenAddArtistPicture(MPNowPlayingContentItem *item) {
 	if (![item respondsToSelector:@selector(_mediaRemoteContentItem)]) return;
+
 	id artistID = [item valueForKey:@"storeArtistID"];
 	if (![artistID respondsToSelector:@selector(longLongValue)] || [artistID longLongValue] <= 0) return;
+
 	NSString *identifier = @([artistID longLongValue]).stringValue;
 
 	id extras;
+
 	@synchronized(artists) {
 		[items addObject:item];
 		extras = artists[identifier];
 		if (extras == NSNull.null && artistsLoading[identifier]) [artistsLoading[identifier] addObject:item];
+
 		if (!extras) {
 			BOOL loading = !!artistsLoading[identifier];
 			if (!loading) artistsLoading[identifier] = [NSHashTable weakObjectsHashTable];
 			[artistsLoading[identifier] addObject:item];
+
 			if (!loading) dispatch_async(dispatch_get_main_queue(), ^{
 				MenzenLoadArtist(identifier);
 			});
+
 			return;
 		}
 	}
@@ -153,11 +172,13 @@ static void MenzenRefetch(CFNotificationCenterRef center, void *observer, CFNoti
 	dispatch_async(dispatch_get_main_queue(), ^{
 		MenzenThrottleRun(&throttle, MenzenRefetchInterval, ^{
 			NSArray *held;
+
 			@synchronized(artists) {
 				[artists removeAllObjects];
 				[artistsLoading removeAllObjects];
 				held = items.allObjects;
 			}
+
 			for (MPNowPlayingContentItem *item in held) MenzenAddArtistPicture(item);
 		});
 	});
@@ -168,6 +189,7 @@ static void MenzenRefetch(CFNotificationCenterRef center, void *observer, CFNoti
 - (id)nowPlayingInfoCenter:(MPNowPlayingInfoCenter *)center contentItemForID:(NSString *)identifier {
 	id item = %orig;
 	if ([item isKindOfClass:%c(MPNowPlayingContentItem)]) MenzenAddArtistPicture(item);
+
 	return item;
 }
 
@@ -185,8 +207,10 @@ static void MenzenRefetch(CFNotificationCenterRef center, void *observer, CFNoti
 		@"MPStoreItemMetadataResponse -storeItemMetadataForItemIdentifier:",
 		@"MPStoreItemMetadata -effectiveStorePlatformDictionary",
 	], @[]);
+
 	Class publisher = %c(_MPCMediaRemotePublisher);
 	if (!publisher || !%c(MPStoreItemMetadataRequestController)) return;
+
 	artists = [NSMutableDictionary dictionary];
 	artistsLoading = [NSMutableDictionary dictionary];
 	items = [NSHashTable weakObjectsHashTable];

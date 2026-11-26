@@ -18,11 +18,13 @@ static NSTimeInterval MenzenStopGrace(void) {
 static BOOL MenzenSourceEnabled(NSString *bundleIdentifier) {
 	if (!bundleIdentifier.length || !MenzenSettingBool(MenzenSettingEnabled, YES)) return NO;
 	if (!MenzenProviderForBundleIdentifier(bundleIdentifier)) return MenzenSettingBool(MenzenSettingOtherApps, NO) && !MenzenIsChatApp(bundleIdentifier) && !MenzenIsBrowserApp(bundleIdentifier);
+
 	return MenzenSettingBool([MenzenSettingSourcePrefix stringByAppendingString:bundleIdentifier], YES);
 }
 
 static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	if (!MenzenSettingBool(MenzenSettingEnabled, YES)) return NO;
+
 	return MenzenSettingBool([MenzenSettingGamePrefix stringByAppendingString:bundleIdentifier], YES);
 }
 
@@ -61,8 +63,10 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 
 - (MenzenActivity *)customActivity {
 	if (!MenzenSettingBool(MenzenSettingEnabled, YES) || !MenzenSettingBool(MenzenSettingCustom, NO)) return nil;
+
 	NSDictionary *preset = MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil));
 	if (!preset) return nil;
+
 	MenzenActivity *activity = [MenzenActivity new];
 	NSString *kind = MenzenPresetKind(preset);
 	activity.kind = [kind isEqualToString:@"listening"] ? MenzenActivityKindListening : [kind isEqualToString:@"watching"] ? MenzenActivityKindWatching
@@ -86,6 +90,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	if (activity.largeImageURL) {
 		activity.largeText = MenzenPresetString(preset, MenzenPresetLargeTextKey);
 		NSString *smallImage = MenzenPresetString(preset, MenzenPresetSmallImageKey);
+
 		if (MenzenCustomURLIsAllowed(smallImage)) {
 			activity.smallImageURL = smallImage;
 			activity.smallText = MenzenPresetString(preset, MenzenPresetSmallTextKey);
@@ -95,6 +100,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	id timer = preset[MenzenPresetTimerKey];
 	NSDate *start = MenzenSettingValue(MenzenSettingCustomStart);
 	if ((![timer respondsToSelector:@selector(boolValue)] || [timer boolValue]) && [start isKindOfClass:NSDate.class]) activity.startDate = start;
+
 	return activity;
 }
 
@@ -102,14 +108,17 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	if ([source isEqualToString:MenzenSourceCustom]) return [self customActivity];
 	if ([source isEqualToString:MenzenSourceConnected]) return MenzenSettingBool(MenzenSettingEnabled, YES) ? _connected : nil;
 	if ([source isEqualToString:MenzenSourceGames]) return _game ? [self activityForGame:_game] : nil;
+
 	return _media;
 }
 
 - (void)publish {
 	MenzenActivity *activity;
 	NSString *shown;
+
 	for (NSString *source in MenzenPriority()) {
 		activity = [self activityForSource:source];
+
 		if (activity) {
 			shown = source;
 			break;
@@ -118,6 +127,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 
 	[_discord setActivity:activity];
 	[self updateStatus:shown];
+
 	if (activity && ![shown isEqualToString:MenzenSourceMedia]) {
 		_lastOther = activity;
 		_lastOtherEnded = nil;
@@ -134,6 +144,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 // A preset's own status comes first, then Do Not Disturb.
 - (void)updateStatus:(NSString *)shown {
 	NSString *status;
+
 	if (MenzenSettingBool(MenzenSettingEnabled, YES)) {
 		if ([shown isEqualToString:MenzenSourceCustom]) status = MenzenPresetStatus(MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil)));
 		if (!status && _doNotDisturb && MenzenSettingBool(MenzenSettingSyncDoNotDisturb, NO)) status = @"dnd";
@@ -193,6 +204,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	if (!track || !MenzenSourceEnabled(track.bundleIdentifier)) {
 		[self cancelClear];
 		if (_media) [self showMedia:nil];
+
 		return;
 	}
 
@@ -200,10 +212,12 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	// A live stream has no duration or position: its clock counts from when
 	// it first showed, not from each update.
 	if (track.duration <= 0 && activity.startDate && !activity.endDate && _media.startDate && !_media.endDate && [_media.details isEqualToString:activity.details]) activity.startDate = _media.startDate;
+
 	if (track.playing && activity) {
 		[self cancelClear];
 		if (_gameLeft) [self endGame];
 		[self showMedia:activity];
+
 		return;
 	}
 
@@ -212,9 +226,11 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 
 - (void)showPaused:(MenzenActivity *)activity {
 	NSTimeInterval grace = MenzenStopGrace();
+
 	if (grace == 0) {
 		[self cancelClear];
 		[self showMedia:nil];
+
 		return;
 	}
 
@@ -228,12 +244,14 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	}
 
 	if (_clearPending || grace < 0) return;
+
 	_clearPending = YES;
 	NSUInteger generation = ++_clearGeneration;
 	__weak typeof(self) weakSelf = self;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(grace * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || generation != strongSelf->_clearGeneration) return;
+
 		strongSelf->_clearPending = NO;
 		[strongSelf showMedia:nil];
 	});
@@ -250,6 +268,7 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 
 - (void)updateGame {
 	NSString *game;
+
 	for (NSString *bundleIdentifier in _visibleApps) {
 		if ([_appCatalog isGame:bundleIdentifier] && MenzenGameEnabled(bundleIdentifier)) {
 			game = bundleIdentifier;
@@ -260,16 +279,21 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	if (game) {
 		_gameEndGeneration++;
 		_gameLeft = NO;
+
 		if (![game isEqualToString:_game]) {
 			_game = game;
 			_gameStart = NSDate.date;
 		}
+
 		[self publish];
+
 		return;
 	}
 
 	if (!_game) return;
+
 	NSTimeInterval grace = MenzenStopGrace();
+
 	if (!MenzenGameEnabled(_game) || grace == 0) {
 		[self endGame];
 		return;
@@ -278,9 +302,11 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	// Left: it stays for the grace period, or with a negative one until
 	// something else takes over. Other apps coming and going don't restart it.
 	if (_gameLeft) return;
+
 	_gameLeft = YES;
 	NSUInteger generation = ++_gameEndGeneration;
 	if (grace < 0) return;
+
 	__weak typeof(self) weakSelf = self;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(grace * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		typeof(self) strongSelf = weakSelf;
@@ -296,7 +322,9 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 	// Without one, Discord shows Menzen's icon.
 	activity.largeImageURL = [_appCatalog iconURLForApp:bundleIdentifier];
 	if (MenzenAppIsPrivate(bundleIdentifier)) return activity;
+
 	activity.startDate = _gameStart;
+
 	if (activity.largeImageURL) {
 		activity.largeText = activity.name;
 		if (MenzenSettingBool(MenzenSettingLinks, YES)) activity.largeURL = [_appCatalog storeURLForApp:bundleIdentifier];

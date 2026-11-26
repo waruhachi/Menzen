@@ -16,19 +16,23 @@ static NSTimeInterval const MenzenConnectedRequestAge = 60;
 
 static NSString *MenzenConnectedText(id text) {
 	if (![text isKindOfClass:NSString.class]) return nil;
+
 	text = [text stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 	if (![text length]) return nil;
 	if ([text length] <= MenzenConnectedTextLimit) return text;
+
 	return [text substringToIndex:[text rangeOfComposedCharacterSequenceAtIndex:MenzenConnectedTextLimit - 1].location];
 }
 
 static NSString *MenzenConnectedImage(id url) {
 	if (![url isKindOfClass:NSString.class] || [url length] > MenzenConnectedURLLimit) return nil;
+
 	return MenzenCustomURLIsAllowed(url) ? url : nil;
 }
 
 static NSDate *MenzenConnectedDate(id seconds) {
 	if (![seconds isKindOfClass:NSNumber.class] || [seconds doubleValue] <= 0) return nil;
+
 	return [NSDate dateWithTimeIntervalSince1970:[seconds doubleValue]];
 }
 
@@ -57,6 +61,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	activity.startDate = MenzenConnectedDate(info[MenzenActivityStartKey]);
 	NSDate *end = MenzenConnectedDate(info[MenzenActivityEndKey]);
 	if (activity.startDate && [end compare:activity.startDate] == NSOrderedDescending) activity.endDate = end;
+
 	return activity;
 }
 
@@ -125,15 +130,18 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		full = self->_sessions.count >= MenzenConnectedConnectionLimit;
 	});
+
 	if (full) return NO;
 
 	MenzenConnectedSession *session = [MenzenConnectedSession new];
 	session.listener = self;
 	session.connection = connection;
 	session.process = MenzenSigningIdentifier(connection.auditToken);
+
 	connection.exportedInterface = MenzenConnectedServiceInterface();
 	connection.exportedObject = session;
 	connection.remoteObjectInterface = MenzenConnectedClientInterface();
+
 	__weak typeof(self) weakSelf = self;
 	__weak MenzenConnectedSession *weakSession = session;
 	connection.invalidationHandler = ^{
@@ -142,15 +150,19 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 			if (ended) [weakSelf sessionEnded:ended];
 		});
 	};
+
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		[self->_sessions addObject:session];
 	});
+
 	[connection resume];
+
 	return YES;
 }
 
 - (MenzenClientState)stateForIdentifier:(NSString *)identifier {
 	if (!MenzenSettingBool(MenzenSettingEnabled, YES) || !MenzenSettingBool(MenzenSettingConnected, NO)) return MenzenClientStateOff;
+
 	return [MenzenConnectedAllowed() containsObject:identifier] ? MenzenClientStateAllowed : MenzenClientStateNotAllowed;
 }
 
@@ -160,6 +172,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	// One app per connection, for as long as it lasts.
 	if (session.identifier && ![session.identifier isEqualToString:identifier]) return;
 	if (![self rememberApp:identifier name:name process:session.process]) return;
+
 	session.identifier = identifier;
 	session.name = name;
 	[self updateSession:session];
@@ -169,9 +182,11 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 
 - (void)askToAllowIfNeeded:(MenzenConnectedSession *)session {
 	if (session.state != MenzenClientStateNotAllowed) return;
+
 	NSMutableDictionary *apps = [MenzenConnectedApps() mutableCopy];
 	NSMutableDictionary *app = [apps[session.identifier] mutableCopy];
 	if (!app || [app[MenzenConnectedAppAskedKey] boolValue]) return;
+
 	app[MenzenConnectedAppAskedKey] = @YES;
 	apps[session.identifier] = app;
 	MenzenWriteSetting(MenzenSettingConnectedApps, apps);
@@ -182,6 +197,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	NSDate *now = NSDate.date;
 	NSMutableArray *requests = [NSMutableArray array];
 	NSArray *saved = MenzenSettingValue(MenzenSettingConnectedRequests);
+
 	for (NSDictionary *request in [saved isKindOfClass:NSArray.class] ? saved : @[]) {
 		NSDate *date = [request isKindOfClass:NSDictionary.class] ? request[MenzenConnectedRequestDateKey] : nil;
 		if ([date isKindOfClass:NSDate.class] && -date.timeIntervalSinceNow < MenzenConnectedRequestAge) [requests addObject:request];
@@ -200,9 +216,11 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	app[MenzenConnectedAppAskedKey] = apps[identifier][MenzenConnectedAppAskedKey];
 	if ([apps[identifier] isEqualToDictionary:app]) return YES;
 	if (!apps[identifier] && apps.count >= MenzenConnectedAppLimit) return NO;
+
 	apps[identifier] = app;
 	MenzenWriteSetting(MenzenSettingConnectedApps, apps);
 	MenzenPostDarwinNotification(CFSTR(MenzenConnectedAppsChangedNotification));
+
 	return YES;
 }
 
@@ -210,6 +228,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	// The pane has just taken it off the allowed list.
 	MenzenSettingsSynchronize();
 	NSMutableDictionary *apps = [MenzenConnectedApps() mutableCopy];
+
 	if (apps[identifier]) {
 		[apps removeObjectForKey:identifier];
 		MenzenWriteSetting(MenzenSettingConnectedApps, apps);
@@ -220,6 +239,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	// away, so its connection stops counting as the app instead.
 	for (MenzenConnectedSession *session in _sessions) {
 		if (![session.identifier isEqualToString:identifier]) continue;
+
 		[self updateSession:session];
 		session.identifier = nil;
 		session.name = nil;
@@ -231,6 +251,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 
 - (void)session:(MenzenConnectedSession *)session setActivity:(NSDictionary *)activity {
 	if (!session.identifier) return;
+
 	session.sentActivity = [activity isKindOfClass:NSDictionary.class] ? activity : nil;
 	session.sent = ++_sends;
 	[self showLatest];
@@ -244,6 +265,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 - (void)updateSession:(MenzenConnectedSession *)session {
 	MenzenClientState state = [self stateForIdentifier:session.identifier];
 	if (session.state == state) return;
+
 	session.state = state;
 	[[session.connection remoteObjectProxy] stateChanged:state];
 }
@@ -254,13 +276,16 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 
 - (void)showLatestAgain:(BOOL)again {
 	MenzenConnectedSession *latest;
+
 	for (MenzenConnectedSession *session in _sessions) {
 		if (session.state != MenzenClientStateAllowed || !session.sentActivity) continue;
+
 		if (!latest || session.sent > latest.sent) latest = session;
 	}
 
 	MenzenActivity *activity = latest ? MenzenConnectedActivity(latest.sentActivity, latest.name) : nil;
 	if (!again && (activity == _shown || [activity isEquivalentToActivity:_shown])) return;
+
 	_shown = activity;
 	[_presence setConnectedActivity:activity];
 }
@@ -268,6 +293,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 - (void)settingsChanged {
 	for (MenzenConnectedSession *session in _sessions) {
 		if (!session.identifier) continue;
+
 		[self updateSession:session];
 		[self askToAllowIfNeeded:session];
 	}

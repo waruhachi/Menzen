@@ -9,6 +9,7 @@ static NSString *MenzenSourceTitle(NSString *source) {
 	if ([source isEqualToString:MenzenSourceCustom]) return MenzenLocalizedString(@"root.custom_activity", @"Custom Activity");
 	if ([source isEqualToString:MenzenSourceConnected]) return MenzenLocalizedString(@"priority.connected_apps", @"Connected Apps");
 	if ([source isEqualToString:MenzenSourceGames]) return MenzenLocalizedString(@"priority.games", @"Games");
+
 	return MenzenLocalizedString(@"priority.music_and_video", @"Music & Video");
 }
 
@@ -16,6 +17,7 @@ static NSString *MenzenSourceSymbol(NSString *source) {
 	if ([source isEqualToString:MenzenSourceCustom]) return @"square.and.pencil";
 	if ([source isEqualToString:MenzenSourceConnected]) return @"link";
 	if ([source isEqualToString:MenzenSourceGames]) return @"gamecontroller";
+
 	return @"play.circle";
 }
 
@@ -27,6 +29,7 @@ static NSString *MenzenSourceSymbol(NSString *source) {
 		PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
 		[group setProperty:MenzenLocalizedString(@"priority.menzen_shows_the_first_of", @"Menzen checks these from top to bottom and shows the first one with activity.") forKey:@"footerText"];
 		[specifiers addObject:group];
+
 		for (NSString *source in MenzenPriority()) {
 			PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:MenzenSourceTitle(source) target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
 			row.identifier = source;
@@ -48,6 +51,7 @@ static NSString *MenzenSourceSymbol(NSString *source) {
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	UITableViewCell *cell = [super tableView:tableView cellForRowAtIndexPath:indexPath];
 	cell.showsReorderControl = YES;
+
 	return cell;
 }
 
@@ -70,6 +74,7 @@ static NSString *MenzenSourceSymbol(NSString *source) {
 	[_specifiers insertObject:moved atIndex:to.row + 1];
 
 	NSMutableArray<NSString *> *order = [NSMutableArray array];
+
 	for (PSSpecifier *specifier in _specifiers) {
 		if (specifier.identifier.length && specifier.cellType != PSGroupCell) [order addObject:specifier.identifier];
 	}

@@ -37,6 +37,7 @@ static PSSpecifier *MenzenSourceSwitch(id target, NSDictionary *provider, NSStri
 	BOOL installed = MenzenInstalled(provider);
 	[specifier setProperty:@(installed) forKey:@"enabled"];
 	[specifier setProperty:@(!installed) forKey:@"notInstalled"];
+
 	return specifier;
 }
 
@@ -44,6 +45,7 @@ static NSArray<PSSpecifier *> *MenzenPrivacySpecifiers(id target, NSString *bund
 	PSSpecifier *group = [PSSpecifier emptyGroupSpecifier];
 	PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"sources.privacy_mode", @"Privacy Mode") target:target set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 	MenzenSetSetting(toggle, [MenzenSettingPrivatePrefix stringByAppendingString:bundleIdentifier], @NO);
+
 	return @[group, toggle];
 }
 
@@ -53,12 +55,14 @@ static void MenzenSetIcon(PSSpecifier *specifier, NSDictionary *provider) {
 
 static NSString *MenzenGameSummary(NSDictionary *game) {
 	if (!MenzenSettingBool(MenzenGameKey(game), YES)) return MenzenLocalizedString(@"common.off", @"Off");
+
 	return [game[MenzenGameListedKey] boolValue] ? MenzenLocalizedString(@"common.on", @"On") : MenzenLocalizedString(@"common.no_icon", @"No Icon");
 }
 
 static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *hooked) {
 	if (!MenzenInstalled(provider)) return MenzenLocalizedString(@"sources.not_installed", @"Not Installed");
 	if (!MenzenSettingBool(MenzenSourceKey(provider), YES)) return MenzenLocalizedString(@"common.off", @"Off");
+
 	return MenzenSupportStateFor(provider, MenzenAppSupportStatus(provider[MenzenProviderBundleIdentifierKey]), hooked) == MenzenSupportStateMayNotWork ? MenzenLocalizedString(@"common.may_not_work", @"May Not Work") : MenzenLocalizedString(@"common.on", @"On");
 }
 
@@ -72,10 +76,13 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		_hooked = MenzenHookedBundles();
 		NSMutableArray *specifiers = [NSMutableArray array];
 		NSMutableArray<NSDictionary *> *missing = [NSMutableArray array];
+
 		for (NSNumber *watching in @[@NO, @YES]) {
 			NSMutableArray *rows = [NSMutableArray array];
+
 			for (NSDictionary *provider in MenzenProviders()) {
 				if ([provider[MenzenProviderWatchingKey] boolValue] != watching.boolValue) continue;
+
 				if (!MenzenInstalled(provider)) {
 					[missing addObject:provider];
 					continue;
@@ -88,7 +95,9 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 				MenzenSetIcon(specifier, provider);
 				[rows addObject:specifier];
 			}
+
 			if (!rows.count) continue;
+
 			[specifiers addObject:[PSSpecifier groupSpecifierWithName:watching.boolValue ? MenzenLocalizedString(@"common.watching", @"Watching") : MenzenLocalizedString(@"common.listening", @"Listening")]];
 			[specifiers addObjectsFromArray:rows];
 		}
@@ -107,6 +116,7 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		PSSpecifier *other = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"sources.experimental", @"Experimental")];
 		[other setProperty:MenzenLocalizedString(@"sources.shows_unsupported_apps_with_less_information", @"Shows unsupported apps, with less information. Browsers, chat and social networking apps are skipped.") forKey:@"footerText"];
 		[specifiers addObject:other];
+
 		PSSpecifier *otherApps = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"sources.other_apps", @"Other Apps") target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 		MenzenSetSetting(otherApps, MenzenSettingOtherApps, @NO);
 		[specifiers addObject:otherApps];
@@ -119,9 +129,11 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 
 - (NSArray<PSSpecifier *> *)gameSpecifiers {
 	if (!_games.count) return @[];
+
 	NSMutableArray *specifiers = [NSMutableArray array];
 	PSSpecifier *group = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"common.playing", @"Playing")];
 	[specifiers addObject:group];
+
 	for (NSDictionary *game in _games) {
 		PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:game[MenzenGameNameKey] target:self set:nil get:@selector(gameSummary:) detail:MenzenGameListController.class cell:PSLinkListCell edit:nil];
 		[row setProperty:game forKey:@"game"];
@@ -138,6 +150,7 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf || [games isEqual:strongSelf->_games]) return;
+
 			strongSelf->_games = games;
 			[strongSelf reloadSpecifiers];
 		});
@@ -178,15 +191,18 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 	}
 
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+
 	PSListController *controller = [controllerClass new];
 	controller.specifier = specifier;
 	controller.rootController = self.rootController;
 	controller.parentController = self;
+
 	[self showController:controller animate:YES];
 }
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
 	if ([[specifier propertyForKey:@"notInstalled"] boolValue]) return @NO;
+
 	return [super readPreferenceValue:specifier];
 }
 
@@ -204,10 +220,12 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		NSMutableArray *specifiers = [NSMutableArray array];
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		[specifiers addObject:MenzenSourceSwitch(self, provider, provider[MenzenProviderNameKey])];
+
 		if (MenzenInstalled(provider)) {
 			[specifiers addObjectsFromArray:MenzenPrivacySpecifiers(self, provider[MenzenProviderBundleIdentifierKey])];
 			[specifiers addObjectsFromArray:[self supportSpecifiers]];
 		}
+
 		_specifiers = specifiers;
 	}
 
@@ -217,14 +235,17 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 - (NSArray<PSSpecifier *> *)supportSpecifiers {
 	NSDictionary *provider = self.provider;
 	NSString *name = provider[MenzenProviderNameKey];
+
 	NSDictionary *status = MenzenAppSupportStatus(provider[MenzenProviderBundleIdentifierKey]);
 	MenzenSupportState state = MenzenSupportStateFor(provider, status, MenzenHookedBundles());
+
 	NSString *version = MenzenInstalledVersion(provider);
 	NSMutableArray *specifiers = [NSMutableArray array];
 
 	PSSpecifier *group = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"common.support", @"Support")];
 	[specifiers addObject:group];
 	NSString *summary, *footer;
+
 	switch (state) {
 		case MenzenSupportStateNotHooked:
 			summary = MenzenLocalizedString(@"sources.media_controls_only", @"Media Controls Only");
@@ -251,6 +272,7 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 	PSSpecifier *row = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"common.status", @"Status") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
 	[row setProperty:summary forKey:@"supportValue"];
 	[specifiers addObject:row];
+
 	if (state != MenzenSupportStateNotHooked) {
 		PSSpecifier *versionRow = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"common.version", @"Version") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
 		[versionRow setProperty:version forKey:@"supportValue"];
@@ -266,10 +288,12 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 
 	if (state == MenzenSupportStateMayNotWork) {
 		NSString *details = MenzenSupportDetails(name, version, provider[MenzenProviderBundleIdentifierKey], @MENZEN_VERSION, UIDevice.currentDevice.systemVersion, MenzenMissingParts(status));
+
 		PSSpecifier *copy = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"common.copy_details", @"Copy Details") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 		copy.buttonAction = @selector(copyDetails:);
 		[copy setProperty:details forKey:@"details"];
 		[specifiers addObject:copy];
+
 		PSSpecifier *report = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"common.report_on_github", @"Report on GitHub") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 		report.buttonAction = @selector(report:);
 		[report setProperty:details forKey:@"details"];
@@ -309,6 +333,7 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
 	if ([[specifier propertyForKey:@"notInstalled"] boolValue]) return @NO;
+
 	return [super readPreferenceValue:specifier];
 }
 
@@ -326,27 +351,33 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 	if (!_specifiers) {
 		NSDictionary *game = self.game;
 		NSString *name = game[MenzenGameNameKey];
+
 		BOOL listed = [game[MenzenGameListedKey] boolValue];
+
 		NSMutableArray *specifiers = [NSMutableArray array];
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		PSSpecifier *toggle = [PSSpecifier preferenceSpecifierNamed:name target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:PSSwitchCell edit:nil];
 		MenzenSetSetting(toggle, MenzenGameKey(game), @YES);
 		[specifiers addObject:toggle];
+
 		[specifiers addObjectsFromArray:MenzenPrivacySpecifiers(self, game[MenzenGameBundleIdentifierKey])];
 
 		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"common.support", @"Support")]];
 		PSSpecifier *status = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"common.status", @"Status") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
 		[status setProperty:listed ? MenzenLocalizedString(@"common.works", @"Works") : MenzenLocalizedString(@"common.no_icon", @"No Icon") forKey:@"supportValue"];
 		[specifiers addObject:status];
+
 		PSSpecifier *versionRow = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"common.version", @"Version") target:self set:nil get:@selector(supportValue:) detail:nil cell:PSTitleValueCell edit:nil];
 		[versionRow setProperty:MenzenInstalledAppVersion(game[MenzenGameBundleIdentifierKey]) ?: @"?" forKey:@"supportValue"];
 		[specifiers addObject:versionRow];
+
 		if (!listed) {
 			[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 			PSSpecifier *request = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"sources.request_icon_on_github", @"Request Icon on GitHub") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];
 			request.buttonAction = @selector(requestIcon:);
 			[specifiers addObject:request];
 		}
+
 		_specifiers = specifiers;
 	}
 
@@ -375,8 +406,10 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf) return;
+
 			for (NSDictionary *game in games) {
 				if (![game[MenzenGameBundleIdentifierKey] isEqualToString:bundleIdentifier] || [game isEqual:strongSelf.game]) continue;
+
 				strongSelf->_game = game;
 				[strongSelf reloadSpecifiers];
 			}
@@ -394,19 +427,25 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 	if (!_specifiers) {
 		NSArray<NSDictionary *> *providers = [self.specifier propertyForKey:@"providers"];
 		NSMutableArray *specifiers = [NSMutableArray array];
+
 		for (NSNumber *watching in @[@NO, @YES]) {
 			NSMutableArray *rows = [NSMutableArray array];
+
 			for (NSDictionary *provider in providers) {
 				if ([provider[MenzenProviderWatchingKey] boolValue] != watching.boolValue) continue;
+
 				PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:provider[MenzenProviderNameKey] target:self set:nil get:nil detail:nil cell:PSStaticTextCell edit:nil];
 				[specifier setProperty:MenzenLogoCell.class forKey:@"cellClass"];
 				[specifier setProperty:_icons[provider[MenzenProviderBundleIdentifierKey]] forKey:@"logo"];
 				[rows addObject:specifier];
 			}
+
 			if (!rows.count) continue;
+
 			[specifiers addObject:[PSSpecifier groupSpecifierWithName:watching.boolValue ? MenzenLocalizedString(@"common.watching", @"Watching") : MenzenLocalizedString(@"common.listening", @"Listening")]];
 			[specifiers addObjectsFromArray:rows];
 		}
+
 		_specifiers = specifiers;
 	}
 
@@ -422,6 +461,7 @@ static NSString *MenzenSourceSummary(NSDictionary *provider, NSSet<NSString *> *
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf || [icons isEqual:strongSelf->_icons]) return;
+
 			strongSelf->_icons = icons;
 			[strongSelf reloadSpecifiers];
 		});

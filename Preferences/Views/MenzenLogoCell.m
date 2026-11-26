@@ -20,13 +20,16 @@ CGFloat const MenzenLogoCellHeight = MenzenLogoSize + 2 * MenzenLogoPadding;
 		_logoView.clipsToBounds = YES;
 		_logoView.layer.cornerRadius = 8;
 		_logoView.backgroundColor = UIColor.tertiarySystemFillColor;
+
 		_titleLabel = [UILabel new];
 		_titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+
 		UIStackView *row = [[UIStackView alloc] initWithArrangedSubviews:@[_logoView, _titleLabel]];
 		row.spacing = 12;
 		row.alignment = UIStackViewAlignmentCenter;
 		row.translatesAutoresizingMaskIntoConstraints = NO;
 		[self.contentView addSubview:row];
+
 		UILayoutGuide *margins = self.contentView.layoutMarginsGuide;
 		[NSLayoutConstraint activateConstraints:@[
 			[_logoView.widthAnchor constraintEqualToConstant:MenzenLogoSize],

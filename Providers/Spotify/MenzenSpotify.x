@@ -48,17 +48,20 @@ static NSMutableSet<NSString *> *artistPicturesLoading;
 static NSString *MenzenURIString(id uri) {
 	if ([uri isKindOfClass:NSString.class]) return uri;
 	if ([uri respondsToSelector:@selector(absoluteString)]) return [uri absoluteString];
+
 	return [uri description];
 }
 
 static NSString *MenzenMetadataString(SPTPlayerTrack *track, NSString *key) {
 	NSDictionary *metadata = [track respondsToSelector:@selector(metadata)] ? track.metadata : nil;
 	id value = [metadata isKindOfClass:NSDictionary.class] ? metadata[key] : nil;
+
 	return [value isKindOfClass:NSString.class] && [value length] ? value : nil;
 }
 
 static NSString *MenzenSpotifyImageURL(NSString *value) {
 	if ([value hasPrefix:@"spotify:image:"]) return [@"https://i.scdn.co/image/" stringByAppendingString:[value substringFromIndex:@"spotify:image:".length]];
+
 	return value && [[NSURL URLWithString:value].scheme isEqualToString:@"https"] ? value : nil;
 }
 
@@ -76,8 +79,10 @@ static NSString *const MenzenBase62 = @"0123456789abcdefghijklmnopqrstuvwxyzABCD
 static NSString *MenzenEntityID(NSString *uri, NSString *type) {
 	NSString *prefix = [NSString stringWithFormat:@"spotify:%@:", type];
 	if (![uri hasPrefix:prefix]) return nil;
+
 	NSString *identifier = [uri substringFromIndex:prefix.length];
 	NSCharacterSet *invalid = [NSCharacterSet characterSetWithCharactersInString:MenzenBase62].invertedSet;
+
 	return identifier.length == 22 && [identifier rangeOfCharacterFromSet:invalid].location == NSNotFound ? identifier : nil;
 }
 
@@ -89,6 +94,7 @@ static NSString *MenzenWebURL(NSString *uri, NSString *type) {
 // Spotify's API names entities by the ID's 128 bit value in hex.
 static NSString *MenzenHexID(NSString *base62) {
 	unsigned __int128 value = 0;
+
 	for (NSUInteger i = 0; i < base62.length; i++) {
 		value = value * 62 + [MenzenBase62 rangeOfString:[base62 substringWithRange:NSMakeRange(i, 1)]].location;
 	}
@@ -100,14 +106,19 @@ static NSString *MenzenPortraitURL(NSDictionary *artist) {
 	NSDictionary *group = artist[@"portrait_group"];
 	NSArray *images = [group isKindOfClass:NSDictionary.class] ? group[@"image"] : nil;
 	if (![images isKindOfClass:NSArray.class]) return nil;
+
 	NSCharacterSet *notHex = [NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdef"].invertedSet;
 	NSString *best;
+
 	for (NSDictionary *image in images) {
 		if (![image isKindOfClass:NSDictionary.class] || ![image[@"file_id"] isKindOfClass:NSString.class]) continue;
+
 		NSString *fileID = image[@"file_id"];
 		if (!fileID.length || [fileID rangeOfCharacterFromSet:notHex].location != NSNotFound) continue;
+
 		NSString *url = [@"https://i.scdn.co/image/" stringByAppendingString:fileID];
 		if ([image[@"size"] isEqual:@"LARGE"]) return url;
+
 		if (!best || [image[@"size"] isEqual:@"DEFAULT"]) best = url;
 	}
 
@@ -135,6 +146,7 @@ static void MenzenLoadArtist(NSString *hexID, NSArray *factories, void (^done)(N
 				MenzenLoadArtist(hexID, [factories subarrayWithRange:NSMakeRange(1, factories.count - 1)], done);
 				return;
 			}
+
 			signedLoaderFactory = factory;
 			done(artist);
 		});
@@ -144,12 +156,14 @@ static void MenzenLoadArtist(NSString *hexID, NSArray *factories, void (^done)(N
 static NSString *MenzenArtistPicture(NSString *artistURI) {
 	NSString *identifier = MenzenEntityID(artistURI, @"artist");
 	if (!identifier) return nil;
+
 	id known = artistPictures[artistURI];
 	if (known) return [known isKindOfClass:NSString.class] ? known : nil;
 	if ([artistPicturesLoading containsObject:artistURI] || !%c(SPTDataLoaderRequest) || !%c(SPTDataLoaderBlockWrapper)) return nil;
 
 	NSMutableArray *factories = [loaderFactories.allObjects mutableCopy];
 	id signedFactory = signedLoaderFactory;
+
 	if (signedFactory && [factories containsObject:signedFactory]) {
 		[factories removeObject:signedFactory];
 		[factories insertObject:signedFactory atIndex:0];
@@ -160,12 +174,15 @@ static NSString *MenzenArtistPicture(NSString *artistURI) {
 	if (!artistPictures) artistPictures = [NSMutableDictionary dictionary];
 	if (!artistPicturesLoading) artistPicturesLoading = [NSMutableSet set];
 	[artistPicturesLoading addObject:artistURI];
+
 	MenzenLoadArtist(MenzenHexID(identifier), factories, ^(NSDictionary *artist) {
 		[artistPicturesLoading removeObject:artistURI];
 		if (!artist) return;
+
 		artistPictures[artistURI] = MenzenPortraitURL(artist) ?: (id)NSNull.null;
 		MenzenRepublish();
 	});
+
 	return nil;
 }
 
@@ -173,6 +190,7 @@ static NSString *MenzenArtistPicture(NSString *artistURI) {
 static NSString *MenzenTrackURIInInfo(NSDictionary *info) {
 	NSString *identifier = info[MPNowPlayingInfoPropertyExternalContentIdentifier];
 	if (![identifier isKindOfClass:NSString.class]) return nil;
+
 	return [identifier componentsSeparatedByString:@"#"].firstObject;
 }
 
@@ -187,10 +205,13 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	extras[MenzenExtrasCoverKey] = MenzenCoverURL(track);
 	extras[MenzenExtrasTitleURLKey] = MenzenWebURL(trackURI, @"track") ?: MenzenWebURL(trackURI, @"episode");
+
 	NSString *artistURI = MenzenMetadataString(track, @"artist_uri");
 	extras[MenzenExtrasArtistURLKey] = MenzenWebURL(artistURI, @"artist");
+
 	extras[MenzenExtrasAlbumURLKey] = MenzenWebURL(MenzenMetadataString(track, @"album_uri"), @"album");
 	NSString *picture = MenzenArtistPicture(artistURI);
+
 	if (picture) {
 		extras[MenzenExtrasArtistImageKey] = picture;
 		extras[MenzenExtrasArtistNameKey] = MenzenMetadataString(track, @"artist_name");
@@ -215,6 +236,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 - (id)createDataLoader {
 	if (!loaderFactories) loaderFactories = [NSHashTable weakObjectsHashTable];
 	[loaderFactories addObject:self];
+
 	return %orig;
 }
 
@@ -235,6 +257,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 		@"SPTDataLoaderBlockWrapper -performRequest:completion:",
 		@"Connectivity_HttpClientKit.DataLoaderFactoryHttpClientImpl -createDataLoader | SPTDataLoaderFactory -createDataLoader",
 	]);
+
 	MenzenAddExtras(MenzenExtras);
 	%init;
 	// Spotify's Swift subclass of SPTDataLoaderFactory makes the signed ones.

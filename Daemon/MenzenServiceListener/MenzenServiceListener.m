@@ -35,7 +35,9 @@ static BOOL MenzenIsR3v4mp(audit_token_t token) {
 		if (path) executable = @(path);
 		free(path);
 	});
+
 	char path[MAXPATHLEN] = {};
+
 	return executable && proc_pidpath_audittoken && proc_pidpath_audittoken(&token, path, sizeof(path)) > 0 && [executable isEqualToString:@(path)];
 }
 
@@ -45,8 +47,10 @@ static BOOL MenzenIsR3v4mp(audit_token_t token) {
 static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 	audit_token_t token = connection.auditToken;
 	if (MenzenIsR3v4mp(token)) return MenzenR3v4mpIdentifier;
+
 	SecTaskRef task = SecTaskCreateWithAuditToken(kCFAllocatorDefault, token);
 	if (!task) return nil;
+
 	NSString *identifier = CFBridgingRelease(SecTaskCopySigningIdentifier(task, NULL));
 	id application = CFBridgingRelease(SecTaskCopyValueForEntitlement(task, CFSTR("application-identifier"), NULL));
 	uint32_t flags = SecTaskGetCodeSignStatus(task);
@@ -55,6 +59,7 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 
 	if ([identifier isEqualToString:@"com.apple.Preferences"]) return identifier;
 	if ([application isKindOfClass:NSString.class] && [application isEqualToString:MenzenTweakSettingsIdentifier]) return MenzenTweakSettingsIdentifier;
+
 	return nil;
 }
 
@@ -83,9 +88,11 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)connection {
 	if (!MenzenSettingsApp(connection)) return NO;
+
 	connection.exportedInterface = MenzenServiceInterface();
 	connection.exportedObject = self;
 	[connection resume];
+
 	return YES;
 }
 
@@ -149,6 +156,7 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 - (void)deviceSignInFinished:(BOOL)signedIn error:(NSString *)error {
 	void (^waiter)(BOOL, NSString *) = _deviceSignInWaiter;
 	[self resetDeviceSignInWait];
+
 	if (waiter) {
 		waiter(signedIn, error);
 	} else {
@@ -168,6 +176,7 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 - (void)checkAppWithBundleIdentifier:(NSString *)bundleIdentifier {
 	NSString *returnTo = MenzenSettingsApp(NSXPCConnection.currentConnection);
 	if (![bundleIdentifier isKindOfClass:NSString.class] || !returnTo) return;
+
 	dispatch_async(dispatch_get_main_queue(), ^{
 		[self.appChecker openAppToCheck:bundleIdentifier returningTo:returnTo];
 	});
@@ -176,18 +185,23 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 - (void)gamesWithReply:(void (^)(NSArray<NSDictionary<NSString *, id> *> *))reply {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		NSMutableArray *games = [NSMutableArray array];
+
 		for (NSString *bundleIdentifier in self.appCatalog.installedGames) {
 			NSMutableDictionary *game = [NSMutableDictionary dictionary];
 			game[MenzenGameBundleIdentifierKey] = bundleIdentifier;
 			game[MenzenGameNameKey] = MenzenAppName(bundleIdentifier);
+
 			NSString *iconURL = [self.appCatalog iconURLForApp:bundleIdentifier];
 			game[MenzenGameListedKey] = @(iconURL != nil);
+
 			game[MenzenGameIconURLKey] = iconURL;
 			[games addObject:game];
 		}
+
 		[games sortUsingComparator:^NSComparisonResult(NSDictionary *a, NSDictionary *b) {
 			return [a[MenzenGameNameKey] localizedStandardCompare:b[MenzenGameNameKey]];
 		}];
+
 		reply(games);
 		[self.appCatalog checkIfStale];
 	});

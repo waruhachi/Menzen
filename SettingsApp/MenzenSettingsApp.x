@@ -11,7 +11,9 @@
 // "prefs:root=Menzen/connected".
 static BOOL MenzenIsConnectedURL(NSURL *url) {
 	if (![url.scheme.lowercaseString isEqualToString:@"prefs"]) return NO;
+
 	NSMutableDictionary<NSString *, NSString *> *query = [NSMutableDictionary dictionary];
+
 	for (NSString *pair in [url.resourceSpecifier componentsSeparatedByString:@"&"]) {
 		NSRange equals = [pair rangeOfString:@"="];
 		if (equals.location != NSNotFound) query[[pair substringToIndex:equals.location]] = [pair substringFromIndex:NSMaxRange(equals)];
@@ -19,6 +21,7 @@ static BOOL MenzenIsConnectedURL(NSURL *url) {
 
 	NSArray<NSString *> *root = [query[@"root"] componentsSeparatedByString:@"/"];
 	if (![root.firstObject isEqualToString:@"Menzen"]) return NO;
+
 	return [query[@"path"] isEqualToString:@"connected"] || (root.count > 1 && [root[1] isEqualToString:@"connected"]);
 }
 
@@ -42,6 +45,7 @@ static UINavigationController *MenzenNavigationController(UIViewController *cont
 // first would fight SwiftUI, which owns the stack, so it goes on top.
 static void MenzenOpenConnected(UIWindowScene *scene, NSUInteger attempt) {
 	UINavigationController *navigationController = nil;
+
 	for (UIWindow *window in scene.windows) {
 		navigationController = MenzenNavigationController(window.rootViewController);
 		if (navigationController) break;
@@ -54,26 +58,32 @@ static void MenzenOpenConnected(UIWindowScene *scene, NSUInteger attempt) {
 				MenzenOpenConnected(scene, attempt + 1);
 			});
 		}
+
 		return;
 	}
 
 	Class rootClass = NSClassFromString(@"MenzenRootListController");
+
 	if (!rootClass) {
 		[[NSBundle bundleWithPath:jbroot(@"/Library/PreferenceBundles/MenzenPreferences.bundle")] load];
 		rootClass = NSClassFromString(@"MenzenRootListController");
 	}
+
 	if (!rootClass) return;
 
 	Class connectedClass = NSClassFromString(@"MenzenConnectedListController");
 	if (connectedClass && [navigationController.topViewController isKindOfClass:connectedClass]) return;
 
 	PSListController *root = (PSListController *)navigationController.topViewController;
+
 	if (![root isKindOfClass:rootClass]) {
 		PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:@"Menzen" target:nil set:nil get:nil detail:rootClass cell:PSLinkCell edit:nil];
 		specifier.identifier = @"Menzen";
+
 		root = [rootClass new];
 		root.rootController = (id)navigationController;
 		root.specifier = specifier;
+
 		[navigationController pushViewController:root animated:NO];
 	}
 
@@ -82,11 +92,14 @@ static void MenzenOpenConnected(UIWindowScene *scene, NSUInteger attempt) {
 
 static void MenzenOpenIfConnected(UIScene *scene, NSSet<UIOpenURLContext *> *contexts) {
 	if (![scene isKindOfClass:UIWindowScene.class]) return;
+
 	for (UIOpenURLContext *context in contexts) {
 		if (!MenzenIsConnectedURL(context.URL)) continue;
+
 		dispatch_async(dispatch_get_main_queue(), ^{
 			MenzenOpenConnected((UIWindowScene *)scene, 0);
 		});
+
 		return;
 	}
 }

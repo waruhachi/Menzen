@@ -14,18 +14,21 @@ UIColor *MenzenStatusColor(NSString *status) {
 	if ([status isEqualToString:@"dnd"]) return MenzenColorFromRGB(0xF23F43);
 	if ([status isEqualToString:@"streaming"]) return MenzenColorFromRGB(0x593695);
 	if ([status isEqualToString:@"invisible"] || [status isEqualToString:@"offline"]) return MenzenColorFromRGB(0x80848E);
+
 	return nil;
 }
 
 NSString *MenzenActivitySymbolName(NSString *kind) {
 	if ([kind isEqualToString:@"watching"]) return @"play.tv.fill";
 	if ([kind isEqualToString:@"playing"]) return @"gamecontroller.fill";
+
 	return @"music.note";
 }
 
 UIColor *MenzenNameColor(NSArray<NSNumber *> *colors, CGSize size) {
 	if (!colors.count) return UIColor.labelColor;
 	if (colors.count < 2 || size.width < 1 || size.height < 1) return MenzenColorFromRGB(colors.firstObject.unsignedIntValue);
+
 	NSMutableArray *cgColors = [NSMutableArray array];
 	for (NSNumber *color in colors) [cgColors addObject:(__bridge id)MenzenColorFromRGB(color.unsignedIntValue).CGColor];
 	UIImage *gradient = [[[UIGraphicsImageRenderer alloc] initWithSize:size] imageWithActions:^(UIGraphicsImageRendererContext *context) {
@@ -33,5 +36,6 @@ UIColor *MenzenNameColor(NSArray<NSNumber *> *colors, CGSize size) {
 		CGContextDrawLinearGradient(context.CGContext, cgGradient, CGPointZero, CGPointMake(size.width, 0), 0);
 		CGGradientRelease(cgGradient);
 	}];
+
 	return [UIColor colorWithPatternImage:gradient];
 }

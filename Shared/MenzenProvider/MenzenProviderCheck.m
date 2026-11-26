@@ -11,6 +11,7 @@ static dispatch_queue_t MenzenStatusQueue(void) {
 	dispatch_once(&once, ^{
 		queue = dispatch_queue_create("moe.waru.menzen.status", DISPATCH_QUEUE_SERIAL);
 	});
+
 	return queue;
 }
 
@@ -30,6 +31,7 @@ static void MenzenUpdateStatus(void (^change)(NSMutableDictionary *status)) {
 		NSMutableDictionary *status = [old mutableCopy];
 		change(status);
 		if ([status isEqualToDictionary:old]) return;
+
 		[NSFileManager.defaultManager createDirectoryAtURL:url.URLByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:nil];
 		NSData *data = [NSPropertyListSerialization dataWithPropertyList:status format:NSPropertyListBinaryFormat_v1_0 options:0 error:nil];
 		[data writeToURL:url options:NSDataWritingAtomic error:nil];
@@ -51,9 +53,12 @@ static BOOL MenzenHasOne(NSString *requirement) {
 	Class cls = objc_getClass(parts[0].UTF8String);
 	if (!cls || parts.count > 2) return NO;
 	if (parts.count == 1) return YES;
+
 	NSString *member = parts[1];
 	if (member.length < 2) return NO;
+
 	SEL selector = NSSelectorFromString([member substringFromIndex:1]);
+
 	switch ([member characterAtIndex:0]) {
 		case '-':
 			return class_getInstanceMethod(cls, selector) != NULL;
@@ -62,6 +67,7 @@ static BOOL MenzenHasOne(NSString *requirement) {
 		case '_': {
 			Ivar ivar = class_getInstanceVariable(cls, member.UTF8String);
 			const char *type = ivar ? ivar_getTypeEncoding(ivar) : NULL;
+
 			return type && type[0] == '@';
 		}
 		default:
@@ -71,11 +77,14 @@ static BOOL MenzenHasOne(NSString *requirement) {
 
 static NSArray<NSString *> *MenzenMissing(NSArray<NSString *> *requirements) {
 	NSMutableArray *missing = [NSMutableArray array];
+
 	for (NSString *requirement in requirements) {
 		BOOL found = NO;
+
 		for (NSString *alternative in [requirement componentsSeparatedByString:@" | "]) {
 			if ((found = MenzenHasOne(alternative))) break;
 		}
+
 		if (!found) [missing addObject:requirement];
 	}
 
@@ -85,10 +94,13 @@ static NSArray<NSString *> *MenzenMissing(NSArray<NSString *> *requirements) {
 static UIViewController *MenzenTopViewController(void) {
 	for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
 		if (scene.activationState != UISceneActivationStateForegroundActive || ![scene isKindOfClass:UIWindowScene.class]) continue;
+
 		for (UIWindow *window in ((UIWindowScene *)scene).windows) {
 			if (!window.isKeyWindow) continue;
+
 			UIViewController *top = window.rootViewController;
 			while (top.presentedViewController && !top.presentedViewController.isBeingDismissed) top = top.presentedViewController;
+
 			return top;
 		}
 	}
@@ -100,11 +112,13 @@ static void MenzenAlert(NSArray<NSString *> *missing, NSUInteger attempt) {
 	static BOOL answered;
 	UIViewController *top = MenzenTopViewController();
 	if (answered || attempt >= 10) return;
+
 	if (!top) {
 		// The app's first screen isn't up yet.
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 			MenzenAlert(missing, attempt + 1);
 		});
+
 		return;
 	}
 
@@ -126,13 +140,16 @@ static void MenzenAlert(NSArray<NSString *> *missing, NSUInteger attempt) {
 		seen();
 		[UIApplication.sharedApplication openURL:MenzenSupportReportURL(app, version, details) options:@{} completionHandler:nil];
 	}]];
+
 	[alert addAction:[UIAlertAction actionWithTitle:@"Copy Details" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 		seen();
 		UIPasteboard.generalPasteboard.string = details;
 	}]];
+
 	[alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
 		seen();
 	}]];
+
 	[top presentViewController:alert animated:YES completion:nil];
 
 	// Apps replace their launch screens, and whatever they present, as they
@@ -154,15 +171,19 @@ static void MenzenRunCheck(NSArray<NSString *> *required, NSArray<NSString *> *o
 		status[MenzenSupportMissingKey] = missing;
 		status[MenzenSupportMissingOptionalKey] = missingOptional;
 		status[MenzenSupportBackgroundKey] = @(background);
+
 		BOOL alerted = [status[MenzenSupportAlertedVersionKey] isEqual:version];
 		if (!missing.count || alerted || background) return;
+
 		static BOOL scheduled;
 		if (scheduled) return;
+
 		scheduled = YES;
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 			MenzenAlert(missing, 0);
 		});
 	});
+
 	dispatch_async(MenzenStatusQueue(), ^{
 		NSString *name = [@MenzenSupportCheckedNotificationPrefix stringByAppendingString:NSBundle.mainBundle.bundleIdentifier ?: @""];
 		MenzenPostDarwinNotification((__bridge CFStringRef)name);
@@ -184,15 +205,18 @@ void MenzenProviderCheck(NSArray<NSString *> *required, NSArray<NSString *> *opt
 		observer = nil;
 		UIApplication *application = UIApplication.sharedApplication;
 		if (application.applicationState != UIApplicationStateBackground) return;
+
 		__block UIBackgroundTaskIdentifier task = [application beginBackgroundTaskWithName:@"moe.waru.menzen.check" expirationHandler:^{
 			[application endBackgroundTask:task];
 			task = UIBackgroundTaskInvalid;
 		}];
+
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 			if (application.applicationState != UIApplicationStateBackground) {
 				[application endBackgroundTask:task];
 				return;
 			}
+
 			MenzenRunCheck(required, optional, YES, ^{
 				if (task != UIBackgroundTaskInvalid) [application endBackgroundTask:task];
 			});

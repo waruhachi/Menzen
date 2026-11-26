@@ -22,6 +22,7 @@ static NSString *MenzenFormEncoded(NSDictionary<NSString *, NSString *> *fields)
 	[fields enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
 		[pairs addObject:[NSString stringWithFormat:@"%@=%@", [key stringByAddingPercentEncodingWithAllowedCharacters:unreserved], [value stringByAddingPercentEncodingWithAllowedCharacters:unreserved]]];
 	}];
+
 	return [pairs componentsJoinedByString:@"&"];
 }
 
@@ -69,10 +70,12 @@ static NSTimeInterval MenzenJSONSeconds(NSDictionary *json, NSString *key, NSTim
 		NSString *userCode = MenzenJSONString(json, @"user_code");
 		NSString *page = MenzenJSONString(json, @"verification_uri_complete") ?: MenzenJSONString(json, @"verification_uri");
 		NSURL *verificationURL = page ? [NSURL URLWithString:page] : nil;
+
 		if (!deviceCode || !userCode || ![verificationURL.scheme isEqualToString:@"https"]) {
 			codeHandler(nil, nil, MenzenLocalizedString(@"signin.error.discord_couldn_t_start_the_sign", @"Discord couldn't start the sign-in. Try again."));
 			return;
 		}
+
 		strongSelf->_deviceCode = deviceCode;
 		strongSelf->_pollInterval = MenzenJSONSeconds(json, @"interval", MenzenDefaultPollInterval);
 		strongSelf->_expiry = [NSDate dateWithTimeIntervalSinceNow:MenzenJSONSeconds(json, @"expires_in", MenzenDefaultCodeLifetime)];
@@ -110,6 +113,7 @@ static NSTimeInterval MenzenJSONSeconds(NSDictionary *json, NSString *key, NSTim
 	[self post:MenzenTokenURL fields:fields completion:^(NSInteger statusCode, NSDictionary *json) {
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || generation != strongSelf->_generation) return;
+
 		[strongSelf handleTokenResponse:json statusCode:statusCode];
 	}];
 }
@@ -117,14 +121,17 @@ static NSTimeInterval MenzenJSONSeconds(NSDictionary *json, NSString *key, NSTim
 - (void)handleTokenResponse:(NSDictionary *)json statusCode:(NSInteger)statusCode {
 	NSString *accessToken = MenzenJSONString(json, @"access_token");
 	NSString *refreshToken = MenzenJSONString(json, @"refresh_token");
+
 	if (statusCode == 200 && accessToken && refreshToken) {
 		MenzenDeviceSignInCompletion completion = _completion;
 		[self cancel];
 		completion(accessToken, refreshToken, MenzenJSONSeconds(json, @"expires_in", 0), nil);
+
 		return;
 	}
 
 	NSString *error = MenzenJSONString(json, @"error");
+
 	if ([error isEqualToString:@"authorization_pending"]) {
 		_unexpectedErrors = 0;
 		[self schedulePoll];
@@ -156,6 +163,7 @@ static NSTimeInterval MenzenJSONSeconds(NSDictionary *json, NSString *key, NSTim
 	request.HTTPMethod = @"POST";
 	request.HTTPBody = [MenzenFormEncoded(fields) dataUsingEncoding:NSUTF8StringEncoding];
 	[request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+
 	[[_session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
 		NSInteger statusCode = [response isKindOfClass:NSHTTPURLResponse.class] ? ((NSHTTPURLResponse *)response).statusCode : 0;
 		id json = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL] : nil;

@@ -19,6 +19,7 @@ static NSString *MenzenCover(NSString *imageURI) {
 static void MenzenRememberLoad(id configuration) {
 	NSDictionary *metadata = [configuration isKindOfClass:NSDictionary.class] ? configuration[@"metadata"] : nil;
 	if (![metadata isKindOfClass:NSDictionary.class]) metadata = [configuration isKindOfClass:NSDictionary.class] ? configuration : nil;
+
 	@synchronized(MPNowPlayingInfoCenter.class) {
 		loadedTitle = MenzenString(metadata[@"title"]);
 		loadedIdentifier = MenzenString(metadata[@"contentIdentifier"]);
@@ -55,9 +56,11 @@ static void MenzenRememberLoad(id configuration) {
 
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
+
 	NSString *title = MenzenString(info[MPMediaItemPropertyTitle]);
 	NSString *identifier = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
+
 	@synchronized(MPNowPlayingInfoCenter.class) {
 		if ((identifier && [identifier isEqualToString:loadedIdentifier]) || (title && [title isEqualToString:loadedTitle])) {
 			extras[MenzenExtrasCoverKey] = loadedCover;

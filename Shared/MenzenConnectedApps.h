@@ -39,6 +39,7 @@ static inline NSXPCInterface *MenzenConnectedServiceInterface(void) {
 	NSXPCInterface *interface = [NSXPCInterface interfaceWithProtocol:@protocol(MenzenConnectedService)];
 	NSSet *classes = [NSSet setWithObjects:NSDictionary.class, NSString.class, NSNumber.class, nil];
 	[interface setClasses:classes forSelector:@selector(setActivity:) argumentIndex:0 ofReply:NO];
+
 	return interface;
 }
 
@@ -48,29 +49,36 @@ static inline NSXPCInterface *MenzenConnectedClientInterface(void) {
 
 static inline BOOL MenzenConnectedIdentifierIsValid(NSString *identifier) {
 	if (![identifier isKindOfClass:NSString.class] || !identifier.length || identifier.length > 128) return NO;
+
 	NSMutableCharacterSet *allowed = [NSMutableCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_"];
+
 	return [identifier rangeOfCharacterFromSet:allowed.invertedSet].location == NSNotFound;
 }
 
 static inline NSString *MenzenConnectedName(NSString *name) {
 	if (![name isKindOfClass:NSString.class]) return nil;
+
 	name = [name stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+
 	return name.length && name.length <= 64 ? name : nil;
 }
 
 static inline NSDictionary<NSString *, NSDictionary *> *MenzenConnectedApps(void) {
 	NSDictionary *apps = MenzenSettingValue(MenzenSettingConnectedApps);
 	if (![apps isKindOfClass:NSDictionary.class]) return @{};
+
 	NSMutableDictionary *valid = [NSMutableDictionary dictionary];
 	[apps enumerateKeysAndObjectsUsingBlock:^(id identifier, id app, BOOL *stop) {
 		if (MenzenConnectedIdentifierIsValid(identifier) && [app isKindOfClass:NSDictionary.class] && MenzenConnectedName(app[MenzenConnectedAppNameKey])) valid[identifier] = app;
 	}];
+
 	return valid;
 }
 
 static inline NSArray<NSString *> *MenzenConnectedAllowed(void) {
 	NSArray *allowed = MenzenSettingValue(MenzenSettingConnectedAllowed);
 	if (![allowed isKindOfClass:NSArray.class]) return @[];
+
 	return [allowed filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id identifier, NSDictionary *bindings) {
 		return MenzenConnectedIdentifierIsValid(identifier);
 	}]];

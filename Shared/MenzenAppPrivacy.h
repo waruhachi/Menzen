@@ -11,13 +11,16 @@
 static inline NSArray<NSArray<NSString *> *> *MenzenInstalledProviderApps(void) {
 	NSMutableArray<NSArray<NSString *> *> *apps = [NSMutableArray array];
 	LSApplicationWorkspace *workspace = MenzenWorkspace();
+
 	for (NSDictionary *provider in MenzenProviders()) {
 		NSString *bundleIdentifier = provider[MenzenProviderBundleIdentifierKey];
 		if ([workspace applicationIsInstalled:bundleIdentifier]) [apps addObject:@[bundleIdentifier, provider[MenzenProviderNameKey]]];
 	}
+
 	[apps sortUsingComparator:^NSComparisonResult(NSArray<NSString *> *a, NSArray<NSString *> *b) {
 		return [a[1] localizedCaseInsensitiveCompare:b[1]];
 	}];
+
 	return apps;
 }
 

@@ -15,8 +15,10 @@ static inline id MenzenJSON(NSData *body) {
 
 static inline void MenzenEachDictionaryAt(id object, NSUInteger depth, void (^visit)(NSDictionary *dictionary)) {
 	if (depth > 16) return;
+
 	if ([object isKindOfClass:NSDictionary.class]) {
 		visit(object);
+
 		for (id child in [object allValues]) {
 			if ([child isKindOfClass:NSDictionary.class] || [child isKindOfClass:NSArray.class]) MenzenEachDictionaryAt(child, depth + 1, visit);
 		}

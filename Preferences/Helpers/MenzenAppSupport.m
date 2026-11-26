@@ -9,6 +9,7 @@ NSString *MenzenInstalledVersion(NSDictionary *provider) {
 NSArray<NSString *> *MenzenMissingParts(NSDictionary *status) {
 	NSArray *list = status[MenzenSupportMissingKey];
 	if (![list isKindOfClass:NSArray.class]) return @[];
+
 	return [list filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"self isKindOfClass: %@", NSString.class]];
 }
 
@@ -16,5 +17,6 @@ MenzenSupportState MenzenSupportStateFor(NSDictionary *provider, NSDictionary *s
 	if (![hooked containsObject:provider[MenzenProviderBundleIdentifierKey]]) return MenzenSupportStateNotHooked;
 	if (!MenzenStatusIsCurrent(status, MenzenInstalledVersion(provider))) return MenzenSupportStateNotChecked;
 	if (!MenzenMissingParts(status).count) return MenzenSupportStateWorks;
+
 	return [status[MenzenSupportBackgroundKey] boolValue] ? MenzenSupportStateNotFullyChecked : MenzenSupportStateMayNotWork;
 }

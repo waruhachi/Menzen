@@ -64,6 +64,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	if (!_specifiers) {
 		NSMutableArray *specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
 		MenzenLocalizeSpecifiers(specifiers);
+
 		if (!_status && !_unreachable) {
 			// Not knowing yet, rather than flashing the sign-in.
 			specifiers = [NSMutableArray array];
@@ -78,14 +79,19 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 			NSArray *profileSpecifiers = self.profileSpecifiers;
 			[specifiers insertObjects:profileSpecifiers atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, profileSpecifiers.count)]];
 		}
+
 		[self applyStatusToSpecifiers:specifiers];
 		[self makeMenu:MenzenSpecifier(specifiers, MenzenSettingPauseGrace)];
+
 		PSSpecifier *moduleApp = MenzenSpecifier(specifiers, MenzenSettingPrivacyModuleApp);
+
 		NSMutableArray *moduleApps = [NSMutableArray arrayWithObject:@[@"", MenzenLocalizedString(@"module.all_apps", @"All Apps")]];
 		[moduleApps addObjectsFromArray:MenzenInstalledProviderApps()];
+
 		[moduleApp setProperty:moduleApps forKey:@"choices"];
 		[moduleApp setProperty:[self readPreferenceValue:moduleApp] ?: @"" forKey:@"choice"];
 		[moduleApp setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
+
 		_specifiers = specifiers;
 	}
 
@@ -110,6 +116,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf) return;
+
 			[strongSelf->_refreshControl endRefreshing];
 			[strongSelf refreshStatus];
 		});
@@ -127,8 +134,10 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	MenzenSettingsSynchronize();
 	[self reloadSpecifierID:@"enabled" animated:NO];
 	[self reloadSpecifierID:@"privacy" animated:NO];
+
 	PSSpecifier *moduleApp = [self specifierForID:MenzenSettingPrivacyModuleApp];
 	[moduleApp setProperty:[self readPreferenceValue:moduleApp] ?: @"" forKey:@"choice"];
+
 	[self reloadSpecifier:moduleApp animated:NO];
 }
 
@@ -137,6 +146,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	return MenzenServiceProxy(^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf) return;
+
 		strongSelf->_unreachable = YES;
 		strongSelf->_busy = NO;
 		[strongSelf->_refreshControl endRefreshing];
@@ -150,6 +160,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf) return;
+
 			strongSelf->_status = status;
 			strongSelf->_unreachable = NO;
 			[strongSelf scheduleConnectTimeout];
@@ -161,6 +172,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)handleURL:(NSDictionary *)url withCompletion:(void (^)(void))completion {
 	NSString *path = [url[@"path"] isKindOfClass:NSString.class] ? url[@"path"] : nil;
+
 	if (![path.pathComponents.firstObject isEqualToString:@"connected"]) {
 		[super handleURL:url withCompletion:completion];
 		return;
@@ -173,9 +185,11 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)openConnectedIfRequested {
 	if (!_opensConnected || (!_status && !_unreachable)) return;
+
 	_opensConnected = NO;
 	PSSpecifier *specifier = [self specifierForID:@"connected"];
 	if (!specifier) return;
+
 	MenzenConnectedListController *controller = [MenzenConnectedListController new];
 	controller.specifier = specifier;
 	controller.rootController = self.rootController;
@@ -190,7 +204,9 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 - (NSDictionary<NSString *, id> *)profile {
 	NSDictionary *profile = _status[MenzenStatusProfileKey];
 	if ([profile isKindOfClass:NSDictionary.class]) return profile;
+
 	NSString *username = _status[MenzenStatusUsernameKey];
+
 	return username ? @{MenzenProfileUsernameKey: username} : @{};
 }
 
@@ -201,12 +217,14 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 - (NSTimeInterval)connectingTime {
 	NSNumber *since = _status[MenzenStatusConnectingSinceKey];
 	NSDate *start = [since isKindOfClass:NSNumber.class] ? [NSDate dateWithTimeIntervalSince1970:since.doubleValue] : _connectingSeen;
+
 	return start ? MAX(-start.timeIntervalSinceNow, 0) : 0;
 }
 
 - (void)scheduleConnectTimeout {
 	[_connectTimer invalidate];
 	_connectTimer = nil;
+
 	if (!self.connecting) {
 		_connectingSeen = nil;
 		return;
@@ -215,6 +233,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	if (!_connectingSeen) _connectingSeen = NSDate.date;
 	NSTimeInterval remaining = MenzenConnectTimeout - self.connectingTime;
 	if (remaining <= 0) return;
+
 	__weak typeof(self) weakSelf = self;
 	_connectTimer = [NSTimer scheduledTimerWithTimeInterval:remaining repeats:NO block:^(NSTimer *timer) {
 		[weakSelf reloadSpecifiers];
@@ -230,6 +249,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	if (self.signedIn) return [self.profile[MenzenProfileLimitedKey] boolValue] ? MenzenLocalizedString(@"root.sign_out_and_back_in_to", @"Sign out and back in to show your badges, banner and Nitro.") : nil;
 	if (_unreachable) return self.unreachableMessage;
 	if (!_status) return nil;
+
 	return _status[MenzenStatusErrorKey] ?: MenzenLocalizedString(@"root.if_the_page_doesn_t_load", @"If the page doesn't load, sign in on another device.");
 }
 
@@ -243,6 +263,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 
 	// Problems cover the profile, since it can't be trusted then.
 	NSString *error = _status[MenzenStatusErrorKey];
+
 	if (_unreachable) {
 		[header setProperty:self.unreachableMessage forKey:@"overlay"];
 	} else if (error) {
@@ -268,11 +289,13 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	NSArray *titles = [specifier propertyForKey:@"validTitles"];
 	NSArray *keys = [specifier propertyForKey:@"validTitlesKeys"];
 	if (![values isKindOfClass:NSArray.class] || ![titles isKindOfClass:NSArray.class] || titles.count != values.count) return;
+
 	BOOL localized = [keys isKindOfClass:NSArray.class] && keys.count == titles.count;
 	NSMutableArray *choices = [NSMutableArray array];
 	[values enumerateObjectsUsingBlock:^(id value, NSUInteger index, BOOL *stop) {
 		[choices addObject:@[value, localized ? MenzenLocalizedString(keys[index], titles[index]) : titles[index]]];
 	}];
+
 	[specifier setProperty:choices forKey:@"choices"];
 	[specifier setProperty:[self readPreferenceValue:specifier] forKey:@"choice"];
 	[specifier setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
@@ -281,6 +304,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
 	[super setPreferenceValue:value specifier:specifier];
 	if (![specifier propertyForKey:@"choices"]) return;
+
 	[specifier setProperty:value forKey:@"choice"];
 	// reloadSpecifier: doesn't redraw the menu's title.
 	NSIndexPath *indexPath = [self indexPathForSpecifier:specifier];
@@ -291,11 +315,13 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 	if ([self isSelfSizingRowAtIndexPath:indexPath]) return UITableViewAutomaticDimension;
 	if ([[self specifierAtIndexPath:indexPath] propertyForKey:@"choices"]) return MenzenChoiceRowHeight;
+
 	return [super tableView:tableView heightForRowAtIndexPath:indexPath];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
 	if ([self isSelfSizingRowAtIndexPath:indexPath]) return 400;
+
 	return [super tableView:tableView estimatedHeightForRowAtIndexPath:indexPath];
 }
 
@@ -303,6 +329,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	[MenzenSpecifier(specifiers, @"account") setProperty:self.accountFooter forKey:@"footerText"];
 
 	PSSpecifier *button = MenzenSpecifier(specifiers, @"accountButton");
+
 	if (_busy) {
 		button.name = MenzenLocalizedString(@"root.signing_in", @"Signing In…");
 	} else {
@@ -319,6 +346,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)accountButtonTapped {
 	if (_busy) return;
+
 	if (self.signedIn) {
 		[self confirmSignOut];
 	} else {
@@ -336,6 +364,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf) return;
+
 			if (authorizeURL) {
 				[strongSelf presentSignInWithURL:authorizeURL];
 			} else {
@@ -347,6 +376,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)otherDeviceButtonTapped {
 	if (_busy || self.signedIn) return;
+
 	_busy = YES;
 	_message = nil;
 	[self reloadSpecifiers];
@@ -356,6 +386,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	controller.completion = ^{
 		[weakSelf finishWithMessage:nil];
 	};
+
 	UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:controller];
 	navigation.modalPresentationStyle = UIModalPresentationFormSheet;
 	[self presentViewController:navigation animated:YES completion:nil];
@@ -367,12 +398,16 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf) return;
+
 			strongSelf->_session = nil;
+
 			if (!callbackURL) {
 				BOOL cancelled = [error.domain isEqualToString:ASWebAuthenticationSessionErrorDomain] && error.code == ASWebAuthenticationSessionErrorCodeCanceledLogin;
 				[strongSelf finishWithMessage:cancelled ? nil : MenzenLocalizedString(@"root.the_sign_in_page_couldn_t", @"The sign-in page couldn't be opened. Try again.")];
+
 				return;
 			}
+
 			[strongSelf.service finishSignInWithCallbackURL:callbackURL reply:^(NSString *message) {
 				dispatch_async(dispatch_get_main_queue(), ^{
 					[weakSelf finishWithMessage:message];
@@ -380,10 +415,12 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 			}];
 		});
 	}];
+
 	_session.presentationContextProvider = self;
 	// Share Safari's cookies, so someone signed in to Discord there only has
 	// to approve.
 	_session.prefersEphemeralWebBrowserSession = NO;
+
 	if (![_session start]) {
 		_session = nil;
 		[self finishWithMessage:MenzenLocalizedString(@"root.the_sign_in_page_couldn_t", @"The sign-in page couldn't be opened. Try again.")];
@@ -408,6 +445,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 			});
 		}];
 	}]];
+
 	[self presentViewController:alert animated:YES completion:nil];
 }
 
@@ -421,6 +459,7 @@ static void MenzenRootSettingsChanged(CFNotificationCenterRef center, void *obse
 	[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"root.reset", @"Reset") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
 		[weakSelf resetSettings];
 	}]];
+
 	[self presentViewController:alert animated:YES completion:nil];
 }
 

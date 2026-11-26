@@ -6,6 +6,7 @@
 
 static void MenzenLoadAssetURL(NSString *key, void (^completion)(NSString *urlString)) {
 	static NSDictionary<NSString *, NSString *> *assets;
+
 	if (assets) {
 		completion(assets[key]);
 		return;
@@ -16,13 +17,17 @@ static void MenzenLoadAssetURL(NSString *key, void (^completion)(NSString *urlSt
 		id list = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
 		NSMutableDictionary *found = [NSMutableDictionary dictionary];
 		NSCharacterSet *nonDigits = NSCharacterSet.decimalDigitCharacterSet.invertedSet;
+
 		for (NSDictionary *asset in [list isKindOfClass:NSArray.class] ? list : nil) {
 			if (![asset isKindOfClass:NSDictionary.class]) continue;
+
 			NSString *name = asset[@"name"];
 			NSString *identifier = asset[@"id"];
 			if (![name isKindOfClass:NSString.class] || ![identifier isKindOfClass:NSString.class] || !identifier.length || [identifier rangeOfCharacterFromSet:nonDigits].location != NSNotFound) continue;
+
 			found[name] = [NSString stringWithFormat:@"https://cdn.discordapp.com/app-assets/%llu/%@.png", MenzenApplicationId, identifier];
 		}
+
 		dispatch_async(dispatch_get_main_queue(), ^{
 			if (found.count) assets = found;
 			completion(found[key]);
@@ -36,6 +41,7 @@ void MenzenLoadImage(NSString *urlString, void (^completion)(UIImage *image)) {
 			if (assetURL) MenzenLoadImage(assetURL, completion);
 			else completion(nil);
 		});
+
 		return;
 	}
 
@@ -46,12 +52,14 @@ void MenzenLoadImage(NSString *urlString, void (^completion)(UIImage *image)) {
 	});
 
 	NSURL *url = MenzenCustomURLIsAllowed(urlString) ? [NSURL URLWithString:urlString] : nil;
+
 	if (!url) {
 		completion(nil);
 		return;
 	}
 
 	UIImage *cached = [cache objectForKey:urlString];
+
 	if (cached) {
 		completion(cached);
 		return;
@@ -69,6 +77,7 @@ void MenzenLoadImage(NSString *urlString, void (^completion)(UIImage *image)) {
 void MenzenSetImage(UIImageView *imageView, NSString *urlString) {
 	static char key;
 	if ([objc_getAssociatedObject(imageView, &key) isEqual:urlString] && (imageView.image || !urlString)) return;
+
 	objc_setAssociatedObject(imageView, &key, urlString, OBJC_ASSOCIATION_COPY_NONATOMIC);
 	imageView.image = nil;
 	__weak UIImageView *weakImageView = imageView;

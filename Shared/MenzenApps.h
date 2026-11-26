@@ -27,21 +27,26 @@
 static inline NSArray<NSDictionary *> *MenzenProviderFilters(void) {
 	NSString *directory = jbroot(@"/Library/MobileSubstrate/DynamicLibraries");
 	NSMutableArray *filters = [NSMutableArray array];
+
 	for (NSString *name in [NSFileManager.defaultManager contentsOfDirectoryAtPath:directory error:nil]) {
 		if (![name hasPrefix:@"Menzen"] || ![name.pathExtension isEqualToString:@"plist"]) continue;
+
 		NSDictionary *filter = [NSDictionary dictionaryWithContentsOfFile:[directory stringByAppendingPathComponent:name]];
 		if ([filter isKindOfClass:NSDictionary.class]) [filters addObject:filter];
 	}
+
 	return filters;
 }
 
 static inline NSSet<NSString *> *MenzenHookedBundles(void) {
 	NSMutableSet *bundles = [NSMutableSet set];
+
 	for (NSDictionary *filter in MenzenProviderFilters()) {
 		NSDictionary *loader = [filter[@"Filter"] isKindOfClass:NSDictionary.class] ? filter[@"Filter"] : nil;
 		NSArray *names = loader[@"Bundles"];
 		if ([names isKindOfClass:NSArray.class]) [bundles addObjectsFromArray:names];
 	}
+
 	return bundles;
 }
 
@@ -57,6 +62,7 @@ static inline NSString *MenzenInstalledAppVersion(NSString *bundleIdentifier) {
 	LSApplicationProxy *proxy = MenzenAppProxy(bundleIdentifier);
 	NSString *version = proxy.shortVersionString;
 	if (![version isKindOfClass:NSString.class] || !version.length) return nil;
+
 	return MenzenSupportVersion(version, proxy.bundleVersion);
 }
 
@@ -70,16 +76,21 @@ static NSUInteger const MenzenStatusMaxItems = 64;
 // report, and no right-to-left overrides.
 static inline NSString *MenzenStatusString(id value) {
 	if (![value isKindOfClass:NSString.class] || ![value length] || [value length] > MenzenStatusMaxLength) return nil;
+
 	NSMutableCharacterSet *invalid = [NSMutableCharacterSet controlCharacterSet];
 	[invalid formUnionWithCharacterSet:NSCharacterSet.illegalCharacterSet];
+
 	return [value rangeOfCharacterFromSet:invalid].location == NSNotFound ? value : nil;
 }
 
 static inline NSArray<NSString *> *MenzenStatusStrings(id value) {
 	if (![value isKindOfClass:NSArray.class]) return nil;
+
 	NSMutableArray *strings = [NSMutableArray array];
+
 	for (id item in value) {
 		if (strings.count == MenzenStatusMaxItems) break;
+
 		NSString *string = MenzenStatusString(item);
 		if (string) [strings addObject:string];
 	}
@@ -92,7 +103,9 @@ static inline NSArray<NSString *> *MenzenStatusStrings(id value) {
 static inline NSData *MenzenReadStatusFile(NSString *path) {
 	int fd = open(path.fileSystemRepresentation, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
 	if (fd < 0) return nil;
+
 	struct stat info;
+
 	if (fstat(fd, &info) || !S_ISREG(info.st_mode) || info.st_size > (off_t)MenzenStatusMaxSize) {
 		close(fd);
 		return nil;
@@ -100,12 +113,14 @@ static inline NSData *MenzenReadStatusFile(NSString *path) {
 
 	NSFileHandle *handle = [[NSFileHandle alloc] initWithFileDescriptor:fd closeOnDealloc:YES];
 	NSData *data = [handle readDataUpToLength:MenzenStatusMaxSize + 1 error:NULL];
+
 	return data.length <= MenzenStatusMaxSize ? data : nil;
 }
 
 static inline NSDictionary *MenzenAppSupportStatus(NSString *bundleIdentifier) {
 	NSURL *container = MenzenAppProxy(bundleIdentifier).dataContainerURL;
 	if (![container isKindOfClass:NSURL.class] || !container.isFileURL) return nil;
+
 	NSData *data = MenzenReadStatusFile([container URLByAppendingPathComponent:MenzenSupportStatusPath].path);
 	NSDictionary *file = data ? [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL] : nil;
 	if (![file isKindOfClass:NSDictionary.class]) return nil;
@@ -115,6 +130,7 @@ static inline NSDictionary *MenzenAppSupportStatus(NSString *bundleIdentifier) {
 	for (NSString *key in @[MenzenSupportCheckedKey, MenzenSupportWorkedKey]) status[key] = [file[key] isKindOfClass:NSDate.class] ? file[key] : nil;
 	for (NSString *key in @[MenzenSupportMissingKey, MenzenSupportMissingOptionalKey]) status[key] = MenzenStatusStrings(file[key]);
 	status[MenzenSupportBackgroundKey] = [file[MenzenSupportBackgroundKey] isKindOfClass:NSNumber.class] ? file[MenzenSupportBackgroundKey] : nil;
+
 	return status;
 }
 

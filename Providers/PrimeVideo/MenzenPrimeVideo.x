@@ -19,7 +19,9 @@ static void MenzenRememberTitle(id title, id image) {
 	if ([ASIN respondsToSelector:@selector(internalString)]) ASIN = [ASIN internalString];
 	NSString *ID = MenzenLinkURL(@"%@", ASIN);
 	if (!ID) return;
+
 	NSString *cover = MenzenImageURL(image, @[@"m.media-amazon.com", @"ssl-images-amazon.com", @".ssl-images-amazon.com"]);
+
 	@synchronized(lock) {
 		titleID = ID;
 		titleCover = cover;
@@ -32,8 +34,10 @@ static NSArray<NSString *> *MenzenEpisodeParts(NSString *text) {
 	dispatch_once(&once, ^{
 		expression = [NSRegularExpression regularExpressionWithPattern:@"^Season (\\d+), Ep\\. (\\d+)\\s+(.+)$" options:0 error:nil];
 	});
+
 	NSTextCheckingResult *match = [text isKindOfClass:NSString.class] ? [expression firstMatchInString:text options:0 range:NSMakeRange(0, text.length)] : nil;
 	if (!match) return nil;
+
 	return @[[text substringWithRange:[match rangeAtIndex:1]], [text substringWithRange:[match rangeAtIndex:2]], [text substringWithRange:[match rangeAtIndex:3]]];
 }
 
@@ -42,6 +46,7 @@ static NSArray<NSString *> *MenzenEpisodeParts(NSString *text) {
 - (id)nowPlayingImageURL {
 	id image = %orig;
 	MenzenRememberTitle(self, image);
+
 	return image;
 }
 
@@ -50,6 +55,7 @@ static NSArray<NSString *> *MenzenEpisodeParts(NSString *text) {
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	NSString *contentID = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
 	NSString *ID, *cover;
+
 	@synchronized(lock) {
 		ID = titleID;
 		cover = titleCover;
@@ -60,6 +66,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	NSArray *parts = MenzenEpisodeParts(info[MPMediaItemPropertyArtist]);
 	NSString *show = MenzenString(info[MPMediaItemPropertyTitle]);
+
 	if (parts && show) {
 		withExtras[MPMediaItemPropertyTitle] = parts[2];
 		withExtras[MPMediaItemPropertyArtist] = show;
@@ -71,6 +78,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 
 	extras[MenzenExtrasCoverKey] = cover;
 	extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://www.primevideo.com/detail/%@", ID);
+
 	return extras;
 }
 

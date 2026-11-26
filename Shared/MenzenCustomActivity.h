@@ -29,6 +29,7 @@
 static inline NSArray<NSDictionary *> *MenzenCustomPresets(void) {
 	NSArray *presets = MenzenSettingValue(MenzenSettingCustomPresets);
 	if (![presets isKindOfClass:NSArray.class]) return @[];
+
 	return [presets filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id preset, NSDictionary *bindings) {
 		return [preset isKindOfClass:NSDictionary.class] && [preset[MenzenPresetIdentifierKey] isKindOfClass:NSString.class];
 	}]];
@@ -36,16 +37,20 @@ static inline NSArray<NSDictionary *> *MenzenCustomPresets(void) {
 
 static inline NSDictionary *MenzenCustomPreset(NSString *identifier) {
 	if (!identifier) return nil;
+
 	for (NSDictionary *preset in MenzenCustomPresets()) {
 		if ([preset[MenzenPresetIdentifierKey] isEqualToString:identifier]) return preset;
 	}
+
 	return nil;
 }
 
 static inline NSString *MenzenPresetString(NSDictionary *preset, NSString *key) {
 	id value = preset[key];
 	if (![value isKindOfClass:NSString.class]) return nil;
+
 	NSString *text = [value stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+
 	return text.length ? text : nil;
 }
 
@@ -53,14 +58,18 @@ static inline NSString *MenzenPresetString(NSDictionary *preset, NSString *key) 
 // like a credential, since Discord shows the activity to everyone.
 static inline BOOL MenzenCustomURLIsAllowed(NSString *string) {
 	if (!string.length) return NO;
+
 	NSURLComponents *components = [NSURLComponents componentsWithString:string];
 	if (![components.scheme.lowercaseString isEqualToString:@"https"] || !components.host.length || components.user || components.password) return NO;
+
 	for (NSURLQueryItem *item in components.queryItems) {
 		NSString *name = item.name.lowercaseString;
+
 		for (NSString *word in @[@"token", @"key", @"auth", @"session", @"secret", @"password", @"signature", @"sig"]) {
 			if ([name containsString:word]) return NO;
 		}
 	}
+
 	return YES;
 }
 
@@ -79,11 +88,13 @@ static inline void MenzenPresetParty(NSDictionary *preset, NSInteger *size, NSIn
 
 static inline NSArray<NSArray<NSString *> *> *MenzenPresetButtons(NSDictionary *preset) {
 	NSMutableArray *buttons = [NSMutableArray array];
+
 	for (NSArray<NSString *> *keys in @[@[MenzenPresetButton1LabelKey, MenzenPresetButton1LinkKey], @[MenzenPresetButton2LabelKey, MenzenPresetButton2LinkKey]]) {
 		NSString *label = MenzenPresetString(preset, keys[0]);
 		NSString *link = MenzenPresetString(preset, keys[1]);
 		if (label && MenzenCustomURLIsAllowed(link)) [buttons addObject:@[label, link]];
 	}
+
 	return buttons;
 }
 

@@ -23,50 +23,62 @@ static NSString *MenzenValidLogin(NSString *name) {
 	NSString *login = [name isKindOfClass:NSString.class] ? name.lowercaseString : nil;
 	static NSCharacterSet *invalid;
 	static dispatch_once_t once;
+
 	dispatch_once(&once, ^{
 		invalid = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyz0123456789_"].invertedSet;
 	});
+
 	return login.length && login.length <= 25 && [login rangeOfCharacterFromSet:invalid].location == NSNotFound ? login : nil;
 }
 
 static NSString *MenzenLogin(NSString *streamURL) {
 	NSURL *url = [streamURL isKindOfClass:NSString.class] ? [NSURL URLWithString:streamURL] : nil;
 	if (![url.host isEqualToString:@"usher.ttvnw.net"]) return nil;
+
 	NSMutableArray<NSString *> *parts = [url.path.pathComponents mutableCopy];
 	if (parts.count == 6 && [parts[2] isEqualToString:@"v2"]) [parts removeObjectAtIndex:2];
 	if (parts.count != 5 || ![parts[1] isEqualToString:@"api"] || ![parts[2] isEqualToString:@"channel"] || ![parts[3] isEqualToString:@"hls"] || ![parts[4].pathExtension isEqualToString:@"m3u8"]) return nil;
+
 	return MenzenValidLogin(parts[4].stringByDeletingPathExtension);
 }
 
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
+
 	NSArray *views;
+
 	@synchronized(playerViews) {
 		views = playerViews.allObjects;
 	}
 
 	TwitchIVSPlayerView *playing;
 	NSString *login;
+
 	for (TwitchIVSPlayerView *view in views) {
 		NSString *viewLogin = MenzenLogin(view.streamUrl);
 		if (!viewLogin) continue;
+
 		if (view.ownsMediaSession || (!playing && !view.paused && view.window)) {
 			playing = view;
 			login = viewLogin;
 		}
+
 		if (view.ownsMediaSession) break;
 	}
 
 	if (!playing && [info[MPNowPlayingInfoPropertyIsLiveStream] boolValue]) login = MenzenValidLogin(info[MPMediaItemPropertyArtist]);
 	if (!login) return nil;
+
 	static NSString *seenLogin;
 	static long long seen;
 	long long loaded;
+
 	@synchronized(playerViews) {
 		if (![login isEqualToString:seenLogin]) {
 			seenLogin = login;
 			seen = (long long)NSDate.date.timeIntervalSince1970;
 		}
+
 		loaded = seen;
 	}
 
@@ -82,6 +94,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 
 - (void)setStreamUrl:(NSString *)streamUrl {
 	%orig;
+
 	@synchronized(playerViews) {
 		[playerViews addObject:self];
 	}

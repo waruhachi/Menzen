@@ -44,6 +44,7 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 - (UIImage *)glyphNamed:(NSString *)name renderingMode:(UIImageRenderingMode)mode {
 	NSBundle *bundle = [NSBundle bundleForClass:self.class];
 	UIImage *glyph = [UIImage imageNamed:name inBundle:bundle compatibleWithTraitCollection:nil];
+
 	return [glyph imageWithRenderingMode:mode];
 }
 
@@ -58,6 +59,7 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 - (UIViewController *)contentViewControllerForContext:(id)context {
 	UIViewController *controller = [super contentViewControllerForContext:context];
 	if ([controller isMemberOfClass:CCUIToggleViewController.class]) object_setClass(controller, MenzenToggleViewController.class);
+
 	return controller;
 }
 
@@ -68,6 +70,7 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 - (BOOL)isSelected {
 	// Settings writes from another process.
 	MenzenSettingsSynchronize();
+
 	return MenzenSettingBool(self.class.settingKey, self.class.settingDefault);
 }
 

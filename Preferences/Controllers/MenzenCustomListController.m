@@ -41,13 +41,16 @@ static void MenzenConfirmPresetImages(UIViewController *controller, NSDictionary
 			proceed();
 			return;
 		}
+
 		UIAlertController *alert = [UIAlertController alertControllerWithTitle:problems.count > 1 ? MenzenLocalizedString(@"custom.these_images_won_t_work", @"These Images Won't Work") : MenzenLocalizedString(@"common.this_image_won_t_work", @"This Image Won't Work") message:[problems componentsJoinedByString:@"\n\n"] preferredStyle:UIAlertControllerStyleAlert];
 		[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"common.cancel", @"Cancel") style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
 			cancel();
 		}]];
+
 		[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"custom.use_anyway", @"Use Anyway") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
 			proceed();
 		}]];
+
 		[controller presentViewController:alert animated:YES completion:nil];
 	});
 }
@@ -86,6 +89,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 			[row setProperty:preset[MenzenPresetIdentifierKey] forKey:@"presetIdentifier"];
 			[specifiers addObject:row];
 		}
+
 		_specifiers = specifiers;
 	}
 
@@ -116,6 +120,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	NSString *identifier = NSUUID.UUID.UUIDString;
 	NSDictionary *preset = @{MenzenPresetIdentifierKey: identifier, MenzenPresetKindKey: @"playing", MenzenPresetTimerKey: @YES};
 	MenzenWritePresets([MenzenCustomPresets() arrayByAddingObject:preset]);
+
 	if (!MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil))) {
 		MenzenWriteSetting(MenzenSettingCustomPreset, identifier);
 		MenzenWriteSetting(MenzenSettingCustomStart, NSDate.date);
@@ -140,6 +145,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 // PSListController only opens its own list from a list cell.
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	PSSpecifier *specifier = [self specifierAtIndexPath:indexPath];
+
 	if (![specifier propertyForKey:@"presetIdentifier"]) {
 		[super tableView:tableView didSelectRowAtIndexPath:indexPath];
 		return;
@@ -175,13 +181,16 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	activity[MenzenActivityButtonsKey] = MenzenPresetButtons(preset);
 	NSInteger partySize, partyMax;
 	MenzenPresetParty(preset, &partySize, &partyMax);
+
 	if (partySize) {
 		activity[MenzenActivityPartySizeKey] = @(partySize);
 		activity[MenzenActivityPartyMaxKey] = @(partyMax);
 	}
+
 	if (activity[MenzenActivityImageURLKey]) {
 		activity[MenzenActivityLargeTextKey] = MenzenPresetString(preset, MenzenPresetLargeTextKey);
 		NSString *smallImage = MenzenPresetString(preset, MenzenPresetSmallImageKey);
+
 		if (MenzenCustomURLIsAllowed(smallImage)) {
 			activity[MenzenActivitySmallImageURLKey] = smallImage;
 			activity[MenzenActivitySmallTextKey] = MenzenPresetString(preset, MenzenPresetSmallTextKey);
@@ -189,6 +198,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	}
 
 	id timer = preset[MenzenPresetTimerKey];
+
 	if (![timer respondsToSelector:@selector(boolValue)] || [timer boolValue]) {
 		NSDate *start = MenzenSettingValue(MenzenSettingCustomStart);
 		BOOL inUse = [self.identifier isEqualToString:MenzenSettingString(MenzenSettingCustomPreset, nil)];
@@ -203,6 +213,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	specifier.identifier = @"preview";
 	[specifier setProperty:MenzenCardPreviewCell.class forKey:@"cellClass"];
 	[specifier setProperty:self.previewActivity forKey:@"activity"];
+
 	return specifier;
 }
 
@@ -214,6 +225,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 - (PSSpecifier *)fieldNamed:(NSString *)name key:(NSString *)key cell:(PSCellType)cell {
 	PSSpecifier *specifier = [PSSpecifier preferenceSpecifierNamed:name target:self set:@selector(setPreferenceValue:specifier:) get:@selector(readPreferenceValue:) detail:nil cell:cell edit:nil];
 	[specifier setProperty:key forKey:@"presetKey"];
+
 	return specifier;
 }
 
@@ -221,6 +233,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	PSSpecifier *specifier = [self fieldNamed:name key:key cell:PSEditTextCell];
 	[specifier setProperty:placeholder forKey:@"placeholder"];
 	[specifier setProperty:@YES forKey:@"noAutoCorrect"];
+
 	return specifier;
 }
 
@@ -228,20 +241,24 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	PSSpecifier *specifier = [self textFieldNamed:name key:key placeholder:@"https://"];
 	[specifier setProperty:@YES forKey:@"isURL"];
 	[specifier setProperty:@"UIKeyboardTypeURL" forKey:@"keyboard"];
+
 	return specifier;
 }
 
 - (PSSpecifier *)numberFieldNamed:(NSString *)name key:(NSString *)key {
 	PSSpecifier *specifier = [self textFieldNamed:name key:key placeholder:MenzenLocalizedString(@"common.none", @"None")];
 	[specifier setProperty:@"UIKeyboardTypeNumberPad" forKey:@"keyboard"];
+
 	return specifier;
 }
 
 - (NSArray *)specifiers {
 	if (!_specifiers) {
 		NSDictionary *preset = self.preset;
+
 		BOOL inUse = [self.identifier isEqualToString:MenzenSettingString(MenzenSettingCustomPreset, nil)];
 		BOOL showing = inUse && MenzenSettingBool(MenzenSettingCustom, NO);
+
 		NSMutableArray *specifiers = [NSMutableArray array];
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		[specifiers addObject:self.previewSpecifier];
@@ -259,6 +276,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		[kind setProperty:@[@[@"playing", MenzenLocalizedString(@"common.playing", @"Playing")], @[@"listening", MenzenLocalizedString(@"common.listening", @"Listening")], @[@"watching", MenzenLocalizedString(@"common.watching", @"Watching")]] forKey:@"choices"];
 		[kind setProperty:MenzenPresetKind(preset) forKey:@"choice"];
 		[specifiers addObject:kind];
+
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.name", @"Name") key:MenzenPresetNameKey placeholder:@"Menzen"]];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.first_line", @"First Line") key:MenzenPresetDetailsKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.second_line", @"Second Line") key:MenzenPresetStateKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
@@ -280,15 +298,18 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.button_1", @"Button 1")]];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.label", @"Label") key:MenzenPresetButton1LabelKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
 		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.link", @"Link") key:MenzenPresetButton1LinkKey]];
+
 		PSSpecifier *secondButton = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.button_2", @"Button 2")];
 		[secondButton setProperty:MenzenLocalizedString(@"custom.buttons_footer", @"A button needs a label and an https link. Discord shows buttons to everyone but you.") forKey:@"footerText"];
 		[specifiers addObject:secondButton];
+
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.label", @"Label") key:MenzenPresetButton2LabelKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
 		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.link", @"Link") key:MenzenPresetButton2LinkKey]];
 
 		PSSpecifier *statusGroup = [PSSpecifier emptyGroupSpecifier];
 		[statusGroup setProperty:MenzenLocalizedString(@"custom.discord_status_footer", @"Your status goes back once the preset stops showing, unless you changed it yourself.") forKey:@"footerText"];
 		[specifiers addObject:statusGroup];
+
 		PSSpecifier *status = [self fieldNamed:MenzenLocalizedString(@"custom.discord_status", @"Discord Status") key:MenzenPresetStatusKey cell:PSStaticTextCell];
 		[status setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
 		[status setProperty:@[@[@"", MenzenLocalizedString(@"common.default", @"Default")], @[@"online", MenzenLocalizedString(@"status.online", @"Online")], @[@"idle", MenzenLocalizedString(@"status.idle", @"Idle")], @[@"dnd", MenzenLocalizedString(@"status.dnd", @"Do Not Disturb")], @[@"invisible", MenzenLocalizedString(@"status.invisible", @"Invisible")]] forKey:@"choices"];
@@ -304,6 +325,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		delete.buttonAction = @selector(confirmDelete:);
 		[delete setProperty:MenzenDestructiveButtonCell.class forKey:@"cellClass"];
 		[specifiers addObject:delete];
+
 		_specifiers = specifiers;
 	}
 
@@ -313,21 +335,26 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 - (id)readPreferenceValue:(PSSpecifier *)specifier {
 	NSString *key = [specifier propertyForKey:@"presetKey"];
 	if (!key) return [super readPreferenceValue:specifier];
+
 	id value = self.preset[key];
 	if ([key isEqualToString:MenzenPresetTimerKey]) return value ?: @YES;
+
 	return value ?: @"";
 }
 
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
 	NSString *key = [specifier propertyForKey:@"presetKey"];
+
 	if (!key) {
 		[super setPreferenceValue:value specifier:specifier];
 		return;
 	}
 
 	NSMutableArray<NSDictionary *> *presets = [MenzenCustomPresets() mutableCopy];
+
 	for (NSUInteger i = 0; i < presets.count; i++) {
 		if (![presets[i][MenzenPresetIdentifierKey] isEqualToString:self.identifier]) continue;
+
 		NSMutableDictionary *preset = [presets[i] mutableCopy];
 		preset[key] = value;
 		presets[i] = preset;
@@ -343,10 +370,12 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 - (void)checkLink:(NSString *)link {
 	link = [link stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 	if (!link.length) return;
+
 	__weak typeof(self) weakSelf = self;
 	MenzenCheckImageLink(link, ^(NSString *problem) {
 		typeof(self) strongSelf = weakSelf;
 		if (!problem || !strongSelf.view.window || strongSelf.presentedViewController) return;
+
 		UIAlertController *alert = [UIAlertController alertControllerWithTitle:MenzenLocalizedString(@"common.this_image_won_t_work", @"This Image Won't Work") message:problem preferredStyle:UIAlertControllerStyleAlert];
 		[alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
 		[strongSelf presentViewController:alert animated:YES completion:nil];
@@ -369,16 +398,19 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	if ([cell respondsToSelector:@selector(editableTextField)]) field = cell.editableTextField;
 	else if ([cell respondsToSelector:@selector(textField)]) field = cell.textField;
 	if ([field isKindOfClass:UITextField.class]) field.textAlignment = NSTextAlignmentRight;
+
 	return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 	if ([[self specifierAtIndexPath:indexPath].identifier isEqualToString:@"preview"]) return UITableViewAutomaticDimension;
+
 	return [super tableView:tableView heightForRowAtIndexPath:indexPath];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
 	if ([[self specifierAtIndexPath:indexPath].identifier isEqualToString:@"preview"]) return 140;
+
 	return [super tableView:tableView estimatedHeightForRowAtIndexPath:indexPath];
 }
 
@@ -389,12 +421,14 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"common.delete", @"Delete") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
 		[weakSelf deletePreset];
 	}]];
+
 	[self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)deletePreset {
 	NSString *identifier = self.identifier;
 	NSArray *presets = [MenzenCustomPresets() filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"%K != %@", MenzenPresetIdentifierKey, identifier]];
+
 	if ([identifier isEqualToString:MenzenSettingString(MenzenSettingCustomPreset, nil)]) {
 		MenzenWriteSetting(MenzenSettingCustomPreset, nil);
 		MenzenWriteSetting(MenzenSettingCustom, nil);

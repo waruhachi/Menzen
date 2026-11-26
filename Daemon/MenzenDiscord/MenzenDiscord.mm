@@ -49,6 +49,7 @@ static std::string MenzenStdString(NSString *string) {
 // Discord rejects details/state/text outside 2...128 characters.
 static NSString *MenzenActivityText(NSString *text) {
 	if (!text.length) return nil;
+
 	if (text.length > 128) {
 		NSRange range = [text rangeOfComposedCharacterSequencesForRange:NSMakeRange(0, 127)];
 		if (NSMaxRange(range) > 127) range = [text rangeOfComposedCharacterSequencesForRange:NSMakeRange(0, range.location)];
@@ -57,6 +58,7 @@ static NSString *MenzenActivityText(NSString *text) {
 
 	// Braille blank: Discord trims ordinary whitespace before checking length.
 	if (text.length < 2) text = [text stringByAppendingString:@"⠀"];
+
 	return text;
 }
 
@@ -66,6 +68,7 @@ static BOOL MenzenSameString(NSString *a, NSString *b) {
 
 static BOOL MenzenSameDate(NSDate *a, NSDate *b) {
 	if (!a || !b) return a == b;
+
 	return fabs([a timeIntervalSinceDate:b]) < 2;
 }
 
@@ -76,9 +79,11 @@ static uint64_t MenzenMilliseconds(NSDate *date) {
 static NSString *MenzenRandomString(void) {
 	uint8_t bytes[32];
 	if (SecRandomCopyBytes(kSecRandomDefault, sizeof(bytes), bytes) != errSecSuccess) return nil;
+
 	NSString *string = [[NSData dataWithBytes:bytes length:sizeof(bytes)] base64EncodedStringWithOptions:0];
 	string = [string stringByReplacingOccurrencesOfString:@"+" withString:@"-"];
 	string = [string stringByReplacingOccurrencesOfString:@"/" withString:@"_"];
+
 	return [string stringByReplacingOccurrencesOfString:@"=" withString:@""];
 }
 
@@ -96,6 +101,7 @@ static discordpp::StatusType MenzenStatusType(NSString *name) {
 	if ([name isEqualToString:@"idle"]) return discordpp::StatusType::Idle;
 	if ([name isEqualToString:@"dnd"]) return discordpp::StatusType::Dnd;
 	if ([name isEqualToString:@"invisible"]) return discordpp::StatusType::Invisible;
+
 	return discordpp::StatusType::Online;
 }
 
@@ -111,17 +117,21 @@ static NSString *MenzenQueryValue(NSURLComponents *components, NSString *name) {
 // 512.
 static NSArray<NSArray<NSString *> *> *MenzenActivityButtons(NSArray<NSArray<NSString *> *> *buttons) {
 	NSMutableArray *valid = [NSMutableArray array];
+
 	for (NSArray<NSString *> *button in buttons) {
 		if (valid.count == 2) break;
+
 		NSString *label = button[0];
 		if (label.length > 32) label = [label substringWithRange:[label rangeOfComposedCharacterSequencesForRange:NSMakeRange(0, 31)]];
 		if (label.length && button[1].length <= 512) [valid addObject:@[label, button[1]]];
 	}
+
 	return valid;
 }
 
 static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSMutableDictionary *info = [NSMutableDictionary dictionary];
+
 	switch (activity.kind) {
 		case MenzenActivityKindWatching: info[MenzenActivityKindKey] = @"watching"; break;
 		case MenzenActivityKindPlaying: info[MenzenActivityKindKey] = @"playing"; break;
@@ -137,6 +147,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	info[MenzenActivityNameKey] = activity.name;
 	info[MenzenActivityDetailsKey] = MenzenActivityText(activity.details);
 	info[MenzenActivityStateKey] = MenzenActivityText(activity.state);
+
 	if (activity.largeImageURL) {
 		info[MenzenActivityImageURLKey] = activity.largeImageURL;
 		info[MenzenActivityLargeTextKey] = MenzenActivityText(activity.largeText);
@@ -150,13 +161,16 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	info[MenzenActivityDetailsURLKey] = activity.detailsURL;
 	info[MenzenActivityStateURLKey] = activity.stateURL;
 	info[MenzenActivityLargeURLKey] = activity.largeURL;
+
 	if (activity.partySize > 0) {
 		info[MenzenActivityPartySizeKey] = @(activity.partySize);
 		info[MenzenActivityPartyMaxKey] = @(activity.partyMax);
 	}
+
 	if (activity.buttons.count) info[MenzenActivityButtonsKey] = MenzenActivityButtons(activity.buttons);
 	if (activity.startDate) info[MenzenActivityStartKey] = @(activity.startDate.timeIntervalSince1970);
 	if (activity.endDate) info[MenzenActivityEndKey] = @(activity.endDate.timeIntervalSince1970);
+
 	return info;
 }
 
@@ -182,6 +196,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	copy.partyMax = self.partyMax;
 	copy.startDate = self.startDate;
 	copy.endDate = self.endDate;
+
 	return copy;
 }
 
@@ -194,6 +209,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	if (!MenzenSameString(self.largeURL, activity.largeURL) || !MenzenSameString(self.smallURL, activity.smallURL)) return NO;
 	if (self.partySize != activity.partySize || self.partyMax != activity.partyMax) return NO;
 	if (!(self.buttons.count == 0 && activity.buttons.count == 0) && ![self.buttons isEqualToArray:activity.buttons]) return NO;
+
 	return MenzenSameDate(self.startDate, activity.startDate) && MenzenSameDate(self.endDate, activity.endDate);
 }
 
@@ -251,6 +267,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	_client->SetStatusChangedCallback([weakSelf](discordpp::Client::Status status, discordpp::Client::Error error, int32_t errorDetail) {
 		[weakSelf statusChanged:status error:error errorDetail:errorDetail];
 	});
+
 	_client->SetUserUpdatedCallback([weakSelf](uint64_t userId) {
 		typeof(self) strongSelf = weakSelf;
 		if (strongSelf && strongSelf->_profile && userId == strtoull([strongSelf->_profile[MenzenProfileIdKey] UTF8String], NULL, 10)) [strongSelf updateProfileFromClient];
@@ -260,11 +277,13 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	// and below runs on the main thread. Often while waiting for an answer,
 	// rarely otherwise (only status and profile changes come unasked).
 	_callbackTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
+
 	dispatch_source_set_event_handler(_callbackTimer, ^{
 		discordpp::RunCallbacks();
 		typeof(self) strongSelf = weakSelf;
 		if (strongSelf && strongSelf->_callbacksFast && CFAbsoluteTimeGetCurrent() > strongSelf->_busyUntil) [strongSelf setCallbacksFast:NO];
 	});
+
 	[self setCallbacksFast:NO];
 	dispatch_resume(_callbackTimer);
 
@@ -292,6 +311,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	status[MenzenStatusProfileKey] = _profile;
 	if (_ready && _publishedKnown && _publishedActivity) status[MenzenStatusActivityKey] = MenzenActivityInfo(_publishedActivity);
 	status[MenzenStatusPreviewKey] = _previewInfo;
+
 	return status;
 }
 
@@ -299,6 +319,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSMutableDictionary *info = activity ? [MenzenActivityInfo(activity) mutableCopy] : nil;
 	if (pausedDate) info[MenzenActivityPausedKey] = @(pausedDate.timeIntervalSince1970);
 	if ([_previewInfo isEqualToDictionary:info] || (!_previewInfo && !info)) return;
+
 	_previewInfo = info;
 	[self accountStatusChanged];
 }
@@ -315,6 +336,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	discordpp::AuthorizationCodeVerifier verifier = _client->CreateAuthorizationCodeVerifier();
 	NSString *state = MenzenRandomString();
 	if (!state) return nil;
+
 	_pendingVerifier = @(verifier.Verifier().c_str());
 	_pendingState = state;
 	_pendingExpiry = [NSDate dateWithTimeIntervalSinceNow:MenzenSignInTimeout];
@@ -329,7 +351,9 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 		[NSURLQueryItem queryItemWithName:@"code_challenge" value:@(verifier.Challenge().Challenge().c_str())],
 		[NSURLQueryItem queryItemWithName:@"code_challenge_method" value:@"S256"],
 	];
+
 	[self expectCallbacks];
+
 	return components.URL;
 }
 
@@ -343,6 +367,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	_pendingExpiry = nil;
 
 	NSURLComponents *components = [NSURLComponents componentsWithURL:callbackURL resolvingAgainstBaseURL:NO];
+
 	if (![components.scheme isEqualToString:MenzenCallbackScheme()]) {
 		completion(MenzenLocalizedString(@"signin.error.discord_sent_back_an_unexpected_address", @"Discord sent back an unexpected address. Try again."));
 		return;
@@ -359,12 +384,14 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	}
 
 	NSString *error = MenzenQueryValue(components, @"error");
+
 	if (error) {
 		completion([error isEqualToString:@"access_denied"] ? nil : MenzenLocalizedString(@"signin.error.discord_couldn_t_complete_the_sign", @"Discord couldn't complete the sign-in. Try again."));
 		return;
 	}
 
 	NSString *code = MenzenQueryValue(components, @"code");
+
 	if (!code.length) {
 		completion(MenzenLocalizedString(@"signin.error.discord_didn_t_send_a_sign", @"Discord didn't send a sign-in code. Try again."));
 		return;
@@ -373,6 +400,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSUInteger generation = ++_accountGeneration;
 	__weak typeof(self) weakSelf = self;
 	[self expectCallbacks];
+
 	_client->GetToken(_applicationId, MenzenStdString(code), MenzenStdString(verifier), MenzenStdString(self.redirectURI), [weakSelf, generation, completion](discordpp::ClientResult result, std::string accessToken, std::string refreshToken, discordpp::AuthorizationTokenType tokenType, int32_t expiresIn, std::string scopes) {
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || generation != strongSelf->_accountGeneration) return;
@@ -381,6 +409,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 			completion(MenzenLocalizedString(@"signin.error.discord_didn_t_accept_the_sign", @"Discord didn't accept the sign-in. Try again."));
 			return;
 		}
+
 		completion([strongSelf signInWithAccessToken:@(accessToken.c_str()) refreshToken:@(refreshToken.c_str()) expiresIn:expiresIn]);
 	});
 }
@@ -391,10 +420,12 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	[_deviceSignIn startWithCodeHandler:codeHandler completion:^(NSString *accessToken, NSString *refreshToken, NSTimeInterval expiresIn, NSString *error) {
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf) return;
+
 		if (!accessToken) {
 			completion(NO, error);
 			return;
 		}
+
 		NSString *saveError = [strongSelf signInWithAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn];
 		completion(!saveError, saveError);
 	}];
@@ -406,11 +437,13 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (NSString *)signInWithAccessToken:(NSString *)accessToken refreshToken:(NSString *)refreshToken expiresIn:(NSTimeInterval)expiresIn {
 	if (![self saveAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn]) return MenzenLocalizedString(@"signin.error.couldn_t_save_the_sign_in", @"Couldn't save the sign-in to the Keychain.");
+
 	_signedIn = YES;
 	_accountError = nil;
 	[self connectWithAccessToken:accessToken];
 	[self scheduleRefreshAt:[NSDate dateWithTimeIntervalSinceNow:expiresIn]];
 	[self accountStatusChanged];
+
 	return nil;
 }
 
@@ -429,14 +462,17 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	_ready = NO;
 	_connectingSince = nil;
 	_publishedKnown = NO;
+
 	MenzenSetDaemonString(MenzenStatusBeforeKey, nil);
 	MenzenSetDaemonString(MenzenStatusSetKey, nil);
+
 	[self expectCallbacks];
 	_client->Disconnect();
 
 	// Revoking the refresh token ends the whole grant, so Discord forgets
 	// the access token too.
 	NSString *token = tokens[MenzenTokensRefreshTokenKey] ?: tokens[MenzenTokensAccessTokenKey];
+
 	if ([token isKindOfClass:NSString.class] && token.length) {
 		_client->RevokeToken(_applicationId, MenzenStdString(token), [](discordpp::ClientResult) {});
 	}
@@ -450,16 +486,19 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 		MenzenTokensRefreshTokenKey: refreshToken,
 		MenzenTokensExpiresAtKey: [NSDate dateWithTimeIntervalSinceNow:expiresIn],
 	};
+
 	return MenzenKeychainSaveTokens(tokens) == errSecSuccess;
 }
 
 - (void)loadTokens {
 	OSStatus status;
 	NSDictionary *tokens = MenzenKeychainLoadTokens(&status);
+
 	if (status == errSecInteractionNotAllowed) {
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenKeychainLockedRetry * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 			[self loadTokens];
 		});
+
 		return;
 	}
 
@@ -484,6 +523,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSUInteger generation = _accountGeneration;
 	__weak typeof(self) weakSelf = self;
 	[self expectCallbacks];
+
 	_client->RefreshToken(_applicationId, MenzenStdString(refreshToken), [weakSelf, generation, fallbackAccessToken, expiresAt](discordpp::ClientResult result, std::string accessToken, std::string newRefreshToken, discordpp::AuthorizationTokenType tokenType, int32_t expiresIn, std::string scopes) {
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || generation != strongSelf->_accountGeneration) return;
@@ -495,6 +535,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 				strongSelf->_accountError = MenzenLocalizedString(@"signin.error.discord_ended_the_sign_in_sign", @"Discord ended the sign-in. Sign in again.");
 				[strongSelf accountStatusChanged];
 			}
+
 			return;
 		}
 
@@ -506,12 +547,14 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)scheduleRefreshAt:(NSDate *)expiresAt {
 	if (![expiresAt isKindOfClass:NSDate.class]) return;
+
 	NSTimeInterval delay = MAX(60, expiresAt.timeIntervalSinceNow - MenzenRefreshMargin);
 	NSUInteger generation = ++_refreshGeneration;
 	__weak typeof(self) weakSelf = self;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || generation != strongSelf->_refreshGeneration) return;
+
 		NSDictionary *tokens = MenzenKeychainLoadTokens(NULL);
 		NSString *refreshToken = tokens[MenzenTokensRefreshTokenKey];
 		if (refreshToken.length) [strongSelf refreshWithToken:refreshToken fallbackAccessToken:tokens[MenzenTokensAccessTokenKey] expiresAt:tokens[MenzenTokensExpiresAtKey]];
@@ -523,6 +566,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	if (!_ready && !_connectingSince) _connectingSince = NSDate.date;
 	std::shared_ptr<discordpp::Client> client = _client;
 	[self expectCallbacks];
+
 	_client->UpdateToken(discordpp::AuthorizationTokenType::Bearer, MenzenStdString(accessToken), [client](discordpp::ClientResult result) {
 		if (!result.Successful()) return;
 		// Already connected: UpdateToken reconnects by itself if it needs to.
@@ -534,16 +578,20 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	BOOL wasReady = _ready;
 	if (status != discordpp::Client::Status::Ready && status != discordpp::Client::Status::Disconnected) [self expectCallbacks];
 	_ready = status == discordpp::Client::Status::Ready;
+
 	if (_ready) {
 		_connectingSince = nil;
 	} else if (wasReady) {
 		_connectingSince = NSDate.date;
 	}
+
 	if (status == discordpp::Client::Status::Disconnected && errorDetail == MenzenAuthenticationFailedCloseCode) [self accessTokenRejected];
+
 	if (_ready) {
 		_rejectedTokenRefreshed = NO;
 		_publishedKnown = NO;
 		[_missingAssets removeAllObjects];
+
 		[self schedulePublishAfter:MenzenNewTrackPublishDelay];
 		[self updateProfile];
 		[self applyStatus];
@@ -554,9 +602,11 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)accessTokenRejected {
 	NSString *refreshToken = MenzenKeychainLoadTokens(NULL)[MenzenTokensRefreshTokenKey];
+
 	if (!_rejectedTokenRefreshed && refreshToken.length) {
 		_rejectedTokenRefreshed = YES;
 		[self refreshWithToken:refreshToken fallbackAccessToken:nil expiresAt:nil];
+
 		return;
 	}
 
@@ -585,6 +635,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)updateProfile {
 	if (![self updateProfileFromClient]) return;
+
 	_profileFetchedAt = NSDate.date;
 	[self fetchProfileDetailsWithCompletion:nil];
 }
@@ -603,33 +654,40 @@ static NSString *MenzenStatusName(discordpp::StatusType status) {
 
 - (void)setStatusOverride:(NSString *)status {
 	if (MenzenSameString(_statusOverride, status)) return;
+
 	_statusOverride = [status copy];
 	[self applyStatus];
 }
 
 - (void)applyStatus {
 	if (!_ready) return;
+
 	std::optional<discordpp::UserHandle> user = _client->GetCurrentUserV2();
 	if (!user) return;
+
 	NSString *current = MenzenStatusName(user->Status());
 	if (![@[@"online", @"idle", @"dnd", @"invisible"] containsObject:current]) current = nil;
 	NSString *before = MenzenDaemonString(MenzenStatusBeforeKey);
 	NSString *target;
+
 	if (_statusOverride) {
 		if (!before) MenzenSetDaemonString(MenzenStatusBeforeKey, current ?: @"online");
 		MenzenSetDaemonString(MenzenStatusSetKey, _statusOverride);
 		target = _statusOverride;
 	} else {
 		if (!before) return;
+
 		NSString *set = MenzenDaemonString(MenzenStatusSetKey);
 		MenzenSetDaemonString(MenzenStatusBeforeKey, nil);
 		MenzenSetDaemonString(MenzenStatusSetKey, nil);
 		// Changed by hand since: that one stays.
 		if (set && current && ![current isEqualToString:set]) return;
+
 		target = before;
 	}
 
 	if ([current isEqualToString:target]) return;
+
 	[self expectCallbacks];
 	_client->SetOnlineStatus(MenzenStatusType(target), [](discordpp::ClientResult) {});
 }
@@ -637,6 +695,7 @@ static NSString *MenzenStatusName(discordpp::StatusType status) {
 - (BOOL)updateProfileFromClient {
 	std::optional<discordpp::UserHandle> user = _client->GetCurrentUserV2();
 	if (!user) return NO;
+
 	_username = @(user->DisplayName().c_str());
 
 	NSMutableDictionary *profile = [_profile mutableCopy] ?: [NSMutableDictionary dictionary];
@@ -646,6 +705,7 @@ static NSString *MenzenStatusName(discordpp::StatusType status) {
 	profile[MenzenProfileGlobalNameKey] = globalName ? @(globalName->c_str()) : nil;
 	profile[MenzenProfileAvatarURLKey] = @(user->AvatarUrl(discordpp::UserHandle::AvatarType::Png, discordpp::UserHandle::AvatarType::Png).c_str());
 	profile[MenzenProfileStatusKey] = MenzenStatusName(user->Status());
+
 	if (![profile isEqualToDictionary:_profile]) {
 		_profile = profile;
 		[self accountStatusChanged];
@@ -672,7 +732,9 @@ static NSArray<NSString *> *MenzenBadges(uint64_t flags) {
 		{1 << 17, @"earlyVerifiedBotDeveloper"},
 		{1 << 9, @"earlySupporter"},
 	};
+
 	NSMutableArray *result = [NSMutableArray array];
+
 	for (size_t i = 0; i < sizeof(badges) / sizeof(*badges); i++) {
 		if (flags & badges[i].flag) [result addObject:badges[i].badge];
 	}
@@ -689,12 +751,15 @@ static NSString *MenzenAssetName(id value) {
 	if ([value isKindOfClass:NSNumber.class]) value = [value stringValue];
 	if (![value isKindOfClass:NSString.class] || ![value length]) return nil;
 	if ([value rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@"/?#%\\"]].location != NSNotFound || [value containsString:@".."]) return nil;
+
 	return value;
 }
 
 static NSString *MenzenAssetPath(id value) {
 	if (![value isKindOfClass:NSString.class] || ![value hasSuffix:@"/"]) return nil;
+
 	NSArray<NSString *> *components = [[value substringToIndex:[value length] - 1] componentsSeparatedByString:@"/"];
+
 	for (NSString *component in components) {
 		if (!MenzenAssetName(component)) return nil;
 	}
@@ -732,30 +797,38 @@ static NSString *MenzenAssetPath(id value) {
 
 - (void)applyProfileDetails:(NSDictionary *)user statusCode:(NSInteger)statusCode {
 	NSMutableDictionary *profile = [_profile mutableCopy];
+
 	if (!user) {
 		// Signed in before the identify scope was asked for.
 		if (statusCode == 401 || statusCode == 403) profile[MenzenProfileLimitedKey] = @YES;
 		_profile = profile;
 		[self accountStatusChanged];
+
 		return;
 	}
 
 	[profile removeObjectForKey:MenzenProfileLimitedKey];
 
 	NSString *userId = profile[MenzenProfileIdKey];
+
 	id banner = user[@"banner"];
 	profile[MenzenProfileBannerURLKey] = [banner isKindOfClass:NSString.class] ? [NSString stringWithFormat:@"https://cdn.discordapp.com/banners/%@/%@.png?size=600", userId, banner] : nil;
+
 	id accentColor = user[@"accent_color"];
 	profile[MenzenProfileAccentColorKey] = [accentColor isKindOfClass:NSNumber.class] ? accentColor : nil;
+
 	id premiumType = user[@"premium_type"];
 	profile[MenzenProfilePremiumTypeKey] = [premiumType isKindOfClass:NSNumber.class] ? premiumType : nil;
+
 	id flags = user[@"public_flags"];
 	profile[MenzenProfileBadgesKey] = MenzenBadges([flags isKindOfClass:NSNumber.class] ? [flags unsignedLongLongValue] : 0);
 
 	NSDictionary *guild = MenzenDictionary(user[@"primary_guild"]);
 	NSString *tag = [guild[@"tag"] isKindOfClass:NSString.class] ? guild[@"tag"] : nil;
+
 	NSString *guildId = MenzenAssetName(guild[@"identity_guild_id"]);
 	NSString *tagBadge = MenzenAssetName(guild[@"badge"]);
+
 	BOOL showsTag = [guild[@"identity_enabled"] isKindOfClass:NSNumber.class] && [guild[@"identity_enabled"] boolValue] && tag.length;
 	profile[MenzenProfileGuildTagKey] = showsTag ? tag : nil;
 	profile[MenzenProfileGuildTagBadgeURLKey] = showsTag && guildId && tagBadge ? [NSString stringWithFormat:@"https://cdn.discordapp.com/guild-tag-badges/%@/%@.png?size=64", guildId, tagBadge] : nil;
@@ -768,6 +841,7 @@ static NSString *MenzenAssetPath(id value) {
 
 	NSMutableArray *nameColors = [NSMutableArray array];
 	id colors = MenzenDictionary(user[@"display_name_styles"])[@"colors"];
+
 	for (id color in [colors isKindOfClass:NSArray.class] ? colors : nil) {
 		if ([color isKindOfClass:NSNumber.class]) [nameColors addObject:color];
 	}
@@ -795,12 +869,14 @@ static NSString *MenzenAssetPath(id value) {
 - (void)schedulePublishAfter:(NSTimeInterval)delay {
 	CFAbsoluteTime fireTime = CFAbsoluteTimeGetCurrent() + delay;
 	if (_publishPending && fireTime >= _publishFireTime) return;
+
 	_publishPending = YES;
 	_publishFireTime = fireTime;
 	__weak typeof(self) weakSelf = self;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || !strongSelf->_publishPending || strongSelf->_publishFireTime != fireTime) return;
+
 		strongSelf->_publishPending = NO;
 		[strongSelf publish];
 	});
@@ -811,13 +887,16 @@ static NSString *MenzenAssetPath(id value) {
 	// without that image.
 	NSString *error = @(result.Error().c_str());
 	NSRange keyRange = [error rangeOfString:@"image asset: "];
+
 	if ([error hasPrefix:@"Unable to resolve"] && keyRange.location != NSNotFound) {
 		NSString *key = [[error substringFromIndex:NSMaxRange(keyRange)] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+
 		if (key.length && ![_missingAssets containsObject:key]) {
 			if (!_missingAssets) _missingAssets = [NSMutableSet set];
 			[_missingAssets addObject:key];
 			_publishedKnown = NO;
 			[self schedulePublishAfter:0];
+
 			return;
 		}
 	}
@@ -831,15 +910,18 @@ static NSString *MenzenAssetPath(id value) {
 
 - (void)publish {
 	if (!_ready) return;
+
 	MenzenActivity *activity = _desiredActivity;
 	if (_publishedKnown && (activity ? [activity isEquivalentToActivity:_publishedActivity] : !_publishedActivity)) return;
 
 	CFAbsoluteTime now = CFAbsoluteTimeGetCurrent();
 	if (!_publishTimes) _publishTimes = [NSMutableArray array];
 	while (_publishTimes.count && now - _publishTimes.firstObject.doubleValue >= MenzenPublishWindow) [_publishTimes removeObjectAtIndex:0];
+
 	if (_publishTimes.count >= MenzenPublishLimit) {
 		NSTimeInterval wait = _publishTimes.firstObject.doubleValue + MenzenPublishWindow - now;
 		[self schedulePublishAfter:wait];
+
 		return;
 	}
 
@@ -856,6 +938,7 @@ static NSString *MenzenAssetPath(id value) {
 	}
 
 	discordpp::Activity richPresence;
+
 	switch (activity.kind) {
 		case MenzenActivityKindListening: richPresence.SetType(discordpp::ActivityTypes::Listening); break;
 		case MenzenActivityKindWatching: richPresence.SetType(discordpp::ActivityTypes::Watching); break;
@@ -869,6 +952,7 @@ static NSString *MenzenAssetPath(id value) {
 	}
 
 	if (activity.name.length) richPresence.SetName(MenzenStdString(activity.name));
+
 	if (NSString *details = MenzenActivityText(activity.details)) {
 		richPresence.SetDetails(MenzenStdString(details));
 		if (activity.detailsURL) richPresence.SetDetailsUrl(MenzenStdString(activity.detailsURL));
@@ -884,11 +968,13 @@ static NSString *MenzenAssetPath(id value) {
 		assets.SetLargeImage(MenzenStdString(activity.largeImageURL));
 		if (NSString *largeText = MenzenActivityText(activity.largeText)) assets.SetLargeText(MenzenStdString(largeText));
 		if (activity.largeURL) assets.SetLargeUrl(MenzenStdString(activity.largeURL));
+
 		if (activity.smallImageURL && ![_missingAssets containsObject:activity.smallImageURL]) {
 			assets.SetSmallImage(MenzenStdString(activity.smallImageURL));
 			if (NSString *smallText = MenzenActivityText(activity.smallText)) assets.SetSmallText(MenzenStdString(smallText));
 			if (activity.smallURL) assets.SetSmallUrl(MenzenStdString(activity.smallURL));
 		}
+
 		richPresence.SetAssets(assets);
 	}
 
@@ -927,6 +1013,7 @@ BOOL MenzenSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout) 
 	OSStatus status;
 	NSDictionary *tokens = MenzenKeychainLoadTokens(&status);
 	if (!tokens) return status == errSecItemNotFound;
+
 	status = MenzenKeychainDeleteTokens();
 	if (status != errSecSuccess && status != errSecItemNotFound) return NO;
 
@@ -938,10 +1025,13 @@ BOOL MenzenSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout) 
 	bool done = false;
 	auto client = std::make_shared<discordpp::Client>();
 	client->SetApplicationId(applicationId);
+
 	client->RevokeToken(applicationId, MenzenStdString(token), [&done](discordpp::ClientResult result) {
 		done = true;
 	});
+
 	NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];
+
 	while (!done && deadline.timeIntervalSinceNow > 0) {
 		discordpp::RunCallbacks();
 		[NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:MenzenFastCallbackInterval]];

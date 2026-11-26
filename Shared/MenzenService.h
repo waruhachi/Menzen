@@ -85,6 +85,7 @@ static inline NSXPCInterface *MenzenServiceInterface(void) {
 	[interface setClasses:statusClasses forSelector:@selector(statusWithReply:) argumentIndex:0 ofReply:YES];
 	[interface setClasses:statusClasses forSelector:@selector(gamesWithReply:) argumentIndex:0 ofReply:YES];
 	[interface setClasses:[NSSet setWithObjects:NSDictionary.class, NSString.class, nil] forSelector:@selector(appIconsWithReply:) argumentIndex:0 ofReply:YES];
+
 	return interface;
 }
 

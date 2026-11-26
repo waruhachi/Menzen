@@ -37,6 +37,7 @@ static NSArray<NSArray<NSString *> *> *MenzenBadgeDescriptions(NSDictionary *pro
 	if (premiumType == 1) [result addObject:@[MenzenLocalizedString(@"profile.nitro_classic", @"Nitro Classic"), @"bolt.circle.fill"]];
 	if (premiumType == 2) [result addObject:@[MenzenLocalizedString(@"profile.nitro", @"Nitro"), @"bolt.circle.fill"]];
 	if (premiumType == 3) [result addObject:@[MenzenLocalizedString(@"profile.nitro_basic", @"Nitro Basic"), @"bolt.circle.fill"]];
+
 	for (NSString *badge in profile[MenzenProfileBadgesKey]) {
 		NSArray *description = descriptions[badge];
 		if (description) [result addObject:description];
@@ -50,9 +51,11 @@ static NSAttributedString *MenzenBadgesText(NSArray<NSArray<NSString *> *> *badg
 	UIFont *font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
 	NSDictionary *attributes = @{NSFontAttributeName: font, NSForegroundColorAttributeName: UIColor.secondaryLabelColor};
 	UIImageSymbolConfiguration *configuration = [UIImageSymbolConfiguration configurationWithFont:font];
+
 	for (NSArray<NSString *> *badge in badges) {
 		if (text.length) [text appendAttributedString:[[NSAttributedString alloc] initWithString:@"    " attributes:attributes]];
 		UIImage *symbol = [UIImage systemImageNamed:badge[1] withConfiguration:configuration];
+
 		if (symbol) {
 			NSTextAttachment *attachment = [NSTextAttachment new];
 			attachment.image = [symbol imageWithTintColor:MenzenBlurple() renderingMode:UIImageRenderingModeAlwaysOriginal];
@@ -74,10 +77,12 @@ static UIImageView *MenzenRoundImageView(CGFloat size) {
 	imageView.layer.cornerRadius = size / 2;
 	imageView.backgroundColor = UIColor.tertiarySystemFillColor;
 	imageView.translatesAutoresizingMaskIntoConstraints = NO;
+
 	[NSLayoutConstraint activateConstraints:@[
 		[imageView.widthAnchor constraintEqualToConstant:size],
 		[imageView.heightAnchor constraintEqualToConstant:size],
 	]];
+
 	return imageView;
 }
 
@@ -141,16 +146,20 @@ static UIImageView *MenzenRoundImageView(CGFloat size) {
 
 		_tagBadgeView = [UIImageView new];
 		_tagBadgeView.contentMode = UIViewContentModeScaleAspectFit;
+
 		_tagLabel = [UILabel new];
 		_tagLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
 		_tagLabel.font = [UIFont fontWithDescriptor:[_tagLabel.font.fontDescriptor fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold] size:0];
+
 		UIStackView *tagStack = [[UIStackView alloc] initWithArrangedSubviews:@[_tagBadgeView, _tagLabel]];
 		tagStack.spacing = 4;
 		tagStack.alignment = UIStackViewAlignmentCenter;
 		tagStack.translatesAutoresizingMaskIntoConstraints = NO;
+
 		_tagChip = [UIView new];
 		_tagChip.backgroundColor = UIColor.tertiarySystemFillColor;
 		_tagChip.layer.cornerRadius = 6;
+
 		[_tagChip addSubview:tagStack];
 		[_tagChip setContentCompressionResistancePriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisHorizontal];
 
@@ -176,15 +185,19 @@ static UIImageView *MenzenRoundImageView(CGFloat size) {
 		_overlay = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleSystemMaterial]];
 		_overlay.translatesAutoresizingMaskIntoConstraints = NO;
 		[content addSubview:_overlay];
+
 		_overlaySpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+
 		_overlayLabel = [UILabel new];
 		_overlayLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
 		_overlayLabel.textColor = UIColor.secondaryLabelColor;
 		_overlayLabel.textAlignment = NSTextAlignmentCenter;
 		_overlayLabel.numberOfLines = 0;
+
 		UIImageSymbolConfiguration *iconConfiguration = [UIImageSymbolConfiguration configurationWithTextStyle:UIFontTextStyleTitle2];
 		_overlayIcon = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"exclamationmark.triangle.fill" withConfiguration:iconConfiguration]];
 		_overlayIcon.tintColor = UIColor.secondaryLabelColor;
+
 		UIStackView *overlayStack = [[UIStackView alloc] initWithArrangedSubviews:@[_overlaySpinner, _overlayIcon, _overlayLabel]];
 		overlayStack.axis = UILayoutConstraintAxisVertical;
 		overlayStack.alignment = UIStackViewAlignmentCenter;
@@ -196,6 +209,7 @@ static UIImageView *MenzenRoundImageView(CGFloat size) {
 		NSLayoutConstraint *bottom = [_activityView.bottomAnchor constraintEqualToAnchor:content.bottomAnchor constant:-16];
 		// Lets the cell size itself without fighting the table's first guess.
 		bottom.priority = UILayoutPriorityDefaultHigh;
+
 		[NSLayoutConstraint activateConstraints:@[
 			[_bannerView.topAnchor constraintEqualToAnchor:content.topAnchor],
 			[_bannerView.leadingAnchor constraintEqualToAnchor:content.leadingAnchor],
@@ -291,6 +305,7 @@ static UIImageView *MenzenRoundImageView(CGFloat size) {
 	_overlayLabel.text = overlay;
 	BOOL busy = [[specifier propertyForKey:@"overlayBusy"] boolValue];
 	_overlayIcon.hidden = busy;
+
 	if (busy) {
 		_overlaySpinner.hidden = NO;
 		[_overlaySpinner startAnimating];

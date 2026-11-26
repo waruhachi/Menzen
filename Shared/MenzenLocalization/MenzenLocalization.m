@@ -8,6 +8,7 @@ static NSBundle *MenzenLocalizationBundle(void) {
 	dispatch_once(&once, ^{
 		bundle = [NSBundle bundleWithPath:jbroot(@"/Library/Tweak Support/Menzen/Localization")];
 	});
+
 	return bundle;
 }
 

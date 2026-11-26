@@ -25,14 +25,18 @@
 
 static inline NSURL *MenzenExtrasURL(NSDictionary<NSString *, NSString *> *extras) {
 	if (!extras.count) return nil;
+
 	NSURLComponents *components = [NSURLComponents new];
 	components.scheme = MenzenExtrasScheme;
 	components.path = @"extras";
 	NSMutableArray *items = [NSMutableArray array];
+
 	for (NSString *key in [extras.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
 		[items addObject:[NSURLQueryItem queryItemWithName:key value:extras[key]]];
 	}
+
 	components.queryItems = items;
+
 	return components.URL;
 }
 
@@ -44,17 +48,22 @@ static inline NSString *MenzenLinkURL(NSString *format, id ID) {
 	dispatch_once(&once, ^{
 		invalid = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.:"].invertedSet;
 	});
+
 	if ([ID isKindOfClass:NSNumber.class]) ID = [ID stringValue];
 	if (![ID isKindOfClass:NSString.class] || ![ID length] || [ID length] > 100 || [ID rangeOfCharacterFromSet:invalid].location != NSNotFound || [ID containsString:@".."]) return nil;
+
 	return [format stringByReplacingOccurrencesOfString:@"%@" withString:ID];
 }
 
 static inline NSDictionary<NSString *, NSString *> *MenzenExtrasFromURL(NSString *url) {
 	NSURLComponents *components = url ? [NSURLComponents componentsWithString:url] : nil;
 	if (![components.scheme isEqualToString:MenzenExtrasScheme]) return nil;
+
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
+
 	for (NSURLQueryItem *item in components.queryItems) {
 		if (item.value.length) extras[item.name] = item.value;
 	}
+
 	return extras;
 }

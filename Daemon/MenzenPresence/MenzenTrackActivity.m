@@ -16,8 +16,10 @@ static NSString *const MenzenApplePodcasts = @"com.apple.podcasts";
 // are passed on.
 static NSString *MenzenURLOnHosts(NSString *url, NSArray<NSString *> *hosts) {
 	if (url.length > MenzenMaxURLLength) return nil;
+
 	NSURLComponents *components = url ? [NSURLComponents componentsWithString:url] : nil;
 	if (![components.scheme isEqualToString:@"https"] || !components.host || components.user || components.password) return nil;
+
 	for (NSString *host in hosts) {
 		if ([components.host isEqualToString:host] || [components.host hasSuffix:[@"." stringByAppendingString:host]]) return url;
 	}
@@ -29,6 +31,7 @@ static NSString *MenzenURLOnHosts(NSString *url, NSArray<NSString *> *hosts) {
 static NSDictionary<NSString *, NSString *> *MenzenTrackExtras(MenzenTrack *track) {
 	NSDictionary *extras = MenzenExtrasFromURL(track.assetURL);
 	if (extras) return extras;
+
 	return track.assetURL ? @{MenzenExtrasCoverKey: track.assetURL} : @{};
 }
 
@@ -41,27 +44,34 @@ static NSString *MenzenAppleArtworkURL(NSString *identifier) {
 
 	if ([identifier hasPrefix:@"https://"]) {
 		NSURLComponents *components = [NSURLComponents componentsWithString:identifier];
+
 		if (!components) {
 			NSString *escaped = [identifier stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLFragmentAllowedCharacterSet];
 			components = [NSURLComponents componentsWithString:escaped];
 		}
+
 		if (![components.host isEqualToString:@"mzstatic.com"] && ![components.host hasSuffix:@".mzstatic.com"]) return nil;
+
 		NSString *url = identifier;
 		url = [url stringByReplacingOccurrencesOfString:@"{w}" withString:@"512"];
 		url = [url stringByReplacingOccurrencesOfString:@"{h}" withString:@"512"];
 		url = [url stringByReplacingOccurrencesOfString:@"{c}" withString:@"bb"];
 		url = [url stringByReplacingOccurrencesOfString:@"{f}" withString:@"jpg"];
+
 		return [url containsString:@"{"] ? nil : url;
 	}
 
 	if ([identifier hasPrefix:@"/"] || ![identifier containsString:@"/"]) return nil;
+
 	NSString *path = [identifier stringByAddingPercentEncodingWithAllowedCharacters:NSCharacterSet.URLPathAllowedCharacterSet];
 	if (!path) return nil;
+
 	return [NSString stringWithFormat:@"https://is1-ssl.mzstatic.com/image/thumb/%@/512x512bb.jpg", path];
 }
 
 static NSString *MenzenArtworkURL(MenzenTrack *track, NSDictionary *extras) {
 	if ([track.bundleIdentifier isEqualToString:MenzenAppleMusic] || [track.bundleIdentifier isEqualToString:MenzenApplePodcasts]) return MenzenAppleArtworkURL(track.artworkIdentifier);
+
 	return MenzenURLOnHosts(extras[MenzenExtrasCoverKey], MenzenProviderForBundleIdentifier(track.bundleIdentifier)[MenzenProviderArtworkHostsKey]);
 }
 
@@ -73,7 +83,9 @@ static NSString *MenzenAppleMusicURL(NSString *type, NSString *identifier) {
 // Apple Podcasts reports the episode's store ID and its show's as the album's.
 static NSString *MenzenApplePodcastsURL(NSString *show, NSString *episode) {
 	if (!show) return nil;
+
 	NSString *url = [NSString stringWithFormat:@"https://podcasts.apple.com/podcast/id%@", show];
+
 	return episode ? [url stringByAppendingFormat:@"?i=%@", episode] : url;
 }
 
@@ -106,6 +118,7 @@ static MenzenActivityKind MenzenActivityKindForTrack(MenzenTrack *track, NSDicti
 
 static BOOL MenzenShowsAlbum(void) {
 	if ([MenzenPart(MenzenPartHeading) isEqualToString:@"album"] || [MenzenPart(MenzenPartFirstLine) isEqualToString:@"album"] || [MenzenPart(MenzenPartSecondLine) isEqualToString:@"album"]) return YES;
+
 	return [MenzenPart(MenzenPartThirdLine) isEqualToString:@"album"] && ![MenzenPart(MenzenPartBigPicture) isEqualToString:@"none"];
 }
 
@@ -116,6 +129,7 @@ static void MenzenUseEpisodeAsAlbum(MenzenTrack *track, NSDictionary *extras, NS
 	NSInteger season = 0, episode = 0;
 	NSString *rest = *title;
 	BOOL inTitle = MenzenFindEpisode(*title, &season, &episode, &rest);
+
 	if (extras[MenzenExtrasSeasonKey] || extras[MenzenExtrasEpisodeKey]) {
 		season = [extras[MenzenExtrasSeasonKey] integerValue];
 		episode = [extras[MenzenExtrasEpisodeKey] integerValue];
@@ -127,14 +141,17 @@ static void MenzenUseEpisodeAsAlbum(MenzenTrack *track, NSDictionary *extras, NS
 
 static NSDictionary<NSString *, NSString *> *MenzenLinks(MenzenTrack *track, NSDictionary *extras, NSArray<NSString *> *hosts) {
 	if (!MenzenSettingBool(MenzenSettingLinks, YES)) return @{};
+
 	NSString *titleURL = extras[MenzenExtrasTitleURLKey];
 	NSString *artistURL = extras[MenzenExtrasArtistURLKey];
 	NSString *albumURL = extras[MenzenExtrasAlbumURLKey];
+
 	if ([track.bundleIdentifier isEqualToString:MenzenAppleMusic]) {
 		titleURL = titleURL ?: MenzenAppleMusicURL(@"song", track.storeIdentifier);
 		artistURL = artistURL ?: MenzenAppleMusicURL(@"artist", track.artistStoreIdentifier);
 		albumURL = albumURL ?: MenzenAppleMusicURL(@"album", track.albumStoreIdentifier);
 	}
+
 	if ([track.bundleIdentifier isEqualToString:MenzenApplePodcasts]) {
 		titleURL = titleURL ?: MenzenApplePodcastsURL(track.albumStoreIdentifier, track.storeIdentifier);
 		artistURL = artistURL ?: MenzenApplePodcastsURL(track.albumStoreIdentifier, nil);
@@ -150,6 +167,7 @@ static NSDictionary<NSString *, NSString *> *MenzenLinks(MenzenTrack *track, NSD
 	links[@"album"] = albumURL ?: titleURL;
 	links[@"cover"] = albumURL ?: titleURL;
 	links[@"artistImage"] = artistURL;
+
 	return links;
 }
 
@@ -168,12 +186,14 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 	if (!MenzenTrackIsShowable(track)) return nil;
 
 	NSDictionary *provider = MenzenProviderForBundleIdentifier(track.bundleIdentifier);
+
 	if (MenzenAppIsPrivate(track.bundleIdentifier)) {
 		MenzenActivity *activity = [MenzenActivity new];
 		activity.kind = MenzenActivityKindForTrack(track, provider);
 		activity.statusDisplay = MenzenStatusDisplayName;
 		activity.name = MenzenAppName(track.bundleIdentifier);
 		activity.largeImageURL = logo;
+
 		return activity;
 	}
 
@@ -195,11 +215,13 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 		@"artist": track.artist ?: @"",
 		@"album": album ?: @"",
 	};
+
 	NSDictionary<NSString *, NSString *> *images = @{
 		@"cover": MenzenArtworkURL(track, extras) ?: @"",
 		@"artistImage": MenzenURLOnHosts(extras[MenzenExtrasArtistImageKey], provider[MenzenProviderArtworkHostsKey]) ?: @"",
 		@"logo": logo ?: @"",
 	};
+
 	NSDictionary<NSString *, NSString *> *links = MenzenLinks(track, extras, provider[MenzenProviderLinkHostsKey]);
 
 	// Discord needs a first line; the title stands in for a missing album.
@@ -210,6 +232,7 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 
 	NSString *secondLine = MenzenPart(MenzenPartSecondLine);
 	NSString *state = texts[secondLine];
+
 	if (state.length && !MenzenSameText(state, activity.details)) {
 		activity.state = state;
 		activity.stateURL = links[secondLine];
@@ -223,6 +246,7 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 	else if (![heading isEqualToString:@"menzen"]) activity.name = [texts[heading] length] ? texts[heading] : appName;
 
 	NSString *bigPicture = MenzenPart(MenzenPartBigPicture);
+
 	if (![bigPicture isEqualToString:@"none"]) {
 		if (![images[bigPicture] length]) bigPicture = @"logo";
 		activity.largeImageURL = [images[bigPicture] length] ? images[bigPicture] : nil;
@@ -236,6 +260,7 @@ MenzenActivity *MenzenActivityForTrack(MenzenTrack *track, NSString *logo) {
 		// Discord only shows a small picture over a big one.
 		NSString *smallPicture = MenzenPart(MenzenPartSmallPicture);
 		NSString *smallImageURL = images[smallPicture];
+
 		if (smallImageURL.length && ![smallImageURL isEqualToString:activity.largeImageURL]) {
 			activity.smallImageURL = smallImageURL;
 			activity.smallURL = links[smallPicture];
@@ -261,10 +286,12 @@ MenzenActivity *MenzenPreviewForTrack(MenzenTrack *track, NSString *logo, NSDate
 	MenzenActivity *activity = MenzenActivityForTrack(track, logo);
 	*pausedDate = nil;
 	if (!activity || (track.playing && !stoppedDate) || MenzenAppIsPrivate(track.bundleIdentifier)) return activity;
+
 	NSDate *now = NSDate.date;
 	NSTimeInterval elapsed = MAX([track elapsedAtDate:stoppedDate ?: now], 0);
 	if (track.duration > 0) elapsed = MIN(elapsed, track.duration);
 	MenzenSetTime(activity, track, elapsed, now);
 	if (activity.startDate) *pausedDate = now;
+
 	return activity;
 }

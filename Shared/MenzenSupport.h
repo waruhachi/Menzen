@@ -33,6 +33,7 @@ static inline NSURL *MenzenSupportReportURL(NSString *app, NSString *version, NS
 		[NSURLQueryItem queryItemWithName:@"title" value:[NSString stringWithFormat:@"%@ %@: missing parts", app, version]],
 		[NSURLQueryItem queryItemWithName:@"body" value:[NSString stringWithFormat:@"```\n%@\n```\n", details]],
 	];
+
 	return components.URL ?: [NSURL URLWithString:MenzenIssuesURL];
 }
 
@@ -42,5 +43,6 @@ static inline NSURL *MenzenAppRequestURL(NSString *bundleIdentifier) {
 		[NSURLQueryItem queryItemWithName:@"template" value:@"app-request.yml"],
 		[NSURLQueryItem queryItemWithName:@"app" value:bundleIdentifier],
 	];
+
 	return components.URL ?: [NSURL URLWithString:MenzenIssuesURL];
 }

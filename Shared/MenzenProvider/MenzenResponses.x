@@ -36,13 +36,16 @@ static NSArray<MenzenResponseObserver *> *MenzenObserversFor(NSURL *url) {
 	if (![url.scheme isEqualToString:@"https"]) return nil;
 
 	NSArray<MenzenResponseObserver *> *all;
+
 	@synchronized(delegateClasses) {
 		all = observers;
 	}
 
 	NSMutableArray *matching = nil;
+
 	for (MenzenResponseObserver *observer in all) {
 		if (!observer.matches(url)) continue;
+
 		if (!matching) matching = [NSMutableArray array];
 		[matching addObject:observer];
 	}
@@ -52,6 +55,7 @@ static NSArray<MenzenResponseObserver *> *MenzenObserversFor(NSURL *url) {
 
 static NSURLRequest *MenzenModified(NSURLRequest *request) {
 	NSArray *all;
+
 	@synchronized(delegateClasses) {
 		all = modifiers;
 	}
@@ -68,6 +72,7 @@ static void MenzenDeliver(NSArray<MenzenResponseObserver *> *matching, NSURL *ur
 	if (error || status != 200 || ![body isKindOfClass:NSData.class] || !body.length || body.length > MenzenMaxBody) return;
 
 	NSData *copy = [body copy];
+
 	for (MenzenResponseObserver *observer in matching) {
 		dispatch_async(observer.queue, ^{
 			observer.handler(url, copy);
@@ -79,7 +84,9 @@ static void MenzenObserveDelegateClass(Class cls);
 
 static void MenzenObserveTask(NSURLSession *session, NSURLSessionTask *task) {
 	if (![task isKindOfClass:NSURLSessionDataTask.class] || !session.delegate) return;
+
 	MenzenObserveDelegateClass(object_getClass(session.delegate));
+
 	@synchronized(bodies) {
 		[bodies setObject:[NSMutableData data] forKey:task];
 	}
@@ -152,6 +159,7 @@ static MenzenCompletionHandler MenzenObservingHandler(NSURL *url, NSArray<Menzen
 static void MenzenObserveDelegateClass(Class cls) {
 	@synchronized(delegateClasses) {
 		if (!cls || [delegateClasses containsObject:cls]) return;
+
 		[delegateClasses addObject:cls];
 	}
 
@@ -169,6 +177,7 @@ static void MenzenObserveDelegateClass(Class cls) {
 				else if (body) [bodies removeObjectForKey:task];
 			}
 		}
+
 		BOOL wasInside = insideDelegate;
 		insideDelegate = YES;
 		origDidReceiveData(delegate, didReceiveData, session, task, data);
@@ -181,18 +190,22 @@ static void MenzenObserveDelegateClass(Class cls) {
 	IMP newDidComplete = imp_implementationWithBlock(^(id delegate, NSURLSession *session, NSURLSessionTask *task, NSError *error) {
 		if (!insideDelegate) {
 			NSMutableData *body;
+
 			@synchronized(bodies) {
 				body = [bodies objectForKey:task];
 				[bodies removeObjectForKey:task];
 			}
+
 			NSURL *url = task.originalRequest.URL;
 			if (body) MenzenDeliver(MenzenObserversFor(url), url, body, task.response, error);
 		}
+
 		BOOL wasInside = insideDelegate;
 		insideDelegate = YES;
 		origDidComplete(delegate, didComplete, session, task, error);
 		insideDelegate = wasInside;
 	});
+
 	MSHookMessageEx(cls, didComplete, newDidComplete, (IMP *)&origDidComplete);
 }
 
@@ -215,6 +228,7 @@ void MenzenObserveResponses(BOOL (^matches)(NSURL *url), void (^handler)(NSURL *
 	observer.queue = dispatch_queue_create("moe.waru.menzen.responses", DISPATCH_QUEUE_SERIAL);
 
 	MenzenStart();
+
 	@synchronized(delegateClasses) {
 		observers = [observers arrayByAddingObject:observer];
 	}
@@ -222,6 +236,7 @@ void MenzenObserveResponses(BOOL (^matches)(NSURL *url), void (^handler)(NSURL *
 
 void MenzenModifyRequests(NSURLRequest * (^modify)(NSURLRequest *request)) {
 	MenzenStart();
+
 	@synchronized(delegateClasses) {
 		modifiers = [modifiers arrayByAddingObject:[modify copy]];
 	}

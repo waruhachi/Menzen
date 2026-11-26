@@ -42,6 +42,7 @@ static NSString *const MenzenDoNotDisturbClient = @"moe.waru.menzend";
 
 - (void)setActive:(BOOL)active {
 	if (active == _active) return;
+
 	_active = active;
 	_handler(active);
 }

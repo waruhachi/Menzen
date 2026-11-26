@@ -21,8 +21,10 @@ static CFStringRef const MenzenOldETagKey = CFSTR("gameCatalogETag");
 // list says.
 static BOOL MenzenIsIconURL(id value) {
 	if (![value isKindOfClass:NSString.class]) return NO;
+
 	NSURL *url = [NSURL URLWithString:value];
 	NSString *host = url.host.lowercaseString;
+
 	return [url.scheme isEqualToString:@"https"] && [host hasPrefix:@"is"] && [host hasSuffix:@"-ssl.mzstatic.com"] && [url.path hasPrefix:@"/image/thumb/"];
 }
 
@@ -41,6 +43,7 @@ static NSString *MenzenETagKey(NSString *file) {
 
 static NSSet<NSString *> *MenzenInstalledApps(void) {
 	NSMutableSet *apps = [NSMutableSet set];
+
 	@autoreleasepool {
 		for (LSApplicationProxy *proxy in MenzenWorkspace().allInstalledApplications) {
 			NSString *bundleIdentifier = proxy.bundleIdentifier;
@@ -58,11 +61,14 @@ static NSSet<NSString *> *MenzenInstalledApps(void) {
 static NSDictionary<NSString *, NSDictionary *> *MenzenReadCatalog(NSString *path, NSSet<NSString *> *apps) {
 	NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedAlways error:NULL];
 	if (data.length < 2 || ((const char *)data.bytes)[0] != '{') return nil;
+
 	NSMutableDictionary *entries = [NSMutableDictionary dictionary];
 	const char *bytes = data.bytes;
 	const char *end = bytes + data.length;
+
 	for (const char *line = bytes; line < end;) {
 		const char *lineEnd = memchr(line, '\n', end - line) ?: end;
+
 		@autoreleasepool {
 			const char *keyStart = memchr(line, '"', lineEnd - line);
 			const char *keyEnd = keyStart ? memchr(keyStart + 1, '"', lineEnd - keyStart - 1) : NULL;
@@ -70,14 +76,17 @@ static NSDictionary<NSString *, NSDictionary *> *MenzenReadCatalog(NSString *pat
 			const char *objectEnd = lineEnd;
 			while (object && objectEnd > object && objectEnd[-1] != '}') objectEnd--;
 			NSString *bundleIdentifier = keyEnd ? [[NSString alloc] initWithBytes:keyStart + 1 length:keyEnd - keyStart - 1 encoding:NSUTF8StringEncoding] : nil;
+
 			if (bundleIdentifier && object && objectEnd > object && [apps containsObject:bundleIdentifier]) {
 				NSDictionary *entry = [NSJSONSerialization JSONObjectWithData:[NSData dataWithBytesNoCopy:(void *)object length:objectEnd - object freeWhenDone:NO] options:0 error:NULL];
+
 				if ([entry isKindOfClass:NSDictionary.class] && MenzenIsIconURL(entry[@"icon"])) {
 					id appStoreId = entry[@"appStoreId"];
 					entries[bundleIdentifier] = [appStoreId isKindOfClass:NSNumber.class] ? @{@"icon": entry[@"icon"], @"appStoreId": appStoreId} : @{@"icon": entry[@"icon"]};
 				}
 			}
 		}
+
 		line = lineEnd + 1;
 	}
 
@@ -135,6 +144,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 
 		NSDictionary *games = @{};
 		NSMutableDictionary *apps = [NSMutableDictionary dictionary];
+
 		for (NSString *file in MenzenCatalogFiles()) {
 			NSDictionary *entries = MenzenReadCatalog(MenzenCachePath(file), wanted) ?: @{};
 			if ([file isEqualToString:MenzenGamesFile]) games = entries;
@@ -143,6 +153,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 
 		dispatch_async(dispatch_get_main_queue(), ^{
 			if (generation != self->_readGeneration) return;
+
 			self->_installed = installed;
 			self->_games = games;
 			self->_apps = apps;
@@ -168,6 +179,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	dispatch_group_t group = dispatch_group_create();
 	__block BOOL changed = NO;
 	__block BOOL failed = NO;
+
 	for (NSString *file in MenzenCatalogFiles()) {
 		dispatch_group_enter(group);
 		[self download:file completion:^(BOOL saved, BOOL current) {
@@ -195,6 +207,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	[[_session downloadTaskWithRequest:request completionHandler:^(NSURL *location, NSURLResponse *response, NSError *error) {
 		NSHTTPURLResponse *http = [response isKindOfClass:NSHTTPURLResponse.class] ? (NSHTTPURLResponse *)response : nil;
 		BOOL saved = NO;
+
 		if (http.statusCode == 200 && location && MenzenReadCatalog(location.path, [NSSet set])) {
 			[NSFileManager.defaultManager createDirectoryAtPath:path.stringByDeletingLastPathComponent withIntermediateDirectories:YES attributes:nil error:nil];
 			[NSFileManager.defaultManager removeItemAtPath:path error:nil];
@@ -208,6 +221,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 				CFPreferencesSetAppValue((__bridge CFStringRef)MenzenETagKey(file), (__bridge CFStringRef)newETag, MenzenDaemonDomain);
 				CFPreferencesAppSynchronize(MenzenDaemonDomain);
 			}
+
 			completion(saved, current);
 		});
 	}] resume];
@@ -228,6 +242,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 
 - (NSArray<NSString *> *)installedGames {
 	NSMutableArray *games = [NSMutableArray array];
+
 	@autoreleasepool {
 		for (NSString *bundleIdentifier in _installed) {
 			if ([self isGame:bundleIdentifier]) [games addObject:bundleIdentifier];
@@ -239,6 +254,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 
 - (NSDictionary<NSString *, NSString *> *)providerIcons {
 	NSMutableDictionary *icons = [NSMutableDictionary dictionary];
+
 	for (NSDictionary *provider in MenzenProviders()) {
 		NSString *bundleIdentifier = provider[MenzenProviderBundleIdentifierKey];
 		icons[bundleIdentifier] = _apps[bundleIdentifier][@"icon"];

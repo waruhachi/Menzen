@@ -39,11 +39,13 @@ OSStatus MenzenKeychainSaveTokens(NSDictionary *tokens) {
 		(__bridge id)kSecValueData: data,
 		(__bridge id)kSecAttrAccessible: (__bridge id)kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
 	};
+
 	OSStatus status = SecItemUpdate((__bridge CFDictionaryRef)MenzenKeychainQuery(), (__bridge CFDictionaryRef)attributes);
 	if (status != errSecItemNotFound) return status;
 
 	NSMutableDictionary *item = MenzenKeychainQuery();
 	[item addEntriesFromDictionary:attributes];
+
 	return SecItemAdd((__bridge CFDictionaryRef)item, NULL);
 }
 

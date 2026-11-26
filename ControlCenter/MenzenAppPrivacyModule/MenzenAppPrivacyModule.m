@@ -36,9 +36,11 @@ static void MenzenAppPrivacySettingsChanged(CFNotificationCenterRef center, void
 	MenzenSettingsSynchronize();
 	NSString *app = MenzenPrivacyModuleApp();
 	NSString *title = MenzenLocalizedString(@"module.all_apps", @"All Apps");
+
 	for (NSArray<NSString *> *installed in MenzenInstalledProviderApps()) {
 		if ([installed[0] isEqualToString:app]) title = installed[1];
 	}
+
 	self.title = title;
 	self.selected = MenzenSettingBool(MenzenPrivacyModuleKey(), NO);
 	[self reloadActions];
@@ -46,10 +48,13 @@ static void MenzenAppPrivacySettingsChanged(CFNotificationCenterRef center, void
 
 - (void)reloadActions {
 	[self removeAllActions];
+
 	NSString *current = MenzenPrivacyModuleApp() ?: @"";
 	UIImage *checkmark = [UIImage systemImageNamed:@"checkmark"];
+
 	NSMutableArray<NSArray<NSString *> *> *choices = [NSMutableArray arrayWithObject:@[@"", MenzenLocalizedString(@"module.all_apps", @"All Apps")]];
 	[choices addObjectsFromArray:MenzenInstalledProviderApps()];
+
 	__weak typeof(self) weakSelf = self;
 	for (NSArray<NSString *> *choice in choices) {
 		NSString *value = choice[0];

@@ -50,6 +50,7 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 		NSArray<NSString *> *identifiers = [apps.allKeys sortedArrayUsingComparator:^NSComparisonResult(NSString *a, NSString *b) {
 			return [apps[a][MenzenConnectedAppNameKey] localizedCaseInsensitiveCompare:apps[b][MenzenConnectedAppNameKey]];
 		}];
+
 		for (NSString *identifier in identifiers) {
 			PSSpecifier *app = [PSSpecifier preferenceSpecifierNamed:apps[identifier][MenzenConnectedAppNameKey] target:self set:nil get:@selector(appSummary:) detail:MenzenConnectedAppListController.class cell:PSLinkListCell edit:nil];
 			app.identifier = identifier;
@@ -71,16 +72,19 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 // PSLinkListCell would open a list of choices.
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	PSSpecifier *specifier = [self specifierAtIndexPath:indexPath];
+
 	if (![specifier propertyForKey:@"connectedApp"]) {
 		[super tableView:tableView didSelectRowAtIndexPath:indexPath];
 		return;
 	}
 
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
+
 	MenzenConnectedAppListController *controller = [MenzenConnectedAppListController new];
 	controller.specifier = specifier;
 	controller.rootController = self.rootController;
 	controller.parentController = self;
+
 	[self showController:controller animate:YES];
 }
 
@@ -110,6 +114,7 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 		remove.buttonAction = @selector(confirmRemove:);
 		[remove setProperty:MenzenDestructiveButtonCell.class forKey:@"cellClass"];
 		[specifiers addObject:remove];
+
 		_specifiers = specifiers;
 	}
 
@@ -132,6 +137,7 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 	[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"connected.remove", @"Remove") style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
 		[weakSelf remove];
 	}]];
+
 	[self presentViewController:alert animated:YES completion:nil];
 }
 

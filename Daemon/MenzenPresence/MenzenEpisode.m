@@ -11,6 +11,7 @@ BOOL MenzenFindEpisode(NSString *title, NSInteger *season, NSInteger *episode, N
 
 	NSRange all = NSMakeRange(0, title.length);
 	NSTextCheckingResult *match = [seasonEpisode firstMatchInString:title options:0 range:all];
+
 	if (match) {
 		*season = [title substringWithRange:[match rangeAtIndex:1]].integerValue;
 		*episode = [title substringWithRange:[match rangeAtIndex:2]].integerValue;
@@ -22,6 +23,7 @@ BOOL MenzenFindEpisode(NSString *title, NSInteger *season, NSInteger *episode, N
 	}
 
 	NSRange range = match.range;
+
 	if (range.location > 0 && NSMaxRange(range) < title.length) {
 		unichar before = [title characterAtIndex:range.location - 1], after = [title characterAtIndex:NSMaxRange(range)];
 		if ((before == '(' && after == ')') || (before == '[' && after == ']')) range = NSMakeRange(range.location - 1, range.length + 2);
@@ -33,6 +35,7 @@ BOOL MenzenFindEpisode(NSString *title, NSInteger *season, NSInteger *episode, N
 	*rest = title;
 	if (!before.length && after.length) *rest = after;
 	else if (!after.length && before.length) *rest = before;
+
 	return YES;
 }
 
@@ -40,5 +43,6 @@ NSString *MenzenEpisodeText(NSInteger season, NSInteger episode) {
 	if (season > 0 && episode > 0) return [NSString stringWithFormat:MenzenLocalizedString(@"episode.season_x_episode_x", @"Season %1$ld, Episode %2$ld"), (long)season, (long)episode];
 	if (episode > 0) return [NSString stringWithFormat:MenzenLocalizedString(@"episode.episode_x", @"Episode %ld"), (long)episode];
 	if (season > 0) return [NSString stringWithFormat:MenzenLocalizedString(@"episode.season_x", @"Season %ld"), (long)season];
+
 	return nil;
 }

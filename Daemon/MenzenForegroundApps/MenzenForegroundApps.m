@@ -73,24 +73,29 @@ static NSUInteger const MenzenTaskStateValue = 1;
 		descriptor.values = MenzenTaskStateValue;
 		descriptor.endowmentNamespaces = @[MenzenVisibilityEndowment];
 		[configuration setStateDescriptor:descriptor];
+
 		[configuration setUpdateHandler:^(id monitor, RBSProcessHandle *process, RBSProcessStateUpdate *update) {
 			RBSProcessIdentity *identity = process.identity;
 			// Widgets and other extensions have an identity too.
 			if (!identity.isApplication) return;
+
 			NSString *bundleIdentifier = identity.embeddedApplicationIdentifier;
 			if (!bundleIdentifier.length) return;
+
 			BOOL visible = [update.state.endowmentNamespaces containsObject:MenzenVisibilityEndowment];
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[weakSelf app:bundleIdentifier visible:visible];
 			});
 		}];
 	}];
+
 	return _monitor != nil;
 }
 
 - (void)app:(NSString *)bundleIdentifier visible:(BOOL)visible {
 	NSUInteger index = [_visible indexOfObject:bundleIdentifier];
 	if (visible == (index != NSNotFound)) return;
+
 	if (visible) [_visible insertObject:bundleIdentifier atIndex:0];
 	else [_visible removeObjectAtIndex:index];
 	_handler([_visible copy]);

@@ -67,6 +67,7 @@ static inline double MenzenSettingDouble(NSString *key, double fallback) {
 
 static inline BOOL MenzenAppIsPrivate(NSString *bundleIdentifier) {
 	if (MenzenSettingBool(MenzenSettingPrivacy, NO)) return YES;
+
 	return bundleIdentifier.length && MenzenSettingBool([MenzenSettingPrivatePrefix stringByAppendingString:bundleIdentifier], NO);
 }
 
@@ -79,6 +80,7 @@ static inline NSArray<NSString *> *MenzenPriority(void) {
 	NSArray<NSString *> *defaults = @[MenzenSourceCustom, MenzenSourceConnected, MenzenSourceGames, MenzenSourceMedia];
 	NSMutableArray<NSString *> *order = [NSMutableArray array];
 	id value = MenzenSettingValue(MenzenSettingPriority);
+
 	for (id source in [value isKindOfClass:NSArray.class] ? value : nil) {
 		if ([defaults containsObject:source] && ![order containsObject:source]) [order addObject:source];
 	}

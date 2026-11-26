@@ -11,6 +11,7 @@ typedef struct {
 
 static inline void MenzenThrottleRun(MenzenThrottle *throttle, NSTimeInterval interval, dispatch_block_t block) {
 	if (throttle->pending) return;
+
 	throttle->pending = YES;
 	NSTimeInterval wait = MAX(0, throttle->last + interval - CFAbsoluteTimeGetCurrent());
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(wait * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

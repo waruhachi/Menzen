@@ -19,6 +19,7 @@ static NSString *MenzenText(id object, NSString *key) {
 // picture then.
 static NSString *MenzenCover(id video) {
 	NSMutableArray *pictures = [NSMutableArray array];
+
 	for (NSString *key in @[@"nowPlayingImageUrl", @"airPlayImageUrl"]) {
 		NSString *picture = MenzenText(video, key);
 		if (picture) [pictures addObject:picture];
@@ -26,6 +27,7 @@ static NSString *MenzenCover(id video) {
 
 	id panels = MenzenGet(video, @"shortPanelArt");
 	if ([panels isKindOfClass:NSArray.class]) [pictures addObjectsFromArray:panels];
+
 	for (NSString *picture in pictures) {
 		if ([picture isKindOfClass:NSString.class] && [picture hasPrefix:@"https://"] && picture.length <= 256) return picture;
 	}
@@ -56,6 +58,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 
 	withExtras[MPMediaItemPropertyTitle] = title;
 	BOOL episode = show && ![show isEqualToString:title];
+
 	if (episode) {
 		withExtras[MPMediaItemPropertyArtist] = show;
 		// An album that's the artist again is taken as none.
@@ -68,6 +71,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	extras[MenzenExtrasCoverKey] = MenzenCover(video);
 	extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://www.netflix.com/watch/%@", MenzenGet(video, @"videoId"));
 	if (episode) extras[MenzenExtrasArtistURLKey] = MenzenLinkURL(@"https://www.netflix.com/title/%@", MenzenGet(video, @"showId"));
+
 	if (episode && ![MenzenGet(video, @"hasHiddenEpisodeNumbers") boolValue]) {
 		extras[MenzenExtrasSeasonKey] = MenzenNumber(video, @"seasonNumber");
 		extras[MenzenExtrasEpisodeKey] = MenzenNumber(video, @"episodeNumber");

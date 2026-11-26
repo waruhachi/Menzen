@@ -20,8 +20,10 @@ static UIImage *MenzenQRCodeImage(NSURL *url) {
 	code = [code imageByApplyingTransform:CGAffineTransformMakeScale(scale, scale)];
 	CGImageRef image = [[CIContext contextWithOptions:nil] createCGImage:code fromRect:code.extent];
 	if (!image) return nil;
+
 	UIImage *result = [UIImage imageWithCGImage:image scale:UIScreen.mainScreen.scale orientation:UIImageOrientationUp];
 	CGImageRelease(image);
+
 	return result;
 }
 
@@ -32,6 +34,7 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 	label.textAlignment = NSTextAlignmentCenter;
 	label.numberOfLines = 0;
 	label.adjustsFontForContentSizeCategory = YES;
+
 	return label;
 }
 
@@ -62,12 +65,14 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 	UIView *codeBackground = [UIView new];
 	codeBackground.backgroundColor = UIColor.whiteColor;
 	codeBackground.layer.cornerRadius = 12;
+
 	_codeView = [UIImageView new];
 	_codeView.contentMode = UIViewContentModeScaleAspectFit;
 	_codeView.isAccessibilityElement = YES;
 	_codeView.accessibilityLabel = MenzenLocalizedString(@"signin.qr_code_for_discord_s_sign", @"QR code for Discord's sign-in page");
 	_codeView.translatesAutoresizingMaskIntoConstraints = NO;
 	[codeBackground addSubview:_codeView];
+
 	_spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
 	_spinner.color = UIColor.grayColor;
 	_spinner.hidesWhenStopped = YES;
@@ -83,9 +88,11 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 	_copyButton = [UIButton buttonWithType:UIButtonTypeSystem];
 	[_copyButton setTitle:MenzenLocalizedString(@"signin.copy_link", @"Copy Link") forState:UIControlStateNormal];
 	[_copyButton addTarget:self action:@selector(copyLink) forControlEvents:UIControlEventTouchUpInside];
+
 	_shareButton = [UIButton buttonWithType:UIButtonTypeSystem];
 	[_shareButton setTitle:MenzenLocalizedString(@"signin.share", @"Share") forState:UIControlStateNormal];
 	[_shareButton addTarget:self action:@selector(shareLink) forControlEvents:UIControlEventTouchUpInside];
+
 	UIStackView *linkButtons = [[UIStackView alloc] initWithArrangedSubviews:@[_copyButton, _shareButton]];
 	linkButtons.spacing = 32;
 
@@ -151,12 +158,16 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf || attempt != strongSelf->_attempt) return;
+
 			[strongSelf->_spinner stopAnimating];
+
 			if (!verificationURL || !userCode) {
 				[strongSelf showStatus:error ?: MenzenLocalizedString(@"common.menzen_couldn_t_start_the_sign", @"Menzen couldn't start the sign-in. Try again.")];
 				strongSelf->_retryButton.hidden = NO;
+
 				return;
 			}
+
 			[strongSelf showCodeURL:verificationURL userCode:userCode];
 			if (message) [strongSelf showStatus:[message stringByAppendingString:MenzenLocalizedString(@"signin.here_s_a_new_code", @" Here's a new code.")]];
 			[strongSelf waitForApproval:attempt];
@@ -170,6 +181,7 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			typeof(self) strongSelf = weakSelf;
 			if (!strongSelf || attempt != strongSelf->_attempt) return;
+
 			if (signedIn) {
 				[strongSelf finish];
 			} else {
@@ -195,6 +207,7 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 
 - (void)copyLink {
 	if (!_verificationURL) return;
+
 	UIPasteboard.generalPasteboard.URL = _verificationURL;
 	[[UIImpactFeedbackGenerator new] impactOccurred];
 	[_copyButton setTitle:MenzenLocalizedString(@"signin.copied", @"Copied") forState:UIControlStateNormal];
@@ -206,6 +219,7 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 
 - (void)shareLink {
 	if (!_verificationURL) return;
+
 	[[UIImpactFeedbackGenerator new] impactOccurred];
 	UIActivityViewController *share = [[UIActivityViewController alloc] initWithActivityItems:@[_verificationURL] applicationActivities:nil];
 	share.popoverPresentationController.sourceView = _shareButton;
@@ -220,6 +234,7 @@ static UILabel *MenzenTextLabel(UIFontTextStyle style, UIColor *color) {
 
 - (void)finish {
 	if (_finished) return;
+
 	_finished = YES;
 	_attempt++;
 	[self dismissViewControllerAnimated:YES completion:nil];

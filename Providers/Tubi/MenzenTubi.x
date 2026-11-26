@@ -13,11 +13,13 @@ static NSMutableDictionary<NSString *, NSString *> *seriesTitles;
 static NSString *MenzenSeriesKey(NSString *ID) {
 	NSUInteger zeros = 0;
 	while (zeros + 1 < ID.length && [ID characterAtIndex:zeros] == '0') zeros++;
+
 	return [ID substringFromIndex:zeros];
 }
 
 static NSString *MenzenCover(NSDictionary *video) {
 	NSDictionary *images = [video[@"images"] isKindOfClass:NSDictionary.class] ? video[@"images"] : nil;
+
 	for (NSString *key in @[@"landscape_tb", @"thumbnails"]) {
 		id list = images[key] ?: video[key];
 		NSString *url = [list isKindOfClass:NSArray.class] ? MenzenString([list firstObject]) : nil;
@@ -33,6 +35,7 @@ static void MenzenRemember(NSData *body) {
 		NSString *type = MenzenString(content[@"type"]);
 		NSString *title = MenzenString(content[@"title"]);
 		if (!ID || !title) return;
+
 		if ([type isEqualToString:@"s"]) {
 			@synchronized(videos) {
 				if (seriesTitles.count > 1000) [seriesTitles removeAllObjects];
@@ -43,6 +46,7 @@ static void MenzenRemember(NSData *body) {
 			video[@"cover"] = MenzenCover(content);
 			NSString *seriesID = MenzenString(content[@"series_id"]);
 			video[@"series"] = seriesID ? MenzenSeriesKey(seriesID) : nil;
+
 			@synchronized(videos) {
 				if (videos.count > 2000) [videos removeAllObjects];
 				videos[ID] = video;
@@ -55,6 +59,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSString *contentID = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
 	NSDictionary *video = nil;
 	NSString *show = nil;
+
 	if (contentID) {
 		@synchronized(videos) {
 			video = videos[contentID];
@@ -63,6 +68,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	}
 
 	if (!video || center != MPNowPlayingInfoCenter.defaultCenter || !MenzenString(info[MPMediaItemPropertyTitle])) return nil;
+
 	NSString *seriesID = video[@"series"];
 	NSString *page = seriesID ? MenzenLinkURL(@"https://tubitv.com/series/%@", seriesID) : MenzenLinkURL(@"https://tubitv.com/movies/%@", contentID);
 	if (show) withExtras[MPMediaItemPropertyArtist] = show;
@@ -70,6 +76,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	extras[MenzenExtrasCoverKey] = video[@"cover"];
 	extras[MenzenExtrasTitleURLKey] = page;
 	if (seriesID) extras[MenzenExtrasArtistURLKey] = page;
+
 	return extras;
 }
 
@@ -78,6 +85,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	seriesTitles = [NSMutableDictionary dictionary];
 	MenzenProviderCheck(@[], @[]);
 	MenzenAddExtras(MenzenExtras);
+
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		return [url.host.lowercaseString isEqualToString:@"content-cdn.production-public.tubi.io"] && [url.path hasPrefix:@"/api/"] && [url.path hasSuffix:@"/content"];
 	}, ^(NSURL *url, NSData *body) {

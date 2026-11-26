@@ -30,6 +30,7 @@ static NSString *MenzenImageID(NSDictionary *artwork) {
 	dispatch_once(&once, ^{
 		invalid = [NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF-"].invertedSet;
 	});
+
 	for (NSString *kind in @[@"thumbnail", @"tile", @"background"]) {
 		NSString *imageID = MenzenString(MenzenPath(artwork, @[@"standard", kind, @"1.78", @"imageId"]));
 		if (imageID && [imageID rangeOfCharacterFromSet:invalid].location == NSNotFound) return imageID;
@@ -40,6 +41,7 @@ static NSString *MenzenImageID(NSDictionary *artwork) {
 
 static NSString *MenzenPage(NSArray *actions) {
 	if (![actions isKindOfClass:NSArray.class]) return nil;
+
 	for (NSDictionary *action in actions) {
 		NSString *page = [action isKindOfClass:NSDictionary.class] ? MenzenString(action[@"pageId"]) : nil;
 		if ([page hasPrefix:@"entity-"]) return page;
@@ -54,7 +56,9 @@ static NSString *MenzenSeconds(id value) {
 	dispatch_once(&once, ^{
 		formatter = [NSISO8601DateFormatter new];
 	});
+
 	NSDate *date = [value isKindOfClass:NSString.class] ? [formatter dateFromString:value] : nil;
+
 	return date ? @((long long)date.timeIntervalSince1970).stringValue : nil;
 }
 
@@ -65,8 +69,10 @@ static void MenzenRememberItems(id object) {
 	}
 
 	if (![object isKindOfClass:NSDictionary.class]) return;
+
 	NSString *ID = MenzenString(object[@"id"]);
 	NSDictionary *visuals = object[@"visuals"];
+
 	if (ID && [visuals isKindOfClass:NSDictionary.class]) {
 		NSMutableDictionary *item = [NSMutableDictionary dictionary];
 		item[MenzenItemShowKey] = MenzenString(visuals[@"title"]);
@@ -75,13 +81,17 @@ static void MenzenRememberItems(id object) {
 		item[MenzenItemEpisodeKey] = MenzenString(visuals[@"episodeNumber"]);
 		item[MenzenItemImageKey] = MenzenImageID(visuals[@"artwork"]);
 		item[MenzenItemLeagueKey] = MenzenString(MenzenPath(visuals, @[@"metastringParts", @"sportsLeague", @"name"]));
+
 		NSDictionary *timeline = MenzenPath(visuals, @[@"badging", @"airingEventState", @"timeline"]);
 		item[MenzenItemStartKey] = MenzenSeconds(MenzenPath(timeline, @[@"startTime"]));
+
 		item[MenzenItemEndKey] = MenzenSeconds(MenzenPath(timeline, @[@"endTime"]));
 		item[MenzenItemPageKey] = MenzenPage(object[@"actions"]);
+
 		if (item[MenzenItemImageKey] || item[MenzenItemEpisodeTitleKey]) {
 			// A live event's info has the first part of its ID.
 			NSString *contentID = [ID componentsSeparatedByString:@":"].firstObject;
+
 			@synchronized(items) {
 				if (items.count > 1000) [items removeAllObjects];
 				items[ID] = item;
@@ -105,8 +115,10 @@ static NSArray<NSString *> *MenzenEpisodeParts(NSString *text) {
 	dispatch_once(&once, ^{
 		expression = [NSRegularExpression regularExpressionWithPattern:@"^S(\\d+):E(\\d+)\\s+(.+)$" options:0 error:nil];
 	});
+
 	NSTextCheckingResult *match = [text isKindOfClass:NSString.class] ? [expression firstMatchInString:text options:0 range:NSMakeRange(0, text.length)] : nil;
 	if (!match) return nil;
+
 	return @[[text substringWithRange:[match rangeAtIndex:1]], [text substringWithRange:[match rangeAtIndex:2]], [text substringWithRange:[match rangeAtIndex:3]]];
 }
 
@@ -115,7 +127,9 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSString *contentID = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
 	NSString *show = contentID ? MenzenString(info[MPMediaItemPropertyTitle]) : nil;
 	if (!show) return nil;
+
 	NSDictionary *item = nil;
+
 	@synchronized(items) {
 		item = items[contentID];
 	}
@@ -123,6 +137,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSString *title = item[MenzenItemEpisodeTitleKey];
 	NSString *season = item[MenzenItemSeasonKey], *episode = item[MenzenItemEpisodeKey];
 	NSArray *parts = MenzenEpisodeParts(info[MPMediaItemPropertyArtist]);
+
 	if (!title && parts) {
 		season = parts[0];
 		episode = parts[1];
@@ -131,6 +146,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 
 	// Never pass on the stream's URL.
 	[withExtras removeObjectForKey:MPNowPlayingInfoPropertyAssetURL];
+
 	if (title) {
 		withExtras[MPMediaItemPropertyTitle] = title;
 		withExtras[MPMediaItemPropertyArtist] = item[MenzenItemShowKey] ?: show;
@@ -143,6 +159,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	if (item[MenzenItemImageKey]) extras[MenzenExtrasCoverKey] = [NSString stringWithFormat:@"%@%@/scale?width=600&format=jpeg", MenzenImageServer, item[MenzenItemImageKey]];
+
 	if (title) {
 		extras[MenzenExtrasSeasonKey] = season.integerValue > 0 ? season : nil;
 		extras[MenzenExtrasEpisodeKey] = episode.integerValue > 0 ? episode : nil;
@@ -151,6 +168,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSString *page = MenzenLinkURL(@"https://www.disneyplus.com/browse/%@", item[MenzenItemPageKey]);
 	extras[MenzenExtrasTitleURLKey] = page;
 	if (title) extras[MenzenExtrasArtistURLKey] = page;
+
 	if ([item[MenzenItemEndKey] longLongValue] > [item[MenzenItemStartKey] longLongValue]) {
 		extras[MenzenExtrasStartKey] = item[MenzenItemStartKey];
 		extras[MenzenExtrasEndKey] = item[MenzenItemEndKey];
@@ -163,6 +181,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	items = [NSMutableDictionary dictionary];
 	MenzenProviderCheck(@[], @[]);
 	MenzenAddExtras(MenzenExtras);
+
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		return MenzenIsExplore(url);
 	}, ^(NSURL *url, NSData *body) {

@@ -41,10 +41,12 @@ static void MenzenRememberEpisode(NSDictionary *metadata) {
 	NSString *show = MenzenString(metadata[@"artist"]) ?: MenzenString(metadata[@"playbackSource"]);
 	NSString *key = MenzenPairKey(title, show);
 	if (!key) return;
+
 	NSString *showID = MenzenLinkURL(@"%@", metadata[@"artistId"]);
 	NSString *episodeID = MenzenLinkURL(@"%@", metadata[@"trackId"]);
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	extras[MenzenExtrasCoverKey] = MenzenAmazonImageURL(metadata[@"coverId"]);
+
 	if (showID) {
 		// The app publishes the show as the album.
 		extras[MenzenExtrasAlbumURLKey] = [@"https://music.amazon.com/podcasts/" stringByAppendingString:showID];
@@ -56,14 +58,17 @@ static void MenzenRememberEpisode(NSDictionary *metadata) {
 
 static void MenzenRemember(id object, NSUInteger depth) {
 	if (depth > 12) return;
+
 	if ([object isKindOfClass:NSArray.class]) {
 		for (id item in object) MenzenRemember(item, depth + 1);
 		return;
 	}
 
 	if (![object isKindOfClass:NSDictionary.class]) return;
+
 	NSDictionary *dictionary = object;
 	if ([MenzenString(dictionary[@"__type"]) hasSuffix:@"#SetEMPMediaMetadataMethod"] && [dictionary[@"metadata"] isKindOfClass:NSDictionary.class]) MenzenRememberEpisode(dictionary[@"metadata"]);
+
 	for (id value in dictionary.allValues) {
 		if ([value isKindOfClass:NSArray.class] || [value isKindOfClass:NSDictionary.class]) MenzenRemember(value, depth + 1);
 	}
@@ -75,19 +80,24 @@ static BOOL MenzenIsGraphQL(NSURL *url) {
 
 static NSString *MenzenArtistPicture(NSArray *images) {
 	if (![images isKindOfClass:NSArray.class]) return nil;
+
 	for (NSString *type in @[@"PROFILE", @"BACKGROUND"]) {
 		NSString *found = nil;
 		double foundWidth = 0;
+
 		for (NSDictionary *image in images) {
 			if (![image isKindOfClass:NSDictionary.class] || ![MenzenString(image[@"imageType"]) isEqualToString:type]) continue;
+
 			NSString *url = MenzenAmazonImageURL(image[@"url"]);
 			double width = [image[@"width"] isKindOfClass:NSNumber.class] ? [image[@"width"] doubleValue] : 0;
 			BOOL better = !found || MenzenIsBetterWidth(width, foundWidth, 500);
+
 			if (url && better) {
 				found = url;
 				foundWidth = width;
 			}
 		}
+
 		if (found) return found;
 	}
 
@@ -96,20 +106,24 @@ static NSString *MenzenArtistPicture(NSArray *images) {
 
 static void MenzenLoadArtistPicture(NSString *artistASIN) {
 	NSMutableURLRequest *request;
+
 	@synchronized(graphQLLock) {
 		request = [graphQLRequest mutableCopy];
 	}
 
 	if (!request || [artistPicturesLoading containsObject:artistASIN]) return;
+
 	NSDictionary *body = @{
 		@"operationName": @"ArtistImages",
 		@"variables": @{@"id": artistASIN},
 		@"query": @"query ArtistImages($id: String!) { artist(id: $id) { __typename id images { __typename url width imageType } } }",
 	};
+
 	request.HTTPBody = [NSJSONSerialization dataWithJSONObject:body options:0 error:nil];
 	[request setValue:nil forHTTPHeaderField:@"Content-Length"];
 	[NSURLProtocol setProperty:@YES forKey:@"moe.waru.menzen" inRequest:request];
 	[artistPicturesLoading addObject:artistASIN];
+
 	[[NSURLSession.sharedSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
 		NSInteger status = [response isKindOfClass:NSHTTPURLResponse.class] ? ((NSHTTPURLResponse *)response).statusCode : 0;
 		NSDictionary *document = !error && status == 200 && data.length <= 1024 * 1024 ? [NSJSONSerialization JSONObjectWithData:data options:0 error:nil] : nil;
@@ -119,6 +133,7 @@ static void MenzenLoadArtistPicture(NSString *artistASIN) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[artistPicturesLoading removeObject:artistASIN];
 			if (!answered) return;
+
 			if (artistPictures.count > 1000) [artistPictures removeAllObjects];
 			artistPictures[artistASIN] = picture ?: (id)NSNull.null;
 			if (picture) MenzenRepublish();
@@ -141,6 +156,7 @@ static NSDictionary *MenzenTrackExtras(NSDictionary *info) {
 	NSString *albumASIN = MenzenLinkURL(@"%@", row[@"albumASIN"]);
 	NSString *artistASIN = MenzenLinkURL(@"%@", row[@"trackArtistASIN"]) ?: MenzenLinkURL(@"%@", row[@"albumArtistASIN"]);
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
+
 	if (albumASIN) {
 		extras[MenzenExtrasCoverKey] = covers[albumASIN];
 		extras[MenzenExtrasAlbumURLKey] = [@"https://music.amazon.com/albums/" stringByAppendingString:albumASIN];
@@ -165,6 +181,7 @@ static NSDictionary *MenzenTrackExtras(NSDictionary *info) {
 	NSString *asin = MenzenLinkURL(@"%@", MenzenRow(self)[@"asin"]);
 	NSString *cover = MenzenAmazonImageURL(url);
 	if (asin && cover) covers[asin] = cover;
+
 	return url;
 }
 
@@ -174,7 +191,9 @@ static NSDictionary *MenzenTrackExtras(NSDictionary *info) {
 // state.
 static NSDictionary *MenzenRow(id entity) {
 	if (!entityHasRow || ![entity isKindOfClass:entityClass]) return nil;
+
 	id row = MSHookIvar<id>(entity, "_objectDictionary");
+
 	return [row isKindOfClass:NSDictionary.class] ? row : nil;
 }
 
@@ -196,12 +215,14 @@ static NSDictionary<NSString *, NSString *> *MenzenExtras(MPNowPlayingInfoCenter
 	artistPictures = [NSMutableDictionary dictionary];
 	artistPicturesLoading = [NSMutableSet set];
 	graphQLLock = [NSObject new];
+
 	MenzenProviderCheck(@[
 		@"AMPlayer +sharedPlayer",
 		@"AMPlayer -currentTrack",
 		@"AMPersistentEntity _objectDictionary",
 		@"AMPersistedAlbum -imageURLForRequest:",
 	], @[]);
+
 	MenzenAddExtras(MenzenExtras);
 	MenzenModifyRequests(^NSURLRequest *(NSURLRequest *request) {
 		if (MenzenIsGraphQL(request.URL) && [request.HTTPMethod isEqualToString:@"POST"] && ![NSURLProtocol propertyForKey:@"moe.waru.menzen" inRequest:request]) {
@@ -209,13 +230,16 @@ static NSDictionary<NSString *, NSString *> *MenzenExtras(MPNowPlayingInfoCenter
 				graphQLRequest = [request copy];
 			}
 		}
+
 		return request;
 	});
+
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		return MenzenIsPodcastAPI(url);
 	}, ^(NSURL *url, NSData *body) {
 		id object = MenzenJSON(body);
 		if (object) MenzenRemember(object, 0);
 	});
+
 	%init;
 }

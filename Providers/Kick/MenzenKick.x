@@ -15,11 +15,14 @@ static BOOL MenzenIsChannelInfo(NSURL *url) {
 
 static NSString *MenzenThumbnail(NSDictionary *thumbnail) {
 	if (![thumbnail isKindOfClass:NSDictionary.class]) return nil;
+
 	NSString *found = nil;
+
 	for (id value in thumbnail.allValues) {
 		NSString *url = MenzenImageURL(value, @[@"images.kick.com"]);
 		if (!url || [url containsString:@" "]) continue;
 		if ([url containsString:@"/720."]) return url;
+
 		found = found ?: url;
 	}
 
@@ -30,13 +33,18 @@ static void MenzenRememberInfo(NSData *data, NSString *slug) {
 	NSDictionary *info = MenzenJSON(data);
 	NSDictionary *livestream = [info isKindOfClass:NSDictionary.class] ? info[@"livestream"] : nil;
 	if (![livestream isKindOfClass:NSDictionary.class]) return;
+
 	NSString *thumbnail = MenzenThumbnail(livestream[@"thumbnail"]);
 	if (!thumbnail) return;
+
 	NSString *title = MenzenString(livestream[@"session_title"]);
+
 	NSDictionary *user = info[@"user"];
 	NSString *name = MenzenString([user isKindOfClass:NSDictionary.class] ? user[@"username"] : nil).lowercaseString;
+
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	extras[MenzenExtrasCoverKey] = thumbnail;
+
 	NSString *page = MenzenLinkURL(@"https://kick.com/%@", slug.lowercaseString);
 	extras[MenzenExtrasTitleURLKey] = page;
 	extras[MenzenExtrasArtistURLKey] = page;
@@ -47,6 +55,7 @@ static void MenzenRememberInfo(NSData *data, NSString *slug) {
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	NSString *title = withExtras[MPNowPlayingInfoPropertyAssetURL] ? nil : MenzenString(info[MPMediaItemPropertyTitle]);
 	if (!title) return nil;
+
 	return streams[title] ?: streams[MenzenString(info[MPMediaItemPropertyArtist]).lowercaseString ?: @""];
 }
 
@@ -54,6 +63,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	streams = [[MenzenCache alloc] initWithLimit:200];
 	MenzenProviderCheck(@[], @[@"ExpoModulesCore.URLSessionSessionDelegateProxy -URLSession:dataTask:didReceiveData:"]);
 	MenzenAddExtras(MenzenExtras);
+
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		return MenzenIsChannelInfo(url);
 	}, ^(NSURL *url, NSData *body) {

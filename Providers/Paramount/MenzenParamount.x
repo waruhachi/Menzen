@@ -32,11 +32,13 @@ static NSString *MenzenPageURL(id value) {
 	if (!page || [page containsString:@".."] || [page containsString:@"?"] || page.length > 300) return nil;
 	if ([page hasPrefix:@"https://"]) return page;
 	if ([page hasPrefix:@"//"] || [page containsString:@"://"]) return nil;
+
 	return [page hasPrefix:@"/"] ? [site stringByAppendingString:page] : [NSString stringWithFormat:@"%@/%@", site, page];
 }
 
 static void MenzenRememberVideo(NSDictionary *video, NSString *contentID) {
 	NSMutableDictionary *kept = [NSMutableDictionary dictionary];
+
 	for (NSString *key in @[@"seriesTitle", @"seasonNum", @"episodeNum", @"thumbnail", @"mediaType", @"videoPageUrl", @"showPageUrl"]) {
 		kept[key] = MenzenString(video[key]);
 	}
@@ -51,22 +53,28 @@ static void MenzenRememberListing(NSDictionary *listing, NSString *contentID) {
 	NSString *listingID = MenzenString(listing[@"id"]);
 	NSDate *end = MenzenDate(listing[@"endTimestamp"]);
 	if (!listingID || !end || end.timeIntervalSinceNow < 0) return;
+
 	NSMutableDictionary *kept = [NSMutableDictionary dictionary];
+
 	for (NSString *key in @[@"title", @"episodeTitle", @"filePathThumb", @"filepathMovieThumbnail", @"seasonNumber", @"showEpisodeNumber", @"channelSlug"]) {
 		kept[key] = MenzenString(listing[key]);
 	}
 
 	kept[@"startTimestamp"] = listing[@"startTimestamp"];
 	kept[@"endTimestamp"] = listing[@"endTimestamp"];
+
 	@synchronized(videos) {
 		NSMutableDictionary *forVideo = listings[contentID];
+
 		if (!forVideo) {
 			if (listings.count > 2000) [listings removeAllObjects];
 			forVideo = listings[contentID] = [NSMutableDictionary dictionary];
 		}
+
 		for (NSString *otherID in forVideo.allKeys) {
 			if (MenzenDate(forVideo[otherID][@"endTimestamp"]).timeIntervalSinceNow < 0) [forVideo removeObjectForKey:otherID];
 		}
+
 		if (forVideo.count < 200) forVideo[listingID] = kept;
 	}
 }
@@ -79,6 +87,7 @@ static void MenzenRemember(NSData *body) {
 		else if (videoContentID && dictionary[@"startTimestamp"] && MenzenString(dictionary[@"title"])) MenzenRememberListing(dictionary, videoContentID);
 		NSString *slug = MenzenString(dictionary[@"slug"]);
 		NSString *channelName = MenzenString(dictionary[@"channelName"]);
+
 		if (slug && channelName && [dictionary[@"currentListing"] isKindOfClass:NSArray.class]) {
 			@synchronized(videos) {
 				if (channelNames.count > 2000) [channelNames removeAllObjects];
@@ -92,15 +101,18 @@ static NSDictionary *MenzenLiveExtras(NSString *contentID, NSMutableDictionary *
 	NSDate *now = NSDate.date;
 	NSDictionary *listing = nil;
 	NSString *channelName = nil;
+
 	@synchronized(videos) {
 		for (NSDictionary *candidate in listings[contentID].allValues) {
 			NSDate *start = MenzenDate(candidate[@"startTimestamp"]);
 			NSDate *end = MenzenDate(candidate[@"endTimestamp"]);
+
 			if (start && end && [start compare:now] != NSOrderedDescending && [now compare:end] == NSOrderedAscending) {
 				listing = candidate;
 				break;
 			}
 		}
+
 		channelName = listing[@"channelSlug"] ? channelNames[listing[@"channelSlug"]] : nil;
 	}
 
@@ -116,6 +128,7 @@ static NSDictionary *MenzenLiveExtras(NSString *contentID, NSMutableDictionary *
 	}
 
 	withExtras[MPMediaItemPropertyTitle] = title;
+
 	if (artist) {
 		withExtras[MPMediaItemPropertyArtist] = artist;
 		// An album that's the artist again is taken as none.
@@ -137,6 +150,7 @@ static NSDictionary *MenzenLiveExtras(NSString *contentID, NSMutableDictionary *
 	extras[MenzenExtrasEpisodeKey] = MenzenNumber(listing[@"showEpisodeNumber"]);
 	// The video is the channel.
 	if (pluto && contentID.length == 24) extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://pluto.tv/live-tv/%@", contentID);
+
 	return extras;
 }
 
@@ -149,13 +163,16 @@ static NSDictionary *MenzenVideoExtras(NSDictionary *video, NSMutableDictionary 
 	extras[MenzenExtrasArtistURLKey] = MenzenPageURL(video[@"showPageUrl"]);
 	// The album stays the show, which menzend takes as no album.
 	if (video[@"seriesTitle"]) withExtras[MPMediaItemPropertyArtist] = video[@"seriesTitle"];
+
 	return extras;
 }
 
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	NSString *contentID = MenzenString(info[MPNowPlayingInfoPropertyExternalContentIdentifier]);
 	if (center != MPNowPlayingInfoCenter.defaultCenter || !contentID || !MenzenString(info[MPMediaItemPropertyTitle])) return nil;
+
 	NSDictionary *video;
+
 	@synchronized(videos) {
 		video = videos[contentID];
 	}
@@ -173,6 +190,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSString *host = pluto ? @"pluto.tv" : @"www.paramountplus.com";
 	MenzenProviderCheck(@[], @[]);
 	MenzenAddExtras(MenzenExtras);
+
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		// The API's JSON, not its streams' and sessions' (which carry tokens).
 		NSString *path = url.path;

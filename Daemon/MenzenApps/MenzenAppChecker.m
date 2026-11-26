@@ -29,12 +29,14 @@ static void *MenzenFrontBoardServices(void) {
 	dispatch_once(&once, ^{
 		handle = dlopen("/System/Library/PrivateFrameworks/FrontBoardServices.framework/FrontBoardServices", RTLD_LAZY);
 	});
+
 	return handle;
 }
 
 static NSString *MenzenOptionKey(const char *symbol, NSString *fallback) {
 	void *handle = MenzenFrontBoardServices();
 	NSString *__unsafe_unretained *key = handle ? (NSString * __unsafe_unretained *)dlsym(handle, symbol) : NULL;
+
 	return key && *key ? *key : fallback;
 }
 
@@ -90,17 +92,20 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	notify_register_dispatch(MenzenLockStateNotification, &_lockToken, dispatch_get_main_queue(), ^(int token) {
 		if (![weakSelf locked]) [weakSelf checkNext];
 	});
+
 	[self scheduleScan];
 }
 
 - (BOOL)locked {
 	uint64_t state = 0;
 	if (_lockToken == NOTIFY_TOKEN_INVALID || notify_get_state(_lockToken, &state) != NOTIFY_STATUS_OK) return NO;
+
 	return state != 0;
 }
 
 - (void)observe:(NSString *)bundleIdentifier {
 	if ([_observed containsObject:bundleIdentifier]) return;
+
 	[_observed addObject:bundleIdentifier];
 	NSString *name = [@MenzenSupportCheckedNotificationPrefix stringByAppendingString:bundleIdentifier];
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), (__bridge void *)self, MenzenChecked, (__bridge CFStringRef)name, NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
@@ -109,6 +114,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 - (NSDictionary<NSString *, NSString *> *)tried {
 	CFPreferencesAppSynchronize(MenzenDaemonDomain);
 	NSDictionary *tried = CFBridgingRelease(CFPreferencesCopyAppValue(MenzenTriedKey, MenzenDaemonDomain));
+
 	return [tried isKindOfClass:NSDictionary.class] ? tried : @{};
 }
 
@@ -121,6 +127,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)scheduleScan {
 	if (_scanScheduled) return;
+
 	_scanScheduled = YES;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenScanDelay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		self->_scanScheduled = NO;
@@ -130,12 +137,14 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)scan {
 	NSDictionary *tried = self.tried;
+
 	for (NSString *bundleIdentifier in [MenzenHookedBundles().allObjects sortedArrayUsingSelector:@selector(compare:)]) {
 		[self observe:bundleIdentifier];
 		NSString *version = MenzenInstalledAppVersion(bundleIdentifier);
 		if (!version || MenzenStatusIsCurrent(MenzenAppSupportStatus(bundleIdentifier), version)) continue;
 		if ([tried[bundleIdentifier] isEqual:MenzenTriedValue(version)]) continue;
 		if ([bundleIdentifier isEqual:_current] || [_queue containsObject:bundleIdentifier]) continue;
+
 		[_queue addObject:bundleIdentifier];
 	}
 
@@ -144,6 +153,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)checkNext {
 	if (_current || !_queue.count || self.locked) return;
+
 	NSString *bundleIdentifier = _queue.firstObject;
 	[_queue removeObjectAtIndex:0];
 	NSString *version = MenzenInstalledAppVersion(bundleIdentifier);
@@ -162,15 +172,19 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	[service openApplication:bundleIdentifier options:options withResult:^(NSError *error) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			if (generation != self->_generation) return;
+
 			if (error) {
 				[self finishCurrent];
 				return;
 			}
+
 			self->_currentPid = [service pidForApplication:bundleIdentifier];
 		});
 	}];
+
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenBackgroundTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		if (generation != self->_generation) return;
+
 		[self finishCurrent];
 	});
 }
@@ -184,6 +198,7 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	NSDictionary *status = MenzenAppSupportStatus(bundleIdentifier);
 	BOOL opened = status && ![status[MenzenSupportBackgroundKey] boolValue];
 	if (pid > 0 && !opened && ![bundleIdentifier isEqual:_opened] && [MenzenSystemService() pidForApplication:bundleIdentifier] == pid) kill(pid, SIGKILL);
+
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenNextDelay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		[self checkNext];
 	});
@@ -203,13 +218,16 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 
 - (void)openAppToCheck:(NSString *)bundleIdentifier returningTo:(NSString *)returnBundleIdentifier {
 	if (![MenzenHookedBundles() containsObject:bundleIdentifier]) return;
+
 	[self observe:bundleIdentifier];
 	_opened = bundleIdentifier;
 	_returnTo = returnBundleIdentifier;
 	NSDictionary *options = @{MenzenOptionKey("FBSOpenApplicationOptionKeyUnlockDevice", @"__UnlockDevice"): @YES};
 	[MenzenSystemService() openApplication:bundleIdentifier options:options withResult:^(NSError *error){}];
+
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenOpenTimeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		if (![self->_opened isEqual:bundleIdentifier]) return;
+
 		self->_opened = nil;
 		self->_returnTo = nil;
 	});

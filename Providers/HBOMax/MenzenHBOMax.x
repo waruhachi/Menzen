@@ -22,6 +22,7 @@ static BOOL MenzenIsPlayerCore(const void *address) {
 
 - (NSURLSessionDataTask *)dataTaskWithRequest:(NSURLRequest *)request completionHandler:(void (^)(NSData *, NSURLResponse *, NSError *))completionHandler {
 	NSURL *url = request.URL;
+
 	if (MenzenIsImageServer(url) && url.absoluteString.length <= 256 && MenzenIsPlayerCore(__builtin_return_address(0))) {
 		@synchronized(NSURLSession.class) {
 			cover = url.absoluteString;
@@ -35,6 +36,7 @@ static BOOL MenzenIsPlayerCore(const void *address) {
 
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	if (!info[MPMediaItemPropertyArtwork] || withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
+
 	@synchronized(NSURLSession.class) {
 		return cover ? @{MenzenExtrasCoverKey: cover} : nil;
 	}

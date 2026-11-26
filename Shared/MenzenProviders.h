@@ -209,6 +209,7 @@ static inline NSArray<NSDictionary<NSString *, id> *> *MenzenProviders(void) {
 			},
 		];
 	});
+
 	return providers;
 }
 
@@ -216,5 +217,6 @@ static inline NSDictionary<NSString *, id> *MenzenProviderForBundleIdentifier(NS
 	for (NSDictionary *provider in MenzenProviders()) {
 		if ([provider[MenzenProviderBundleIdentifierKey] isEqualToString:bundleIdentifier]) return provider;
 	}
+
 	return nil;
 }

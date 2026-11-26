@@ -69,9 +69,11 @@ static BBSectionIcon *MenzenIcon(void) {
 	dispatch_once(&once, ^{
 		NSData *data = [NSData dataWithContentsOfFile:jbroot(@"/Library/PreferenceBundles/MenzenPreferences.bundle/icon@3x.png")];
 		if (!data) return;
+
 		icon = [%c(BBSectionIcon) new];
 		[icon addVariant:[%c(BBSectionIconVariant) variantWithFormat:0 imageData:data]];
 	});
+
 	return icon;
 }
 
@@ -84,6 +86,7 @@ static void MenzenRemoveRequestBulletin(NSString *identifier, NSString *bulletin
 	bulletin.bulletinID = bulletinID;
 	bulletin.recordID = [MenzenRequestPrefix stringByAppendingString:identifier];
 	bulletin.publisherBulletinID = bulletinID;
+
 	[MenzenBulletinServer _sendRemoveBulletin:bulletin toFeeds:MenzenRequestFeeds shouldSync:NO];
 }
 
@@ -100,6 +103,7 @@ static void MenzenShowRequest(NSString *identifier, NSString *name) {
 	// A new ID each time, so a request shown again opens Connected Apps again;
 	// the app's identifier comes before the slash.
 	NSString *bulletinID = [NSString stringWithFormat:@"%@/%@", recordID, NSUUID.UUID.UUIDString];
+
 	bulletin.sectionID = MenzenRequestSection;
 	bulletin.bulletinID = bulletinID;
 	bulletin.recordID = recordID;
@@ -113,6 +117,7 @@ static void MenzenShowRequest(NSString *identifier, NSString *name) {
 	bulletin.clearable = YES;
 	bulletin.showsMessagePreview = YES;
 	bulletin.defaultAction = [%c(BBAction) actionWithLaunchURL:MenzenConnectedPageURL()];
+
 	dispatch_async(MenzenBulletinQueue, ^{
 		NSString *previous = MenzenRequestBulletinIDs[identifier];
 		if (previous) MenzenRemoveRequestBulletin(identifier, previous);
@@ -123,19 +128,25 @@ static void MenzenShowRequest(NSString *identifier, NSString *name) {
 
 static void MenzenShowRequests(void) {
 	if (!MenzenRequestsReady || !MenzenBulletinServer) return;
+
 	MenzenSettingsSynchronize();
 	NSArray *requests = MenzenSettingValue(MenzenSettingConnectedRequests);
 	if (![requests isKindOfClass:NSArray.class]) return;
+
 	NSArray *allowed = MenzenConnectedAllowed();
 	NSDate *latest = MenzenRequestsShownUntil;
+
 	for (NSDictionary *request in requests) {
 		if (![request isKindOfClass:NSDictionary.class]) continue;
+
 		NSString *identifier = request[MenzenConnectedRequestIdentifierKey];
 		NSString *appName = MenzenConnectedName(request[MenzenConnectedRequestNameKey]);
 		NSDate *date = request[MenzenConnectedRequestDateKey];
 		if (![date isKindOfClass:NSDate.class] || [date compare:MenzenRequestsShownUntil] != NSOrderedDescending) continue;
+
 		latest = [date laterDate:latest];
 		if (!MenzenConnectedIdentifierIsValid(identifier) || !appName || [allowed containsObject:identifier]) continue;
+
 		MenzenShowRequest(identifier, appName);
 	}
 
@@ -148,6 +159,7 @@ static void MenzenRequestsChanged(CFNotificationCenterRef center, void *observer
 
 static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef info) {
 	if (!MenzenBulletinServer) return;
+
 	MenzenSettingsSynchronize();
 	for (NSString *identifier in MenzenConnectedAllowed()) MenzenWithdrawRequest(identifier);
 }
@@ -156,6 +168,7 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 
 - (id)initWithQueue:(dispatch_queue_t)queue dataProviderManager:(id)dataProviderManager syncService:(id)syncService dismissalSyncCache:(id)dismissalSyncCache observerListener:(id)observerListener conduitListener:(id)conduitListener settingsListener:(id)settingsListener {
 	self = %orig;
+
 	if (self) {
 		MenzenBulletinServer = self;
 		MenzenBulletinQueue = queue;

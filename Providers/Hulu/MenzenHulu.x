@@ -9,15 +9,19 @@ static MenzenCache<NSString *, NSDictionary *> *entities;
 
 static NSString *MenzenArtworkURL(NSDictionary *entity, NSString *ID) {
 	NSDictionary *artwork = [entity[@"artwork"] isKindOfClass:NSDictionary.class] ? entity[@"artwork"] : nil;
+
 	for (NSString *type in @[@"video.horizontal.hero", @"detail.horizontal.hero", @"program.tile"]) {
 		NSDictionary *image = [artwork[type] isKindOfClass:NSDictionary.class] ? artwork[type] : nil;
 		NSURLComponents *components = [NSURLComponents componentsWithString:MenzenString(image[@"path"]) ?: @""];
 		NSString *host = components.host.lowercaseString;
 		if (![components.scheme isEqualToString:@"https"] || !([host isEqualToString:@"img.hulu.com"] || ([host hasPrefix:@"img"] && [host hasSuffix:@".hulu.com"])) || ![components.path isEqualToString:[@"/user/v3/artwork/" stringByAppendingString:ID]]) continue;
+
 		NSMutableArray *items = [NSMutableArray array];
+
 		for (NSURLQueryItem *item in components.queryItems) {
 			if (([item.name isEqualToString:@"base_image_bucket_name"] || [item.name isEqualToString:@"base_image"]) && MenzenLinkURL(@"%@", item.value)) [items addObject:item];
 		}
+
 		[items addObject:[NSURLQueryItem queryItemWithName:@"size" value:@"600x338"]];
 		[items addObject:[NSURLQueryItem queryItemWithName:@"format" value:@"jpeg"]];
 		components.queryItems = items;
@@ -35,12 +39,14 @@ static void MenzenRemember(NSData *body) {
 		NSString *ID = MenzenLinkURL(@"%@", entity[@"id"]);
 		NSString *name = MenzenString(entity[@"name"]);
 		if (!ID || !name || !([type isEqualToString:@"episode"] || [type isEqualToString:@"movie"])) return;
+
 		NSMutableDictionary *kept = [NSMutableDictionary dictionary];
 		kept[@"name"] = name;
 		kept[@"show"] = MenzenString(entity[@"series_name"]);
 		kept[@"season"] = MenzenString(entity[@"season"]);
 		kept[@"number"] = MenzenString(entity[@"number"]);
 		kept[@"cover"] = MenzenArtworkURL(entity, ID);
+
 		entities[ID] = kept;
 	});
 }
@@ -53,6 +59,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	withExtras[MPMediaItemPropertyTitle] = entity[@"name"];
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	NSString *show = entity[@"show"];
+
 	if (show) {
 		withExtras[MPMediaItemPropertyArtist] = show;
 		// An album that's the artist again is taken as none.
@@ -68,6 +75,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 
 	extras[MenzenExtrasCoverKey] = entity[@"cover"];
 	extras[MenzenExtrasTitleURLKey] = MenzenLinkURL(@"https://www.hulu.com/watch/%@", contentID);
+
 	return extras;
 }
 
@@ -75,6 +83,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	entities = [[MenzenCache alloc] initWithLimit:2000];
 	MenzenProviderCheck(@[], @[]);
 	MenzenAddExtras(MenzenExtras);
+
 	MenzenObserveResponses(^BOOL(NSURL *url) {
 		return [url.host.lowercaseString isEqualToString:@"discover.hulu.com"] && [url.path hasPrefix:@"/content/"];
 	}, ^(NSURL *url, NSData *body) {

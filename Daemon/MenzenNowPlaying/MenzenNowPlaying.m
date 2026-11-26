@@ -40,6 +40,7 @@ static double MenzenDouble(id value) {
 	NSTimeInterval elapsed = self.elapsed;
 	if (self.playing && self.timestamp) elapsed += [date timeIntervalSinceDate:self.timestamp] * (self.playbackRate ?: 1);
 	if (self.duration > 0) elapsed = MIN(elapsed, self.duration);
+
 	return MAX(elapsed, 0);
 }
 
@@ -55,8 +56,10 @@ static MenzenTrack *MenzenTrackFromInfo(NSDictionary *info, NSString *bundleIden
 	track.album = MenzenString(info[MenzenInfoAlbum]);
 	track.artworkIdentifier = MenzenString(info[MenzenInfoArtworkIdentifier]);
 	track.contentIdentifier = MenzenString(info[MenzenInfoContentItemIdentifier]);
+
 	id assetURL = info[MenzenInfoAssetURL];
 	track.assetURL = [assetURL isKindOfClass:NSURL.class] ? [assetURL absoluteString] : MenzenString(assetURL);
+
 	track.storeIdentifier = MenzenIdentifier(info[MenzenInfoStoreIdentifier]);
 	track.albumStoreIdentifier = MenzenIdentifier(info[MenzenInfoAlbumStoreIdentifier]);
 	track.artistStoreIdentifier = MenzenIdentifier(info[MenzenInfoArtistStoreIdentifier]);
@@ -69,6 +72,7 @@ static MenzenTrack *MenzenTrackFromInfo(NSDictionary *info, NSString *bundleIden
 
 	NSDictionary *extras = MenzenExtrasFromURL(track.assetURL);
 	double start = [extras[MenzenExtrasStartKey] doubleValue], end = [extras[MenzenExtrasEndKey] doubleValue];
+
 	if (track.duration <= 0 && start > 0 && end > start) {
 		track.duration = end - start;
 		track.elapsed = 0;
@@ -116,10 +120,12 @@ static void *MenzenSymbol(void *handle, const char *name) {
 		"kMRMediaRemoteNowPlayingApplicationDidChangeNotification",
 		"kMRMediaRemoteNowPlayingApplicationIsPlayingDidChangeNotification",
 	};
+
 	__weak typeof(self) weakSelf = self;
 	for (size_t i = 0; i < sizeof(notificationSymbols) / sizeof(*notificationSymbols); i++) {
 		CFStringRef *namePointer = MenzenSymbol(handle, notificationSymbols[i]);
 		if (!namePointer || !*namePointer) continue;
+
 		[NSNotificationCenter.defaultCenter addObserverForName:(__bridge NSString *)*namePointer object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *notification) {
 			[weakSelf scheduleUpdate];
 		}];
@@ -127,6 +133,7 @@ static void *MenzenSymbol(void *handle, const char *name) {
 
 	registerForNotifications(dispatch_get_main_queue());
 	[self scheduleUpdate];
+
 	return YES;
 }
 
@@ -135,11 +142,13 @@ static void *MenzenSymbol(void *handle, const char *name) {
 // notifications, or an app that updates constantly would never be read.
 - (void)scheduleUpdate {
 	if (_updatePending) return;
+
 	_updatePending = YES;
 	__weak typeof(self) weakSelf = self;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 100 * NSEC_PER_MSEC), dispatch_get_main_queue(), ^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf) return;
+
 		strongSelf->_updatePending = NO;
 		[strongSelf update];
 	});
@@ -161,11 +170,13 @@ static void *MenzenSymbol(void *handle, const char *name) {
 		info = [(__bridge NSDictionary *)raw copy];
 		dispatch_group_leave(group);
 	});
+
 	dispatch_group_enter(group);
 	_getIsPlaying(queue, ^(Boolean isPlaying) {
 		playing = isPlaying;
 		dispatch_group_leave(group);
 	});
+
 	dispatch_group_enter(group);
 	MRNowPlayingClientGetStringFn getBundleIdentifier = _clientGetBundleIdentifier;
 	MRNowPlayingClientGetStringFn getParentAppBundleIdentifier = _clientGetParentAppBundleIdentifier;
@@ -174,6 +185,7 @@ static void *MenzenSymbol(void *handle, const char *name) {
 			NSString *parent = getParentAppBundleIdentifier ? (__bridge NSString *)getParentAppBundleIdentifier(client) : nil;
 			bundleIdentifier = [(parent.length ? parent : (__bridge NSString *)getBundleIdentifier(client)) copy];
 		}
+
 		dispatch_group_leave(group);
 	});
 
@@ -181,10 +193,12 @@ static void *MenzenSymbol(void *handle, const char *name) {
 	dispatch_group_notify(group, queue, ^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf) return;
+
 		MenzenTrack *track = info.count && bundleIdentifier ? MenzenTrackFromInfo(info, bundleIdentifier, playing) : nil;
 		// Apple Music's animated artwork shows up as its own content item, and
 		// the next song as a "Loading…" placeholder for a moment.
 		if ([track.contentIdentifier hasPrefix:@"animatedArtwork_"] || [track.contentIdentifier hasPrefix:@"\u267B"]) return;
+
 		strongSelf->_handler(track);
 	});
 }

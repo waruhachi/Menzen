@@ -22,6 +22,7 @@ static NSString *const MenzenInfoExternalContentIdentifier = @"kMRMediaRemoteNow
 static NSString *MenzenMetadataString(MenzenTVMediaItem *item, NSString *property) {
 	id value = [item mediaItemMetadataForProperty:[@"TVPMediaItemMetadata" stringByAppendingString:property]];
 	if ([value isKindOfClass:NSNumber.class]) return [value integerValue] > 0 ? [value stringValue] : nil;
+
 	return [value isKindOfClass:NSString.class] && [value length] ? value : nil;
 }
 
@@ -33,8 +34,10 @@ static NSString *MenzenPage(MenzenTVMediaItem *item, NSString *property, NSStrin
 static MenzenTVMediaItem *MenzenCurrentMediaItem(void) {
 	Class manager = %c(VUIPlaybackManager);
 	if (![manager respondsToSelector:@selector(sharedInstance)] || ![manager instancesRespondToSelector:@selector(mainPlayer)]) return nil;
+
 	id player = [[manager sharedInstance] mainPlayer];
 	id item = [player respondsToSelector:@selector(currentMediaItem)] ? [player currentMediaItem] : nil;
+
 	return [item respondsToSelector:@selector(mediaItemMetadataForProperty:)] ? item : nil;
 }
 
@@ -43,6 +46,7 @@ static MenzenTVMediaItem *MenzenCurrentMediaItem(void) {
 - (void)_updateNowPlayingInfo:(NSDictionary *)info commandsAndStates:(id)commandsAndStates {
 	MenzenTVMediaItem *item = [info isKindOfClass:NSDictionary.class] && [info[MenzenInfoTitle] length] ? MenzenCurrentMediaItem() : nil;
 	NSString *identifier = MenzenMetadataString(item, @"ExternalIdentifier");
+
 	if (!identifier || ![info[MenzenInfoExternalContentIdentifier] isEqual:identifier]) {
 		%orig;
 		return;
@@ -62,6 +66,7 @@ static MenzenTVMediaItem *MenzenCurrentMediaItem(void) {
 	// Movies only have a sized picture, which the CDN also has as a JPEG.
 	if (!cover) {
 		NSURLComponents *picture = [NSURLComponents componentsWithString:MenzenMetadataString(item, @"ArtworkURLString") ?: @""];
+
 		if (picture.path.pathExtension.length && ![picture.path.pathExtension isEqualToString:@"jpg"]) {
 			picture.path = [picture.path.stringByDeletingPathExtension stringByAppendingPathExtension:@"jpg"];
 			cover = picture.string;
@@ -69,6 +74,7 @@ static MenzenTVMediaItem *MenzenCurrentMediaItem(void) {
 	}
 
 	if ([cover hasPrefix:@"https://"] && ![cover containsString:@"{"]) extras[MenzenExtrasCoverKey] = cover;
+
 	if (series) {
 		extras[MenzenExtrasSeasonKey] = MenzenMetadataString(item, @"SeasonNumber");
 		extras[MenzenExtrasEpisodeKey] = MenzenMetadataString(item, @"EpisodeNumber");
@@ -79,6 +85,7 @@ static MenzenTVMediaItem *MenzenCurrentMediaItem(void) {
 	}
 
 	NSURL *extrasURL = MenzenExtrasURL(extras);
+
 	if (extrasURL) {
 		withExtras[MenzenInfoAssetURL] = extrasURL;
 		MenzenProviderWorked();
@@ -95,5 +102,6 @@ static MenzenTVMediaItem *MenzenCurrentMediaItem(void) {
 		@"VUIPlaybackManager +sharedInstance",
 		@"VUIPlaybackManager -mainPlayer",
 	], @[]);
+
 	%init;
 }

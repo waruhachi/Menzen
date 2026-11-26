@@ -39,6 +39,7 @@ CGFloat const MenzenChoiceRowHeight = 52;
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier specifier:(PSSpecifier *)specifier {
 	if ((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier specifier:specifier])) {
 		self.selectionStyle = UITableViewCellSelectionStyleNone;
+
 		_button = [UIButton buttonWithType:UIButtonTypeSystem];
 		_button.showsMenuAsPrimaryAction = YES;
 		_button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
@@ -50,6 +51,7 @@ CGFloat const MenzenChoiceRowHeight = 52;
 		[_button setImage:[UIImage systemImageNamed:@"chevron.down" withConfiguration:[UIImageSymbolConfiguration configurationWithTextStyle:UIFontTextStyleFootnote]] forState:UIControlStateNormal];
 		_button.translatesAutoresizingMaskIntoConstraints = NO;
 		[self.contentView addSubview:_button];
+
 		UILayoutGuide *margins = self.contentView.layoutMarginsGuide;
 		[NSLayoutConstraint activateConstraints:@[
 			[_button.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
@@ -75,14 +77,17 @@ CGFloat const MenzenChoiceRowHeight = 52;
 	NSString *title;
 	__weak PSSpecifier *weakSpecifier = specifier;
 	NSArray *disabled = [specifier propertyForKey:@"disabledValues"];
+
 	for (NSArray *choice in [specifier propertyForKey:@"choices"]) {
 		id value = choice.firstObject;
 		BOOL chosen = [value isEqual:current];
 		if (chosen) title = choice[1];
+
 		UIAction *action = [UIAction actionWithTitle:choice[1] image:nil identifier:nil handler:^(UIAction *action) {
 			PSSpecifier *strongSpecifier = weakSpecifier;
 			[(PSListController *)strongSpecifier.target setPreferenceValue:value specifier:strongSpecifier];
 		}];
+
 		action.state = chosen ? UIMenuElementStateOn : UIMenuElementStateOff;
 		if ([disabled containsObject:value]) action.attributes = UIMenuElementAttributesDisabled;
 		[actions addObject:action];

@@ -154,6 +154,7 @@ static MenzenCache<NSString *, NSNumber *> *publicVideos;
 static YTIVideoDetails *MenzenDetails(YTPlayerResponse *response) {
 	YTIPlayerResponse *data = [response respondsToSelector:@selector(playerData)] ? response.playerData : nil;
 	YTIVideoDetails *details = [data respondsToSelector:@selector(videoDetails)] ? data.videoDetails : nil;
+
 	return [details respondsToSelector:@selector(title)] && [details respondsToSelector:@selector(author)] ? details : nil;
 }
 
@@ -171,17 +172,20 @@ static YTPlayerResponse *MenzenActiveVideoResponse(YTPlayerViewController *contr
 	YTIVideoDetails *details = MenzenDetails(response);
 	NSString *contentID = [controller respondsToSelector:@selector(contentVideoID)] ? controller.contentVideoID : nil;
 	BOOL isContent = [details respondsToSelector:@selector(videoId)] && contentID && [details.videoId isEqualToString:contentID];
+
 	return isContent ? response : nil;
 }
 
 static YTIVideoDetails *MenzenVideoDetails(YTPlayerViewController *controller) {
 	if ([controller respondsToSelector:@selector(contentPlayerResponse)]) return MenzenDetails(controller.contentPlayerResponse);
+
 	return MenzenDetails(MenzenActiveVideoResponse(controller));
 }
 
 static NSString *MenzenVideoID(YTPlayerViewController *controller) {
 	NSString *videoID = [controller respondsToSelector:@selector(contentVideoID)] ? controller.contentVideoID : nil;
 	NSCharacterSet *invalid = [NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_"].invertedSet;
+
 	return [videoID isKindOfClass:NSString.class] && videoID.length == 11 && [videoID rangeOfCharacterFromSet:invalid].location == NSNotFound ? videoID : nil;
 }
 
@@ -189,6 +193,7 @@ static NSString *MenzenVideoID(YTPlayerViewController *controller) {
 // crawlable and not private is linked; one it hasn't seen isn't.
 static NSString *MenzenPublicVideoID(NSString *videoID, YTIVideoDetails *details) {
 	if (!videoID) return nil;
+
 	if ([details respondsToSelector:@selector(videoId)] && [details.videoId isEqualToString:videoID] && [details respondsToSelector:@selector(isCrawlable)]) {
 		BOOL isPrivate = [details respondsToSelector:@selector(isPrivate)] && details.isPrivate;
 		publicVideos[videoID] = @(details.isCrawlable && !isPrivate);
@@ -208,17 +213,21 @@ static BOOL MenzenIsVideoThumbnail(NSURLComponents *thumbnail) {
 static NSURLComponents *MenzenWidestThumbnail(YTIThumbnailDetails *thumbnail) {
 	NSArray *thumbnails = [thumbnail respondsToSelector:@selector(thumbnailsArray)] ? thumbnail.thumbnailsArray : nil;
 	YTIThumbnailDetails_Thumbnail *widest;
+
 	for (YTIThumbnailDetails_Thumbnail *candidate in thumbnails) {
 		if (![candidate respondsToSelector:@selector(URL)] || ![candidate respondsToSelector:@selector(width)]) continue;
+
 		if (!widest || candidate.width > widest.width) widest = candidate;
 	}
 
 	NSURLComponents *components = widest ? [NSURLComponents componentsWithString:widest.URL] : nil;
 	if (music && [components.scheme isEqualToString:@"https"] && [components.host hasSuffix:@".googleusercontent.com"] && widest.URL.length <= 256) return components;
 	if (![components.scheme isEqualToString:@"https"] || ![components.host isEqualToString:@"i.ytimg.com"]) return nil;
+
 	components.query = nil;
 	components.path = [components.path stringByReplacingOccurrencesOfString:@"/vi_webp/" withString:@"/vi/"];
 	if ([components.path.pathExtension isEqualToString:@"webp"]) components.path = [components.path.stringByDeletingPathExtension stringByAppendingPathExtension:@"jpg"];
+
 	return components;
 }
 
@@ -232,30 +241,37 @@ static NSString *MenzenWholeThumbnailURL(NSURLComponents *thumbnail) {
 	// /vi/<video ID>/<size>.jpg; live streams' are <size>_live.jpg.
 	NSArray<NSString *> *parts = thumbnail.path.pathComponents;
 	if (parts.count != 4 || ![parts[1] isEqualToString:@"vi"]) return nil;
+
 	NSURLComponents *components = [thumbnail copy];
 	NSString *name = [parts[3] containsString:@"_live"] ? @"hqdefault_live.jpg" : @"hqdefault.jpg";
 	components.path = [NSString stringWithFormat:@"/vi/%@/%@", parts[2], name];
+
 	return components.URL.absoluteString;
 }
 
 static NSString *MenzenBrowseID(YTICommand *command, NSString *prefix) {
 	if (![command respondsToSelector:@selector(hasBrowseEndpoint)] || !command.hasBrowseEndpoint) return nil;
+
 	NSString *browseID = [command.browseEndpoint respondsToSelector:@selector(browseId)] ? command.browseEndpoint.browseId : nil;
+
 	return [browseID hasPrefix:prefix] ? MenzenLinkURL(@"%@", browseID) : nil;
 }
 
 static YTIPlaylistPanelVideoRenderer *MenzenQueueRenderer(NSString *videoID) {
 	NSArray<YTQueueItem *> *items;
+
 	@synchronized(queueItems) {
 		items = queueItems.allObjects;
 	}
 
 	Class rendererClass = %c(YTIPlaylistPanelVideoRenderer);
+
 	for (YTQueueItem *item in items) {
 		NSMutableArray *renderers = [NSMutableArray array];
 		if ([item respondsToSelector:@selector(videoRenderer)]) [renderers addObject:item.videoRenderer ?: NSNull.null];
 		if ([item respondsToSelector:@selector(audioModeRenderer)]) [renderers addObject:item.audioModeRenderer ?: NSNull.null];
 		if ([item respondsToSelector:@selector(videoModeRenderer)]) [renderers addObject:item.videoModeRenderer ?: NSNull.null];
+
 		for (YTIPlaylistPanelVideoRenderer *renderer in renderers) {
 			if (![renderer isKindOfClass:rendererClass] || ![renderer respondsToSelector:@selector(videoId)]) continue;
 			if ([renderer.videoId isEqualToString:videoID]) return renderer;
@@ -269,14 +285,18 @@ static NSString *MenzenHeaderPicture(YTIBrowseResponse *response) {
 	id header = [response respondsToSelector:@selector(header)] ? response.header : nil;
 	NSData *data = [header respondsToSelector:@selector(data)] ? [header data] : nil;
 	if (![data isKindOfClass:NSData.class]) return nil;
+
 	NSData *prefix = [@"https://yt3.googleusercontent.com/" dataUsingEncoding:NSUTF8StringEncoding];
 	NSRange found = [data rangeOfData:prefix options:0 range:NSMakeRange(0, data.length)];
 	if (found.location == NSNotFound) return nil;
+
 	const char *bytes = data.bytes;
 	NSUInteger end = NSMaxRange(found);
 	while (end < data.length && end - NSMaxRange(found) < 200 && (isalnum((unsigned char)bytes[end]) || bytes[end] == '-' || bytes[end] == '_' || bytes[end] == '/')) end++;
 	if (end == NSMaxRange(found)) return nil;
+
 	NSString *ID = [[NSString alloc] initWithBytes:bytes + NSMaxRange(found) length:end - NSMaxRange(found) encoding:NSASCIIStringEncoding];
+
 	return ID ? [NSString stringWithFormat:@"https://yt3.googleusercontent.com/%@=w544-h544-p-l90-rj", ID] : nil;
 }
 
@@ -291,18 +311,22 @@ static void MenzenLoadArtistPicture(NSString *artistID) {
 	YTBrowseServiceImpl *service = browseService;
 	Class requestClass = %c(YTIBrowseRequest);
 	if (!service || [artistPicturesLoading containsObject:artistID] || ![service respondsToSelector:@selector(makeRequest:refresh:responseBlock:errorBlock:)] || ![requestClass respondsToSelector:@selector(message)]) return;
+
 	YTIBrowseRequest *request = [requestClass message];
 	if (![request respondsToSelector:@selector(setBrowseId:)]) return;
+
 	request.browseId = artistID;
 	[artistPicturesLoading addObject:artistID];
 	[service makeRequest:request refresh:NO responseBlock:^(id response) {
 		NSString *picture = MenzenHeaderPicture(response);
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[artistPicturesLoading removeObject:artistID];
+
 			@synchronized(artistPictures) {
 				if (artistPictures.count > 1000) [artistPictures removeAllObjects];
 				artistPictures[artistID] = picture ?: (id)NSNull.null;
 			}
+
 			if (picture) MenzenRepublishPlayer();
 		});
 	} errorBlock:^(NSError *error) {
@@ -314,6 +338,7 @@ static void MenzenLoadArtistPicture(NSString *artistID) {
 
 static NSString *MenzenArtistPicture(NSString *artistID) {
 	id picture;
+
 	@synchronized(artistPictures) {
 		picture = artistPictures[artistID];
 	}
@@ -331,9 +356,11 @@ static NSString *MenzenPictureAfter(NSData *data, NSUInteger location, NSUIntege
 	NSData *prefix = [@"https://yt3.ggpht.com/" dataUsingEncoding:NSUTF8StringEncoding];
 	const char *bytes = data.bytes;
 	NSRange range = NSMakeRange(location, MIN(length, data.length - location));
+
 	while (true) {
 		NSRange found = [data rangeOfData:prefix options:0 range:range];
 		if (found.location == NSNotFound) return nil;
+
 		NSUInteger start = NSMaxRange(found);
 		NSUInteger end = start;
 		while (end < data.length && end - start < 200 && (isalnum((unsigned char)bytes[end]) || bytes[end] == '-' || bytes[end] == '_' || bytes[end] == '/')) end++;
@@ -341,6 +368,7 @@ static NSString *MenzenPictureAfter(NSData *data, NSUInteger location, NSUIntege
 		// own have a generated one under /ytc/.
 		BOOL proxy = end - start > 6 && !memcmp(bytes + start, "proxy/", 6);
 		if (end > start && end < data.length && bytes[end] == '=' && !proxy) return [[NSString alloc] initWithBytes:bytes + start length:end - start encoding:NSASCIIStringEncoding];
+
 		range = NSMakeRange(start, NSMaxRange(range) > start ? NSMaxRange(range) - start : 0);
 	}
 }
@@ -355,14 +383,17 @@ static NSString *MenzenChannelPictureInData(NSData *data, NSString *channelID) {
 	NSData *channel = [channelID dataUsingEncoding:NSUTF8StringEncoding];
 	const uint8_t *bytes = data.bytes;
 	NSRange range = NSMakeRange(0, data.length);
+
 	while (channel.length) {
 		NSRange found = [data rangeOfData:field options:0 range:range];
 		if (found.location == NSNotFound) return nil;
+
 		range = NSMakeRange(NSMaxRange(found), data.length - NSMaxRange(found));
 		NSUInteger before = MIN(found.location, (NSUInteger)1500);
 		if ([data rangeOfData:channel options:0 range:NSMakeRange(found.location - before, before)].location == NSNotFound) continue;
 
 		NSUInteger length = 0, start = NSMaxRange(found);
+
 		for (NSUInteger shift = 0; start < data.length && shift < 28; shift += 7) {
 			uint8_t byte = bytes[start++];
 			length |= (NSUInteger)(byte & 0x7f) << shift;
@@ -383,10 +414,12 @@ static NSString *MenzenSearchChannelPicture(NSString *channelID) {
 	YTWatchNextViewController *page = watchPage;
 	YTIWatchNextResponse *response = [page respondsToSelector:@selector(watchNextResponse)] ? page.watchNextResponse : nil;
 	if (!response || (response == searchedResponse && [channelID isEqualToString:searchedChannel]) || ![response respondsToSelector:@selector(data)]) return nil;
+
 	searchedResponse = response;
 	searchedChannel = channelID;
 	NSString *picture = MenzenChannelPictureInData(response.data, channelID);
 	if (!picture) return nil;
+
 	@synchronized(artistPictures) {
 		if (artistPictures.count > 1000) [artistPictures removeAllObjects];
 		artistPictures[channelID] = picture;
@@ -397,15 +430,18 @@ static NSString *MenzenSearchChannelPicture(NSString *channelID) {
 
 static NSString *MenzenChannelPicture(NSString *channelID) {
 	id picture;
+
 	@synchronized(artistPictures) {
 		picture = artistPictures[channelID];
 	}
 
 	if (picture) return [picture isKindOfClass:NSString.class] ? picture : nil;
 	if (NSThread.isMainThread) return MenzenSearchChannelPicture(channelID);
+
 	dispatch_async(dispatch_get_main_queue(), ^{
 		if (MenzenSearchChannelPicture(channelID)) MenzenRepublishPlayer();
 	});
+
 	return nil;
 }
 
@@ -425,10 +461,13 @@ static NSDictionary *MenzenMusicExtras(NSString *videoID, YTIVideoDetails *detai
 
 	YTIFormattedString *byline = [renderer respondsToSelector:@selector(shortBylineText)] ? renderer.shortBylineText : nil;
 	NSArray *runs = [byline respondsToSelector:@selector(runsArray)] ? byline.runsArray : nil;
+
 	for (YTIFormattedStringRun *run in runs) {
 		if (![run respondsToSelector:@selector(hasNavigationEndpoint)] || !run.hasNavigationEndpoint) continue;
+
 		NSString *artistID = MenzenBrowseID(run.navigationEndpoint, @"UC");
 		if (!artistID) continue;
+
 		extras[MenzenExtrasArtistURLKey] = [@"https://music.youtube.com/channel/" stringByAppendingString:artistID];
 		if (run.text.length) extras[MenzenExtrasArtistNameKey] = run.text;
 		extras[MenzenExtrasArtistImageKey] = MenzenArtistPicture(artistID);
@@ -438,12 +477,16 @@ static NSDictionary *MenzenMusicExtras(NSString *videoID, YTIVideoDetails *detai
 	YTIMenuSupportedRenderers *menu = [renderer respondsToSelector:@selector(menu)] ? renderer.menu : nil;
 	YTIMenuRenderer *menuRenderer = [menu respondsToSelector:@selector(menuRenderer)] ? menu.menuRenderer : nil;
 	NSArray *menuItems = [menuRenderer respondsToSelector:@selector(itemsArray)] ? menuRenderer.itemsArray : nil;
+
 	for (YTIMenuItemSupportedRenderers *item in menuItems) {
 		if (![item respondsToSelector:@selector(hasMenuNavigationItemRenderer)] || !item.hasMenuNavigationItemRenderer) continue;
+
 		YTIMenuNavigationItemRenderer *navigation = item.menuNavigationItemRenderer;
 		if (![navigation respondsToSelector:@selector(hasNavigationEndpoint)] || !navigation.hasNavigationEndpoint) continue;
+
 		NSString *albumID = MenzenBrowseID(navigation.navigationEndpoint, @"MPRE");
 		if (!albumID) continue;
+
 		extras[MenzenExtrasAlbumURLKey] = [@"https://music.youtube.com/browse/" stringByAppendingString:albumID];
 		break;
 	}
@@ -453,12 +496,14 @@ static NSDictionary *MenzenMusicExtras(NSString *videoID, YTIVideoDetails *detai
 
 static NSDictionary *MenzenExtras(YTPlayerViewController *controller, YTIVideoDetails *details) {
 	if (music) return MenzenMusicExtras(MenzenVideoID(controller), details);
+
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	NSString *videoID = MenzenPublicVideoID(MenzenVideoID(controller), details);
 	NSURLComponents *thumbnail = videoID || !MenzenIsVideoThumbnail(MenzenThumbnail(details)) ? MenzenThumbnail(details) : nil;
 	extras[MenzenExtrasCoverKey] = (thumbnail ? MenzenWholeThumbnailURL(thumbnail) : nil) ?: thumbnail.URL.absoluteString;
 	if (videoID) extras[MenzenExtrasTitleURLKey] = [@"https://www.youtube.com/watch?v=" stringByAppendingString:videoID];
 	NSString *channelID = [details respondsToSelector:@selector(channelId)] ? details.channelId : nil;
+
 	if ([channelID hasPrefix:@"UC"] && [channelID rangeOfCharacterFromSet:NSCharacterSet.URLPathAllowedCharacterSet.invertedSet].location == NSNotFound) {
 		extras[MenzenExtrasArtistURLKey] = [@"https://www.youtube.com/channel/" stringByAppendingString:channelID];
 		extras[MenzenExtrasArtistImageKey] = MenzenChannelPicture(channelID);
@@ -470,12 +515,14 @@ static NSDictionary *MenzenExtras(YTPlayerViewController *controller, YTIVideoDe
 static BOOL MenzenWatching(YTPlayerViewController *controller) {
 	YTSingleVideoController *video = [controller respondsToSelector:@selector(activeVideo)] ? controller.activeVideo : nil;
 	if ([video respondsToSelector:@selector(isMuted)] && video.isMuted) return NO;
+
 	return ![controller respondsToSelector:@selector(isPlayingAd)] || !controller.isPlayingAd;
 }
 
 static NSDictionary *MenzenPlayerInfo(YTPlayerViewController *controller) {
 	YTIVideoDetails *details = MenzenVideoDetails(controller);
 	if (!details.title.length || !MenzenVideoID(controller)) return nil;
+
 	YTSingleVideoController *video = controller.activeVideo;
 	BOOL playing = [video respondsToSelector:@selector(mediaState)] && video.mediaState == MenzenMediaStatePlaying;
 
@@ -484,6 +531,7 @@ static NSDictionary *MenzenPlayerInfo(YTPlayerViewController *controller) {
 	// Channels YouTube makes for an artist's music are "<artist> - Topic".
 	NSString *author = [details.author hasSuffix:@" - Topic"] ? [details.author substringToIndex:details.author.length - @" - Topic".length] : details.author;
 	if (author.length) info[MPMediaItemPropertyArtist] = author;
+
 	if (![details respondsToSelector:@selector(isLive)] || !details.isLive) {
 		if ([details respondsToSelector:@selector(lengthSeconds)] && details.lengthSeconds) info[MPMediaItemPropertyPlaybackDuration] = @(details.lengthSeconds);
 		if ([controller respondsToSelector:@selector(contentVideoMediaTime)]) info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = @(MAX(controller.contentVideoMediaTime, 0));
@@ -496,21 +544,26 @@ static NSDictionary *MenzenPlayerInfo(YTPlayerViewController *controller) {
 	NSURL *url = MenzenExtrasURL(MenzenExtras(controller, details));
 	if (url) info[MPNowPlayingInfoPropertyAssetURL] = url;
 	MenzenProviderWorked();
+
 	return info;
 }
 
 static void MenzenPublish(YTPlayerViewController *controller) {
 	if (!MenzenWatching(controller)) return;
+
 	player = controller;
 	MPNowPlayingInfoCenter *center = MPNowPlayingInfoCenter.defaultCenter;
+
 	if (appPublishes) {
 		// Again, so the extras follow the player.
 		if (center.nowPlayingInfo) center.nowPlayingInfo = center.nowPlayingInfo;
+
 		return;
 	}
 
 	NSDictionary *info = MenzenPlayerInfo(controller);
 	if (!info) return;
+
 	publishing = YES;
 	center.nowPlayingInfo = info;
 	publishing = NO;
@@ -528,10 +581,12 @@ static void MenzenPublishSoon(YTPlayerViewController *controller) {
 static NSDictionary *MenzenInfoWithExtras(NSDictionary *info) {
 	NSURL *assetURL = info[MPNowPlayingInfoPropertyAssetURL];
 	if ([assetURL isKindOfClass:NSURL.class] && ![assetURL.scheme isEqualToString:MenzenExtrasScheme]) return info;
+
 	NSMutableDictionary *withExtras = [info mutableCopy];
 	[withExtras removeObjectForKey:MPNowPlayingInfoPropertyAssetURL];
 	NSURL *url = nil;
 	NSString *videoID = info[MPNowPlayingInfoPropertyExternalContentIdentifier];
+
 	if (music && [videoID isKindOfClass:NSString.class] && MenzenLinkURL(@"%@", videoID)) {
 		// YouTube Music says which video; the player may be elsewhere by now.
 		YTPlayerViewController *controller = NSThread.isMainThread ? player : nil;
@@ -541,6 +596,7 @@ static NSDictionary *MenzenInfoWithExtras(NSDictionary *info) {
 		YTPlayerViewController *controller = player;
 		YTIVideoDetails *details = MenzenVideoDetails(controller);
 		if (!details || ![info[MPMediaItemPropertyTitle] isEqual:details.title]) return withExtras;
+
 		url = MenzenExtrasURL(MenzenExtras(controller, details));
 	}
 
@@ -563,6 +619,7 @@ static NSDictionary *MenzenInfoWithExtras(NSDictionary *info) {
 	if ([info isKindOfClass:NSDictionary.class] && [info[MPMediaItemPropertyTitle] length]) {
 		appPublishes = YES;
 		%orig(MenzenInfoWithExtras(info));
+
 		return;
 	}
 
@@ -653,10 +710,12 @@ static NSDictionary *MenzenInfoWithExtras(NSDictionary *info) {
 		@"YTMBrowseServiceImpl -makeRequest:refresh:responseBlock:errorBlock:",
 		@"YTIBrowseRequest +message",
 	];
+
 	NSArray *videoParts = @[
 		@"YTWatchNextViewController -loadWithResponse:",
 		@"YTWatchNextViewController -watchNextResponse",
 	];
+
 	MenzenProviderCheck(@[
 		@"YTPlayerViewController -contentVideoID",
 		@"YTPlayerViewController -contentPlayerResponse | YTPlaybackData -playerResponse",
@@ -679,9 +738,11 @@ static NSDictionary *MenzenInfoWithExtras(NSDictionary *info) {
 			@"YTIThumbnailDetails -thumbnailsArray",
 		] arrayByAddingObjectsFromArray:music ? musicParts : videoParts]);
 	if (!%c(YTPlayerViewController)) return;
+
 	publicVideos = [[MenzenCache alloc] initWithLimit:64];
 	artistPictures = [NSMutableDictionary dictionary];
 	%init;
+
 	if (music && %c(YTQueueItem)) {
 		queueItems = [NSHashTable weakObjectsHashTable];
 		artistPicturesLoading = [NSMutableSet set];

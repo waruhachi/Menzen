@@ -31,19 +31,25 @@ static NSString *MenzenSlug(id value) {
 static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *info, NSMutableDictionary *withExtras) {
 	// Items belong to the main thread, where the app publishes.
 	if (!NSThread.isMainThread || withExtras[MPNowPlayingInfoPropertyAssetURL]) return nil;
+
 	NSString *title = MenzenString(info[MPMediaItemPropertyTitle]);
 	NSString *artist = MenzenString(info[MPMediaItemPropertyArtist]);
 	if (!title) return nil;
+
 	NSArray *all;
+
 	@synchronized(items) {
 		all = items.allObjects;
 	}
 
 	NSManagedObject *song = nil;
+
 	for (NSManagedObject *item in all.reverseObjectEnumerator) {
 		if (!MenzenUsable(item) || ![MenzenValue(item, @"title") isEqual:title]) continue;
+
 		NSString *itemArtist = MenzenString(MenzenValue(item, @"artist"));
 		if (artist && itemArtist && ![itemArtist isEqualToString:artist]) continue;
+
 		if (![MenzenValue(item, @"isAlbum") boolValue] && ![MenzenValue(item, @"isPlaylist") boolValue]) {
 			song = item;
 			break;
@@ -55,6 +61,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	NSMutableDictionary *extras = [NSMutableDictionary dictionary];
 	extras[MenzenExtrasCoverKey] = MenzenImage(song, @"image");
 	NSString *uploader = MenzenSlug(MenzenValue(song, @"uploaderSlug"));
+
 	if (uploader) {
 		NSString *slug = MenzenSlug(MenzenValue(song, @"urlSlug"));
 		if (slug) extras[MenzenExtrasTitleURLKey] = [NSString stringWithFormat:@"https://audiomack.com/%@/song/%@", uploader, slug];
@@ -64,10 +71,12 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	}
 
 	NSString *albumID = MenzenString(MenzenValue(song, @"albumID"));
+
 	if (albumID) {
 		for (NSManagedObject *item in all) {
 			if (!MenzenUsable(item) || ![MenzenValue(item, @"isAlbum") boolValue]) continue;
 			if (![MenzenString(MenzenValue(item, @"itemID")) isEqualToString:albumID]) continue;
+
 			NSString *albumUploader = MenzenSlug(MenzenValue(item, @"uploaderSlug"));
 			NSString *albumSlug = MenzenSlug(MenzenValue(item, @"urlSlug"));
 			if (albumUploader && albumSlug) extras[MenzenExtrasAlbumURLKey] = [NSString stringWithFormat:@"https://audiomack.com/%@/album/%@", albumUploader, albumSlug];
@@ -84,6 +93,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 
 - (id)initWithEntity:(NSEntityDescription *)entity insertIntoManagedObjectContext:(NSManagedObjectContext *)context {
 	id item = %orig;
+
 	if ([item isKindOfClass:itemClass]) {
 		@synchronized(items) {
 			[items addObject:item];
@@ -99,6 +109,7 @@ static NSDictionary *MenzenExtras(MPNowPlayingInfoCenter *center, NSDictionary *
 	MenzenProviderCheck(@[@"Item"], @[]);
 	itemClass = %c(Item);
 	if (!itemClass) return;
+
 	items = [NSHashTable weakObjectsHashTable];
 	MenzenAddExtras(MenzenExtras);
 	%init;

@@ -32,11 +32,13 @@ static inline NSArray<NSArray<NSString *> *> *MenzenPartChoices(NSString *part) 
 			MenzenPartMemberList: @[@[@"details", MenzenLocalizedString(@"common.first_line", @"First Line")], @[@"state", MenzenLocalizedString(@"common.second_line", @"Second Line")], @[@"name", MenzenLocalizedString(@"common.heading", @"Heading")]],
 		};
 	});
+
 	return choices[part] ?: @[];
 }
 
 static inline NSString *MenzenPart(NSString *part) {
 	NSString *value = MenzenSettingString(part, nil);
+
 	if (!value) {
 		// Before the parts, these were switches.
 		if ([part isEqualToString:MenzenPartSecondLine]) value = MenzenSettingBool(MenzenSettingShowArtist, YES) ? @"artist" : @"none";
@@ -44,6 +46,7 @@ static inline NSString *MenzenPart(NSString *part) {
 		if ([part isEqualToString:MenzenPartSmallPicture]) value = MenzenSettingBool(MenzenSettingShowArtistPicture, YES) ? @"artistImage" : @"none";
 		if ([part isEqualToString:MenzenPartTime]) value = MenzenSettingBool(MenzenSettingShowProgress, YES) ? @"progress" : @"elapsed";
 	}
+
 	if ([part isEqualToString:MenzenPartTime] && [value isEqualToString:@"none"]) value = @"elapsed";
 	// Member lists were briefly set by what they showed, and before that "app"
 	// was the heading.
@@ -56,10 +59,13 @@ static inline NSString *MenzenPart(NSString *part) {
 			value = @"name";
 		}
 	}
+
 	NSArray *choices = MenzenPartChoices(part);
+
 	for (NSArray<NSString *> *choice in choices) {
 		if ([choice.firstObject isEqualToString:value]) return value;
 	}
+
 	return [choices.firstObject firstObject] ?: @"";
 }
 
@@ -67,5 +73,6 @@ static inline NSString *MenzenPartTitle(NSString *part, NSString *value) {
 	for (NSArray<NSString *> *choice in MenzenPartChoices(part)) {
 		if ([choice.firstObject isEqualToString:value]) return choice[1];
 	}
+
 	return value;
 }

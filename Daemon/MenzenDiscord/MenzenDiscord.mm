@@ -41,6 +41,10 @@ static NSTimeInterval const MenzenIdleCallbackInterval = 1;
 // can be put back after a restart.
 static CFStringRef const MenzenStatusBeforeKey = CFSTR("statusBefore");
 static CFStringRef const MenzenStatusSetKey = CFSTR("statusSet");
+static CFStringRef const MenzenProfileKey = CFSTR("profile");
+// After the last activity ends. Covers the gap between songs, and lets a
+// status being put back reach Discord before the connection closes.
+static NSTimeInterval const MenzenIdleDisconnectDelay = 5;
 
 static std::string MenzenStdString(NSString *string) {
 	return string.UTF8String ?: "";
@@ -94,6 +98,16 @@ static NSString *MenzenDaemonString(CFStringRef key) {
 
 static void MenzenSetDaemonString(CFStringRef key, NSString *value) {
 	CFPreferencesSetAppValue(key, (__bridge CFStringRef)value, MenzenDaemonDomain);
+	CFPreferencesAppSynchronize(MenzenDaemonDomain);
+}
+
+static NSDictionary *MenzenDaemonProfile(void) {
+	id value = CFBridgingRelease(CFPreferencesCopyAppValue(MenzenProfileKey, MenzenDaemonDomain));
+	return [value isKindOfClass:NSDictionary.class] ? value : nil;
+}
+
+static void MenzenSetDaemonProfile(NSDictionary *profile) {
+	CFPreferencesSetAppValue(MenzenProfileKey, (__bridge CFDictionaryRef)profile, MenzenDaemonDomain);
 	CFPreferencesAppSynchronize(MenzenDaemonDomain);
 }
 
@@ -252,6 +266,11 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	MenzenDeviceSignIn *_deviceSignIn;
 	NSDate *_pendingExpiry;
 	NSString *_statusOverride;
+	// The connection counts as a Discord session and keeps the account
+	// online, so it's only open while there's something to show.
+	BOOL _connectionWanted;
+	NSUInteger _connectionGeneration;
+	BOOL _tokenSet;
 }
 
 - (instancetype)initWithApplicationId:(uint64_t)applicationId {
@@ -304,10 +323,13 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 - (NSDictionary<NSString *, id> *)accountStatus {
 	NSMutableDictionary *status = [NSMutableDictionary dictionary];
 	status[MenzenStatusSignedInKey] = @(_signedIn);
-	status[MenzenStatusConnectedKey] = @(_ready);
-	if (_signedIn && !_ready && _connectingSince) status[MenzenStatusConnectingSinceKey] = @(_connectingSince.timeIntervalSince1970);
-	status[MenzenStatusUsernameKey] = _username;
+	// Disconnected on purpose, so there's nothing to wait for.
+	status[MenzenStatusConnectedKey] = @(_ready || !_connectionWanted);
+	if (_signedIn && !_ready && _connectionWanted && _connectingSince) status[MenzenStatusConnectingSinceKey] = @(_connectingSince.timeIntervalSince1970);
+	status[MenzenStatusUsernameKey] = _username ?: _profile[MenzenProfileUsernameKey];
 	status[MenzenStatusErrorKey] = _accountError;
+	// While disconnected, the status saved with it: the one picked in
+	// Discord, which stays on the account.
 	status[MenzenStatusProfileKey] = _profile;
 	if (_ready && _publishedKnown && _publishedActivity) status[MenzenStatusActivityKey] = MenzenActivityInfo(_publishedActivity);
 	status[MenzenStatusPreviewKey] = _previewInfo;
@@ -326,6 +348,49 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)accountStatusChanged {
 	if (self.accountStatusChangedHandler) self.accountStatusChangedHandler();
+}
+
+- (void)setProfile:(NSDictionary *)profile {
+	_profile = profile;
+	MenzenSetDaemonProfile(profile);
+	[self accountStatusChanged];
+	[self updateConnection];
+}
+
+// Connected while there's an activity to show, or until the profile is
+// known after signing in.
+- (void)updateConnection {
+	BOOL wanted = _signedIn && (_desiredActivity || !_profile);
+	BOOL changed = wanted != _connectionWanted;
+	_connectionWanted = wanted;
+	[self applyStatus];
+	if (!changed) return;
+
+	NSUInteger generation = ++_connectionGeneration;
+	[self accountStatusChanged];
+
+	if (wanted) {
+		if (!_ready && !_connectingSince) _connectingSince = NSDate.date;
+		[self connectIfWanted];
+		return;
+	}
+
+	__weak typeof(self) weakSelf = self;
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenIdleDisconnectDelay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		typeof(self) strongSelf = weakSelf;
+		if (!strongSelf || generation != strongSelf->_connectionGeneration) return;
+
+		strongSelf->_connectingSince = nil;
+		[strongSelf expectCallbacks];
+		strongSelf->_client->Disconnect();
+	});
+}
+
+- (void)connectIfWanted {
+	if (!_connectionWanted || !_tokenSet || _client->GetStatus() != discordpp::Client::Status::Disconnected) return;
+
+	[self expectCallbacks];
+	_client->Connect();
 }
 
 - (NSString *)redirectURI {
@@ -458,10 +523,14 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	_accountError = nil;
 	_accessToken = nil;
 	_profile = nil;
+	MenzenSetDaemonProfile(nil);
 	_profileFetchedAt = nil;
 	_ready = NO;
 	_connectingSince = nil;
 	_publishedKnown = NO;
+	_connectionWanted = NO;
+	_connectionGeneration++;
+	_tokenSet = NO;
 
 	MenzenSetDaemonString(MenzenStatusBeforeKey, nil);
 	MenzenSetDaemonString(MenzenStatusSetKey, nil);
@@ -507,6 +576,8 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	NSDate *expiresAt = tokens[MenzenTokensExpiresAtKey];
 
 	_signedIn = accessToken.length || refreshToken.length;
+	// Shown until Discord connects, and while idle.
+	if (_signedIn && !_profile) _profile = MenzenDaemonProfile();
 	[self accountStatusChanged];
 	if (!_signedIn) return;
 
@@ -563,15 +634,19 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)connectWithAccessToken:(NSString *)accessToken {
 	_accessToken = accessToken;
-	if (!_ready && !_connectingSince) _connectingSince = NSDate.date;
-	std::shared_ptr<discordpp::Client> client = _client;
 	[self expectCallbacks];
 
-	_client->UpdateToken(discordpp::AuthorizationTokenType::Bearer, MenzenStdString(accessToken), [client](discordpp::ClientResult result) {
-		if (!result.Successful()) return;
+	__weak typeof(self) weakSelf = self;
+	_client->UpdateToken(discordpp::AuthorizationTokenType::Bearer, MenzenStdString(accessToken), [weakSelf](discordpp::ClientResult result) {
+		typeof(self) strongSelf = weakSelf;
+		if (!strongSelf || !result.Successful()) return;
+
+		strongSelf->_tokenSet = YES;
 		// Already connected: UpdateToken reconnects by itself if it needs to.
-		if (client->GetStatus() == discordpp::Client::Status::Disconnected) client->Connect();
+		[strongSelf connectIfWanted];
 	});
+
+	[self updateConnection];
 }
 
 - (void)statusChanged:(discordpp::Client::Status)status error:(discordpp::Client::Error)error errorDetail:(int32_t)errorDetail {
@@ -581,7 +656,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 	if (_ready) {
 		_connectingSince = nil;
-	} else if (wasReady) {
+	} else if (wasReady && _connectionWanted) {
 		_connectingSince = NSDate.date;
 	}
 
@@ -624,7 +699,8 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 		return;
 	}
 
-	if (!_ready || ![self updateProfileFromClient]) {
+	// Disconnected while idle: the saved profile's details still refresh.
+	if (_ready ? ![self updateProfileFromClient] : !_profile) {
 		completion();
 		return;
 	}
@@ -668,12 +744,14 @@ static NSString *MenzenStatusName(discordpp::StatusType status) {
 	NSString *current = MenzenStatusName(user->Status());
 	if (![@[@"online", @"idle", @"dnd", @"invisible"] containsObject:current]) current = nil;
 	NSString *before = MenzenDaemonString(MenzenStatusBeforeKey);
+	// Put back before disconnecting: the status outlasts the connection.
+	NSString *override = _connectionWanted ? _statusOverride : nil;
 	NSString *target;
 
-	if (_statusOverride) {
+	if (override) {
 		if (!before) MenzenSetDaemonString(MenzenStatusBeforeKey, current ?: @"online");
-		MenzenSetDaemonString(MenzenStatusSetKey, _statusOverride);
-		target = _statusOverride;
+		MenzenSetDaemonString(MenzenStatusSetKey, override);
+		target = override;
 	} else {
 		if (!before) return;
 
@@ -706,10 +784,7 @@ static NSString *MenzenStatusName(discordpp::StatusType status) {
 	profile[MenzenProfileAvatarURLKey] = @(user->AvatarUrl(discordpp::UserHandle::AvatarType::Png, discordpp::UserHandle::AvatarType::Png).c_str());
 	profile[MenzenProfileStatusKey] = MenzenStatusName(user->Status());
 
-	if (![profile isEqualToDictionary:_profile]) {
-		_profile = profile;
-		[self accountStatusChanged];
-	}
+	if (![profile isEqualToDictionary:_profile]) [self setProfile:profile];
 
 	return YES;
 }
@@ -801,8 +876,7 @@ static NSString *MenzenAssetPath(id value) {
 	if (!user) {
 		// Signed in before the identify scope was asked for.
 		if (statusCode == 401 || statusCode == 403) profile[MenzenProfileLimitedKey] = @YES;
-		_profile = profile;
-		[self accountStatusChanged];
+		[self setProfile:profile];
 
 		return;
 	}
@@ -847,12 +921,12 @@ static NSString *MenzenAssetPath(id value) {
 	}
 
 	profile[MenzenProfileNameColorsKey] = nameColors.count ? nameColors : nil;
-	_profile = profile;
-	[self accountStatusChanged];
+	[self setProfile:profile];
 }
 
 - (void)setActivity:(MenzenActivity *)activity {
 	_desiredActivity = activity;
+	[self updateConnection];
 	BOOL newTrack = !_publishedKnown || !activity != !_publishedActivity || !MenzenSameString(activity.details, _publishedActivity.details) || !MenzenSameString(activity.state, _publishedActivity.state);
 	[self schedulePublishAfter:newTrack ? MenzenNewTrackPublishDelay : MenzenPublishDelay];
 }
@@ -1016,6 +1090,8 @@ BOOL MenzenSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout) 
 
 	status = MenzenKeychainDeleteTokens();
 	if (status != errSecSuccess && status != errSecItemNotFound) return NO;
+
+	MenzenSetDaemonProfile(nil);
 
 	NSString *token = tokens[MenzenTokensRefreshTokenKey] ?: tokens[MenzenTokensAccessTokenKey];
 	if (![token isKindOfClass:NSString.class] || !token.length) return YES;

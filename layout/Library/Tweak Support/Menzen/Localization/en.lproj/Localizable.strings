@@ -182,7 +182,7 @@
 /* Starts a line naming which picture has a problem, before a colon and the problem. */
 "image.big_picture" = "Big picture";
 /* Problem with a picture link: Discord can't show this file type. */
-"image.discord_only_shows_png_jpeg_gif" = "Discord only shows PNG, JPEG, GIF and WebP images.";
+"image.discord_only_shows_png_jpeg_gif" = "Discord only shows PNG, JPEG, GIF, WebP and AVIF images.";
 /* Problem with a picture link. %@ is the system's error message. */
 "image.it_couldn_t_be_loaded_x" = "It couldn't be loaded: %@";
 /* Starts a line naming which picture has a problem, before a colon and the problem. */

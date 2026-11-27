@@ -50,12 +50,17 @@ static void MenzenCheckLinkFor(NSString *link, BOOL image, void (^completion)(NS
 			return;
 		}
 
-		if (![@[@"image/png", @"image/jpeg", @"image/jpg", @"image/gif", @"image/webp"] containsObject:type]) {
-			finish(MenzenLocalizedString(@"image.discord_only_shows_png_jpeg_gif", @"Discord only shows PNG, JPEG, GIF and WebP images."));
+		if (![@[@"image/png", @"image/jpeg", @"image/jpg", @"image/gif", @"image/webp", @"image/avif"] containsObject:type]) {
+			finish(MenzenLocalizedString(@"image.discord_only_shows_png_jpeg_gif", @"Discord only shows PNG, JPEG, GIF, WebP and AVIF images."));
 			return;
 		}
-		// WebP only decodes on iOS 14 and later, which is all Menzen runs on.
-		finish([UIImage imageWithData:data] ? nil : MenzenLocalizedString(@"image.the_image_couldn_t_be_read", @"The image couldn't be read."));
+
+		// WebP decodes on iOS 14 and later, AVIF only from iOS 16; before
+		// that, Discord can still show it.
+		BOOL decodable = ![type isEqualToString:@"image/avif"];
+		if (@available(iOS 16, *)) decodable = YES;
+
+		finish(!decodable || [UIImage imageWithData:data] ? nil : MenzenLocalizedString(@"image.the_image_couldn_t_be_read", @"The image couldn't be read."));
 	}] resume];
 }
 

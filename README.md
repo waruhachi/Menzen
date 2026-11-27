@@ -62,6 +62,16 @@ Thanks to everyone who translates Menzen:
         <sub><b>748 words</b></sub>
         <br /><sub><b><code title="Chinese Simplified">zh-CN</code></b></sub>
       </td>
+      <td align="center" valign="top">
+        <a href="https://crowdin.com/profile/pizzasdu83"><img alt="logo" style="width: 64px" src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16555353/medium/d4436f7125e8dce1c0a940abcfddc941.jpeg" />
+          <br />
+          <sub><b>Matth B</b></sub>
+          <br />
+          <sub><b>(pizzasdu83)</b></sub></a>
+        <br />
+        <sub><b>56 words</b></sub>
+        <br /><sub><b><code title="French">fr</code></b></sub>
+      </td>
     </tr>
   </tbody>
 </table>

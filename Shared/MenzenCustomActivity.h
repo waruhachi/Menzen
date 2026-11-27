@@ -78,6 +78,14 @@ static inline NSString *MenzenPresetKind(NSDictionary *preset) {
 	return [@[@"listening", @"watching"] containsObject:kind] ? kind : @"playing";
 }
 
+// Discord shows its own play time for games, so a game always has the timer.
+static inline BOOL MenzenPresetShowsTimer(NSDictionary *preset) {
+	if ([MenzenPresetKind(preset) isEqualToString:@"playing"]) return YES;
+
+	id timer = preset[MenzenPresetTimerKey];
+	return ![timer respondsToSelector:@selector(boolValue)] || [timer boolValue];
+}
+
 // Discord wants at least 1 in the party, and no more than the most.
 static inline void MenzenPresetParty(NSDictionary *preset, NSInteger *size, NSInteger *max) {
 	*size = MAX(0, MIN([MenzenPresetString(preset, MenzenPresetPartySizeKey) integerValue], 9999));

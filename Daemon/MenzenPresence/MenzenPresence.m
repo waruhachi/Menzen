@@ -97,9 +97,8 @@ static BOOL MenzenGameEnabled(NSString *bundleIdentifier) {
 		}
 	}
 
-	id timer = preset[MenzenPresetTimerKey];
 	NSDate *start = MenzenSettingValue(MenzenSettingCustomStart);
-	if ((![timer respondsToSelector:@selector(boolValue)] || [timer boolValue]) && [start isKindOfClass:NSDate.class]) activity.startDate = start;
+	if (MenzenPresetShowsTimer(preset) && [start isKindOfClass:NSDate.class]) activity.startDate = start;
 
 	return activity;
 }

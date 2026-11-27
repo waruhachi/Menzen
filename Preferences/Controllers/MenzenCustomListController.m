@@ -201,9 +201,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		}
 	}
 
-	id timer = preset[MenzenPresetTimerKey];
-
-	if (![timer respondsToSelector:@selector(boolValue)] || [timer boolValue]) {
+	if (MenzenPresetShowsTimer(preset)) {
 		NSDate *start = MenzenSettingValue(MenzenSettingCustomStart);
 		BOOL inUse = [self.identifier isEqualToString:MenzenSettingString(MenzenSettingCustomPreset, nil)];
 		activity[MenzenActivityStartKey] = @((inUse && [start isKindOfClass:NSDate.class] ? start : NSDate.date).timeIntervalSince1970);
@@ -312,9 +310,10 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		[status setProperty:MenzenPresetStatus(preset) ?: @"" forKey:@"choice"];
 		[specifiers addObject:status];
 
-		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
-		PSSpecifier *timer = [self fieldNamed:MenzenLocalizedString(@"common.time_elapsed", @"Time Elapsed") key:MenzenPresetTimerKey cell:PSSwitchCell];
-		[specifiers addObject:timer];
+		if (![MenzenPresetKind(preset) isEqualToString:@"playing"]) {
+			[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
+			[specifiers addObject:[self fieldNamed:MenzenLocalizedString(@"common.time_elapsed", @"Time Elapsed") key:MenzenPresetTimerKey cell:PSSwitchCell]];
+		}
 
 		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		PSSpecifier *delete = [PSSpecifier preferenceSpecifierNamed:MenzenLocalizedString(@"custom.delete_preset", @"Delete Preset") target:self set:nil get:nil detail:nil cell:PSButtonCell edit:nil];

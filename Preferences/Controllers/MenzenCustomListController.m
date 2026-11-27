@@ -35,14 +35,18 @@ static NSString *MenzenPresetTitle(NSDictionary *preset) {
 	return MenzenPresetString(preset, MenzenPresetNameKey) ?: MenzenLocalizedString(@"custom.untitled", @"Untitled");
 }
 
-static void MenzenConfirmPresetImages(UIViewController *controller, NSDictionary *preset, void (^proceed)(void), void (^cancel)(void)) {
-	MenzenCheckPresetImages(preset, ^(NSArray<NSString *> *problems) {
+static void MenzenConfirmPresetLinks(UIViewController *controller, NSDictionary *preset, void (^proceed)(void), void (^cancel)(void)) {
+	MenzenCheckPresetLinks(preset, ^(NSArray<NSString *> *problems, BOOL onlyImages) {
 		if (!problems.count) {
 			proceed();
 			return;
 		}
 
-		UIAlertController *alert = [UIAlertController alertControllerWithTitle:problems.count > 1 ? MenzenLocalizedString(@"custom.these_images_won_t_work", @"These Images Won't Work") : MenzenLocalizedString(@"common.this_image_won_t_work", @"This Image Won't Work") message:[problems componentsJoinedByString:@"\n\n"] preferredStyle:UIAlertControllerStyleAlert];
+		NSString *title;
+		if (onlyImages) title = problems.count > 1 ? MenzenLocalizedString(@"custom.these_images_won_t_work", @"These Images Won't Work") : MenzenLocalizedString(@"common.this_image_won_t_work", @"This Image Won't Work");
+		else title = problems.count > 1 ? MenzenLocalizedString(@"custom.these_links_won_t_work", @"These Links Won't Work") : MenzenLocalizedString(@"common.this_link_won_t_work", @"This Link Won't Work");
+
+		UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:[problems componentsJoinedByString:@"\n\n"] preferredStyle:UIAlertControllerStyleAlert];
 		[alert addAction:[UIAlertAction actionWithTitle:MenzenLocalizedString(@"common.cancel", @"Cancel") style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
 			cancel();
 		}]];
@@ -103,7 +107,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	}
 
 	__weak typeof(self) weakSelf = self;
-	MenzenConfirmPresetImages(self, MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil)) ?: @{}, ^{
+	MenzenConfirmPresetLinks(self, MenzenCustomPreset(MenzenSettingString(MenzenSettingCustomPreset, nil)) ?: @{}, ^{
 		MenzenWriteSetting(MenzenSettingCustomStart, NSDate.date);
 		[weakSelf superSetPreferenceValue:value specifier:specifier]; }, ^{ [weakSelf reloadSpecifiers]; });
 }
@@ -364,29 +368,37 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 	if ([key isEqualToString:MenzenPresetNameKey]) self.title = MenzenPresetTitle(self.preset);
 	if ([key isEqualToString:MenzenPresetKindKey] || [key isEqualToString:MenzenPresetStatusKey]) [self reloadSpecifiers];
 	else [self reloadPreview];
-	if (([key isEqualToString:MenzenPresetLargeImageKey] || [key isEqualToString:MenzenPresetSmallImageKey]) && [value isKindOfClass:NSString.class]) [self checkLink:value];
+
+	if (![value isKindOfClass:NSString.class]) return;
+
+	BOOL image = [key isEqualToString:MenzenPresetLargeImageKey] || [key isEqualToString:MenzenPresetSmallImageKey];
+	if (image || [key isEqualToString:MenzenPresetButton1LinkKey] || [key isEqualToString:MenzenPresetButton2LinkKey]) [self checkLink:value image:image];
 }
 
-- (void)checkLink:(NSString *)link {
+- (void)checkLink:(NSString *)link image:(BOOL)image {
 	link = [link stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
 	if (!link.length) return;
 
 	__weak typeof(self) weakSelf = self;
-	MenzenCheckImageLink(link, ^(NSString *problem) {
+	void (^show)(NSString *) = ^(NSString *problem) {
 		typeof(self) strongSelf = weakSelf;
 		if (!problem || !strongSelf.view.window || strongSelf.presentedViewController) return;
 
-		UIAlertController *alert = [UIAlertController alertControllerWithTitle:MenzenLocalizedString(@"common.this_image_won_t_work", @"This Image Won't Work") message:problem preferredStyle:UIAlertControllerStyleAlert];
+		NSString *title = image ? MenzenLocalizedString(@"common.this_image_won_t_work", @"This Image Won't Work") : MenzenLocalizedString(@"common.this_link_won_t_work", @"This Link Won't Work");
+		UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:problem preferredStyle:UIAlertControllerStyleAlert];
 		[alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleCancel handler:nil]];
 		[strongSelf presentViewController:alert animated:YES completion:nil];
-	});
+	};
+
+	if (image) MenzenCheckImageLink(link, show);
+	else MenzenCheckButtonLink(link, show);
 }
 
 - (void)usePreset:(PSSpecifier *)specifier {
 	[self.view endEditing:YES];
 	NSString *identifier = self.identifier;
 	__weak typeof(self) weakSelf = self;
-	MenzenConfirmPresetImages(self, self.preset, ^{
+	MenzenConfirmPresetLinks(self, self.preset, ^{
 		MenzenUsePreset(identifier);
 		[weakSelf reloadSpecifiers];
 	}, ^{});

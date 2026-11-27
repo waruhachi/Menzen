@@ -107,6 +107,8 @@
 "common.text" = "Text";
 /* Alert title when a custom activity's picture link can't be used. */
 "common.this_image_won_t_work" = "This Image Won't Work";
+/* Alert title when a button's link won't open. */
+"common.this_link_won_t_work" = "This Link Won't Work";
 /* Option and switch: show a timer counting up from when the activity started. */
 "common.time_elapsed" = "Time Elapsed";
 /* Activity settings: an option for a line, the song or video title. */
@@ -165,6 +167,8 @@
 "custom.size" = "Size";
 /* Alert title when more than one picture link can't be used. */
 "custom.these_images_won_t_work" = "These Images Won't Work";
+/* Alert title when several of a preset's links, including a button's, won't work. */
+"custom.these_links_won_t_work" = "These Links Won't Work";
 /* Row picking Playing, Listening or Watching. */
 "custom.type" = "Type";
 /* Name of a preset that has no name yet. */

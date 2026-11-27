@@ -6,7 +6,8 @@
 
 static NSTimeInterval const MenzenImageCheckTimeout = 15;
 
-void MenzenCheckImageLink(NSString *link, void (^completion)(NSString *problem)) {
+// A button's link only has to load; an image's has to be one Discord shows.
+static void MenzenCheckLinkFor(NSString *link, BOOL image, void (^completion)(NSString *problem)) {
 	void (^finish)(NSString *) = ^(NSString *problem) {
 		dispatch_async(dispatch_get_main_queue(), ^{
 			completion(problem);
@@ -37,6 +38,11 @@ void MenzenCheckImageLink(NSString *link, void (^completion)(NSString *problem))
 			return;
 		}
 
+		if (!image) {
+			finish(nil);
+			return;
+		}
+
 		NSString *type = response.MIMEType.lowercaseString ?: @"";
 
 		if (![type hasPrefix:@"image/"]) {
@@ -53,24 +59,44 @@ void MenzenCheckImageLink(NSString *link, void (^completion)(NSString *problem))
 	}] resume];
 }
 
-void MenzenCheckPresetImages(NSDictionary *preset, void (^completion)(NSArray<NSString *> *problems)) {
-	NSArray<NSArray<NSString *> *> *links = @[@[MenzenPresetLargeImageKey, MenzenLocalizedString(@"image.big_picture", @"Big picture")], @[MenzenPresetSmallImageKey, MenzenLocalizedString(@"image.small_picture", @"Small picture")]];
+void MenzenCheckImageLink(NSString *link, void (^completion)(NSString *problem)) {
+	MenzenCheckLinkFor(link, YES, completion);
+}
+
+void MenzenCheckButtonLink(NSString *link, void (^completion)(NSString *problem)) {
+	MenzenCheckLinkFor(link, NO, completion);
+}
+
+void MenzenCheckPresetLinks(NSDictionary *preset, void (^completion)(NSArray<NSString *> *problems, BOOL onlyImages)) {
+	NSArray<NSArray<NSString *> *> *links = @[
+		@[MenzenPresetLargeImageKey, MenzenLocalizedString(@"image.big_picture", @"Big picture")],
+		@[MenzenPresetSmallImageKey, MenzenLocalizedString(@"image.small_picture", @"Small picture")],
+		@[MenzenPresetButton1LinkKey, MenzenLocalizedString(@"custom.button_1", @"Button 1")],
+		@[MenzenPresetButton2LinkKey, MenzenLocalizedString(@"custom.button_2", @"Button 2")],
+	];
 	NSMutableArray<NSString *> *problems = [NSMutableArray array];
+	__block BOOL onlyImages = YES;
 	dispatch_group_t group = dispatch_group_create();
 
 	for (NSArray<NSString *> *link in links) {
 		NSString *value = MenzenPresetString(preset, link.firstObject);
 		if (!value) continue;
 
+		BOOL image = [link.firstObject isEqualToString:MenzenPresetLargeImageKey] || [link.firstObject isEqualToString:MenzenPresetSmallImageKey];
+
 		dispatch_group_enter(group);
-		MenzenCheckImageLink(value, ^(NSString *problem) {
-			if (problem) [problems addObject:[NSString stringWithFormat:@"%@: %@", link[1], problem]];
+		MenzenCheckLinkFor(value, image, ^(NSString *problem) {
+			if (problem) {
+				[problems addObject:[NSString stringWithFormat:@"%@: %@", link[1], problem]];
+				if (!image) onlyImages = NO;
+			}
+
 			dispatch_group_leave(group);
 		});
 	}
 
 	dispatch_group_notify(group, dispatch_get_main_queue(), ^{
 		[problems sortUsingSelector:@selector(compare:)];
-		completion(problems);
+		completion(problems, onlyImages);
 	});
 }

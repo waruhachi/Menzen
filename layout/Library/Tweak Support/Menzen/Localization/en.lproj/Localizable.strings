@@ -141,8 +141,6 @@
 "custom.button_1" = "Button 1";
 /* Custom activity: heading of the second button's fields. */
 "custom.button_2" = "Button 2";
-/* Custom activity: footer under the button fields. */
-"custom.buttons_footer" = "A button needs a label and an https link. Discord shows buttons to everyone but you.";
 /* Custom Activity page title and its on/off switch. */
 "custom.custom_activity" = "Custom Activity";
 /* Button that deletes the preset being edited. */
@@ -151,8 +149,6 @@
 "custom.delete_x" = "Delete “%@”?";
 /* Custom preset: row choosing the Discord online status while the preset shows. */
 "custom.discord_status" = "Discord Status";
-/* Footer under the Discord Status row of a custom preset. */
-"custom.discord_status_footer" = "Your status goes back once the preset stops showing, unless you changed it yourself.";
 /* Shown next to the preset that's in use. Keep it short. */
 "custom.in_use" = "In Use";
 /* Custom activity: field for the most people the party takes. */
@@ -161,8 +157,6 @@
 "custom.party" = "Party";
 /* Section header for the list of saved custom statuses. */
 "custom.presets" = "Presets";
-/* Custom activity: footer under the party fields. Keep "Max Size" the same as that field's name. */
-"custom.shows_after_the_second_line" = "Shows after the second line, like \"(2 of 4)\". Leave Max Size empty for no limit.";
 /* Custom activity: field for how many people are in the party. */
 "custom.size" = "Size";
 /* Alert title when more than one picture link can't be used. */
@@ -318,8 +312,6 @@
 "root.sources" = "Sources";
 /* Switch: set the Discord status to Do Not Disturb while the iPhone is in Do Not Disturb or a Focus. */
 "root.sync_do_not_disturb" = "Sync Do Not Disturb";
-/* Footer under the Behavior section, explaining Sync Do Not Disturb. */
-"root.sync_do_not_disturb_footer" = "Sync Do Not Disturb sets your Discord status to Do Not Disturb while a Focus is on. A custom preset's own status comes first.";
 /* Error under the sign-in button. */
 "root.the_sign_in_page_couldn_t" = "The sign-in page couldn't be opened. Try again.";
 /* Note under the sign-in button. */

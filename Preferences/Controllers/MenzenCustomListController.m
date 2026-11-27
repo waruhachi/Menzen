@@ -293,9 +293,7 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.image_link", @"Image Link") key:MenzenPresetSmallImageKey]];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.text", @"Text") key:MenzenPresetSmallTextKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
 
-		PSSpecifier *party = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.party", @"Party")];
-		[party setProperty:MenzenLocalizedString(@"custom.shows_after_the_second_line", @"Shows after the second line, like \"(2 of 4)\". Leave Max Size empty for no limit.") forKey:@"footerText"];
-		[specifiers addObject:party];
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.party", @"Party")]];
 		[specifiers addObject:[self numberFieldNamed:MenzenLocalizedString(@"custom.size", @"Size") key:MenzenPresetPartySizeKey]];
 		[specifiers addObject:[self numberFieldNamed:MenzenLocalizedString(@"custom.max_size", @"Max Size") key:MenzenPresetPartyMaxKey]];
 
@@ -303,17 +301,11 @@ static void MenzenPushController(PSListController *parent, Class controllerClass
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.label", @"Label") key:MenzenPresetButton1LabelKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
 		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.link", @"Link") key:MenzenPresetButton1LinkKey]];
 
-		PSSpecifier *secondButton = [PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.button_2", @"Button 2")];
-		[secondButton setProperty:MenzenLocalizedString(@"custom.buttons_footer", @"A button needs a label and an https link. Discord shows buttons to everyone but you.") forKey:@"footerText"];
-		[specifiers addObject:secondButton];
-
+		[specifiers addObject:[PSSpecifier groupSpecifierWithName:MenzenLocalizedString(@"custom.button_2", @"Button 2")]];
 		[specifiers addObject:[self textFieldNamed:MenzenLocalizedString(@"common.label", @"Label") key:MenzenPresetButton2LabelKey placeholder:MenzenLocalizedString(@"common.none", @"None")]];
 		[specifiers addObject:[self linkFieldNamed:MenzenLocalizedString(@"common.link", @"Link") key:MenzenPresetButton2LinkKey]];
 
-		PSSpecifier *statusGroup = [PSSpecifier emptyGroupSpecifier];
-		[statusGroup setProperty:MenzenLocalizedString(@"custom.discord_status_footer", @"Your status goes back once the preset stops showing, unless you changed it yourself.") forKey:@"footerText"];
-		[specifiers addObject:statusGroup];
-
+		[specifiers addObject:[PSSpecifier emptyGroupSpecifier]];
 		PSSpecifier *status = [self fieldNamed:MenzenLocalizedString(@"custom.discord_status", @"Discord Status") key:MenzenPresetStatusKey cell:PSStaticTextCell];
 		[status setProperty:MenzenChoiceCell.class forKey:@"cellClass"];
 		[status setProperty:@[@[@"", MenzenLocalizedString(@"common.default", @"Default")], @[@"online", MenzenLocalizedString(@"status.online", @"Online")], @[@"idle", MenzenLocalizedString(@"status.idle", @"Idle")], @[@"dnd", MenzenLocalizedString(@"status.dnd", @"Do Not Disturb")], @[@"invisible", MenzenLocalizedString(@"status.invisible", @"Invisible")]] forKey:@"choices"];

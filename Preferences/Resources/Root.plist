@@ -115,10 +115,6 @@
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
-			<key>footerText</key>
-			<string>Sync Do Not Disturb sets your Discord status to Do Not Disturb while a Focus is on. A custom preset's own status comes first.</string>
-			<key>footerTextKey</key>
-			<string>root.sync_do_not_disturb_footer</string>
 			<key>id</key>
 			<string>behaviorGroup</string>
 			<key>label</key>
@@ -179,6 +175,12 @@
 				<integer>60</integer>
 				<integer>-1</integer>
 			</array>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>id</key>
+			<string>syncDoNotDisturbGroup</string>
 		</dict>
 		<dict>
 			<key>PostNotification</key>

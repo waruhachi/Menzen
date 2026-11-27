@@ -13,3 +13,5 @@
 
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "Lien vers l'app / la musique";
+/* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
+"appearance.member_lists_can_only_show_the" = "La liste des membres ne peut afficher qu'une ligne parmi les 3 premières. Pour choisir quelque chose de grisé, mets cette section dans la page \"carte d'Activité\" (soit dans Description, soit dans Titre, soit dans Sous-titre).";

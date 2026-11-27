@@ -35,6 +35,8 @@
 	</array>
 	<key>CCSGetModuleSizeAtRuntime</key>
 	<false/>
+	<key>CCSPreferencesRootListController</key>
+	<string>MenzenAppPrivacyListController</string>
 	<key>CCSModuleSize</key>
 	<dict>
 		<key>Portrait</key>

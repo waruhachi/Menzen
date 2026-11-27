@@ -13,9 +13,10 @@ $(foreach bundle,$(BUNDLE_NAME),$(eval $(bundle)_FRAMEWORKS = UIKit))
 $(foreach bundle,$(BUNDLE_NAME),$(eval $(bundle)_PRIVATE_FRAMEWORKS = ControlCenterUIKit))
 $(foreach bundle,$(BUNDLE_NAME),$(eval $(bundle)_INSTALL_PATH = /Library/ControlCenter/Bundles))
 # Absolute, so arm64 and arm64e don't share the shared file's objects.
-MenzenAppPrivacy_FILES += $(abspath ../Shared/MenzenLocalization/MenzenLocalization.m)
+MenzenAppPrivacy_FILES += $(abspath ../Shared/MenzenLocalization/MenzenLocalization.m) $(abspath ../Preferences/Helpers/MenzenAppIcon.m)
 MenzenAppPrivacy_CFLAGS += -DMENZEN_VERSION='"$(shell sed -n 's/^Version: *//p' ../layout/DEBIAN/control)"'
 MenzenAppPrivacy_FRAMEWORKS += MobileCoreServices
+MenzenAppPrivacy_PRIVATE_FRAMEWORKS += Preferences
 
 include $(THEOS)/makefiles/common.mk
 include $(THEOS_MAKE_PATH)/bundle.mk

@@ -34,14 +34,9 @@ static void MenzenAppPrivacySettingsChanged(CFNotificationCenterRef center, void
 - (void)refresh {
 	// Settings writes from another process.
 	MenzenSettingsSynchronize();
-	NSString *app = MenzenPrivacyModuleApp();
-	NSString *title = MenzenLocalizedString(@"module.all_apps", @"All Apps");
+	NSArray<NSString *> *choice = MenzenPrivacyModuleChoice();
+	self.title = choice[1] ?: MenzenLocalizedString(@"root.privacy_mode", @"Privacy Mode");
 
-	for (NSArray<NSString *> *installed in MenzenInstalledProviderApps()) {
-		if ([installed[0] isEqualToString:app]) title = installed[1];
-	}
-
-	self.title = title;
 	self.selected = MenzenSettingBool(MenzenPrivacyModuleKey(), NO);
 	[self reloadActions];
 }
@@ -49,17 +44,14 @@ static void MenzenAppPrivacySettingsChanged(CFNotificationCenterRef center, void
 - (void)reloadActions {
 	[self removeAllActions];
 
-	NSString *current = MenzenPrivacyModuleApp() ?: @"";
+	NSString *current = MenzenPrivacyModuleApp();
 	UIImage *checkmark = [UIImage systemImageNamed:@"checkmark"];
 
-	NSMutableArray<NSArray<NSString *> *> *choices = [NSMutableArray arrayWithObject:@[@"", MenzenLocalizedString(@"module.all_apps", @"All Apps")]];
-	[choices addObjectsFromArray:MenzenInstalledProviderApps()];
-
 	__weak typeof(self) weakSelf = self;
-	for (NSArray<NSString *> *choice in choices) {
+	for (NSArray<NSString *> *choice in MenzenInstalledProviderApps()) {
 		NSString *value = choice[0];
 		[self addActionWithTitle:choice[1] glyph:[value isEqualToString:current] ? checkmark : [UIImage new] handler:^BOOL {
-			MenzenWriteSetting(MenzenSettingPrivacyModuleApp, value.length ? value : nil);
+			MenzenWriteSetting(MenzenSettingPrivacyModuleApp, value);
 			MenzenPostDarwinNotification(CFSTR(MenzenSettingsChangedNotification));
 			[weakSelf refresh];
 			return YES;

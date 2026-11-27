@@ -4,8 +4,7 @@
 #import "MenzenProviders.h"
 #import "MenzenSettings.h"
 
-// The app the Control Center module switches Privacy Mode for; empty or
-// missing for every app.
+// The app the Control Center module switches Privacy Mode for.
 #define MenzenSettingPrivacyModuleApp @"privacyModuleApp"
 
 static inline NSArray<NSArray<NSString *> *> *MenzenInstalledProviderApps(void) {
@@ -24,9 +23,21 @@ static inline NSArray<NSArray<NSString *> *> *MenzenInstalledProviderApps(void) 
 	return apps;
 }
 
+// The first installed app until one is picked, or when the picked one is
+// removed; nil when none is installed.
+static inline NSArray<NSString *> *MenzenPrivacyModuleChoice(void) {
+	NSArray<NSArray<NSString *> *> *apps = MenzenInstalledProviderApps();
+	NSString *picked = MenzenSettingString(MenzenSettingPrivacyModuleApp, nil);
+
+	for (NSArray<NSString *> *app in apps) {
+		if ([app[0] isEqualToString:picked]) return app;
+	}
+
+	return apps.firstObject;
+}
+
 static inline NSString *MenzenPrivacyModuleApp(void) {
-	NSString *app = MenzenSettingString(MenzenSettingPrivacyModuleApp, nil);
-	return app.length ? app : nil;
+	return MenzenPrivacyModuleChoice().firstObject;
 }
 
 static inline NSString *MenzenPrivacyModuleKey(void) {

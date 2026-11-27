@@ -6,6 +6,7 @@
 @property (nonatomic, strong) UIImage *selectedGlyphImage;
 @property (nonatomic, getter=isSelected) BOOL selected;
 @property (nonatomic, getter=isExpanded) BOOL expanded;
+- (UIControl *)buttonView;
 - (void)buttonTapped:(id)button forEvent:(UIEvent *)event;
 @end
 
@@ -15,6 +16,8 @@
 @end
 
 @interface MenzenAppPrivacyViewController : CCUIMenuModuleViewController
+// The chosen app's icon is the glyph, drawn in its own colors.
+@property (nonatomic, readonly) BOOL showsAppIcon;
 @end
 
 @interface MenzenAppPrivacyModule : NSObject <CCUIContentModule>

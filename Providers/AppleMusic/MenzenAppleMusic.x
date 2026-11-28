@@ -134,7 +134,7 @@ static void MenzenLoadArtist(NSString *artistID) {
 static void MenzenAddArtistPicture(MPNowPlayingContentItem *item) {
 	if (![item respondsToSelector:@selector(_mediaRemoteContentItem)]) return;
 
-	id artistID = [item valueForKey:@"storeArtistID"];
+	id artistID = MenzenGet(item, @"storeArtistID");
 	if (![artistID respondsToSelector:@selector(longLongValue)] || [artistID longLongValue] <= 0) return;
 
 	NSString *identifier = @([artistID longLongValue]).stringValue;

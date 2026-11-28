@@ -125,6 +125,19 @@ static NSString *MenzenPortraitURL(NSDictionary *artist) {
 	return best;
 }
 
+// Private API: an update that renames any of it would otherwise crash
+// Spotify when a song changes.
+static BOOL MenzenCanLoadArtists(void) {
+	static BOOL can;
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		Class request = %c(SPTDataLoaderRequest), wrapper = %c(SPTDataLoaderBlockWrapper);
+		can = [request respondsToSelector:@selector(requestWithURL:sourceIdentifier:)] && [request instancesRespondToSelector:@selector(addValue:forHeader:)] && [wrapper instancesRespondToSelector:@selector(initWithDataLoader:)] && [wrapper instancesRespondToSelector:@selector(performRequest:completion:)];
+	});
+
+	return can;
+}
+
 static void MenzenLoadArtist(NSString *hexID, NSArray *factories, void (^done)(NSDictionary *artist)) {
 	if (!factories.count) {
 		done(nil);
@@ -140,7 +153,9 @@ static void MenzenLoadArtist(NSString *hexID, NSArray *factories, void (^done)(N
 	[wrapper performRequest:request completion:^(SPTDataLoaderResponse *response, NSError *error) {
 		// The block keeps the loader alive until it answers.
 		wrapper = nil;
-		id artist = response.statusCode == 200 && response.body ? [NSJSONSerialization JSONObjectWithData:response.body options:0 error:NULL] : nil;
+		BOOL readable = [response respondsToSelector:@selector(statusCode)] && [response respondsToSelector:@selector(body)];
+		NSData *body = readable && response.statusCode == 200 ? response.body : nil;
+		id artist = [body isKindOfClass:NSData.class] ? [NSJSONSerialization JSONObjectWithData:body options:0 error:NULL] : nil;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			if (![artist isKindOfClass:NSDictionary.class]) {
 				MenzenLoadArtist(hexID, [factories subarrayWithRange:NSMakeRange(1, factories.count - 1)], done);
@@ -159,7 +174,7 @@ static NSString *MenzenArtistPicture(NSString *artistURI) {
 
 	id known = artistPictures[artistURI];
 	if (known) return [known isKindOfClass:NSString.class] ? known : nil;
-	if ([artistPicturesLoading containsObject:artistURI] || !%c(SPTDataLoaderRequest) || !%c(SPTDataLoaderBlockWrapper)) return nil;
+	if ([artistPicturesLoading containsObject:artistURI] || !MenzenCanLoadArtists()) return nil;
 
 	NSMutableArray *factories = [loaderFactories.allObjects mutableCopy];
 	id signedFactory = signedLoaderFactory;

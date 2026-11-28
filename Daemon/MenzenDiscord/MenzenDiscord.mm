@@ -21,6 +21,10 @@ static NSTimeInterval const MenzenKeychainLockedRetry = 30;
 
 // Access tokens last 7 days; refresh once less than a day is left.
 static NSTimeInterval const MenzenRefreshMargin = 24 * 60 * 60;
+// A refresh that fails for a reason other than Discord refusing it (no
+// network, a server error) is tried again, waiting longer each time.
+static NSTimeInterval const MenzenRefreshRetryFirst = 60;
+static NSTimeInterval const MenzenRefreshRetryMax = 30 * 60;
 // A new track is published almost at once. Other changes (seeks, artwork
 // arriving a moment later) wait a little longer so a burst becomes one update.
 static NSTimeInterval const MenzenNewTrackPublishDelay = 0.25;
@@ -78,6 +82,15 @@ static BOOL MenzenSameDate(NSDate *a, NSDate *b) {
 
 static uint64_t MenzenMilliseconds(NSDate *date) {
 	return (uint64_t)(date.timeIntervalSince1970 * 1000);
+}
+
+// Discord turning the refresh token down, as opposed to not being reached.
+static BOOL MenzenRefreshRefused(discordpp::ClientResult const &result) {
+	if (result.Type() != discordpp::ErrorType::HTTPError || result.Retryable()) return NO;
+
+	int status = static_cast<int>(result.Status());
+
+	return status >= 400 && status < 500 && status != 429;
 }
 
 static NSString *MenzenRandomString(void) {
@@ -250,6 +263,10 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 	// until the next connect.
 	NSMutableSet<NSString *> *_missingAssets;
 	NSUInteger _refreshGeneration;
+	NSTimeInterval _refreshRetryDelay;
+	// Tokens Discord sent that couldn't be saved to the Keychain yet: the
+	// refresh token in it may be the only one that still works.
+	NSDictionary *_unsavedTokens;
 	// Bumped on sign in and out, so a refresh still in flight from the
 	// previous account can't save its tokens.
 	NSUInteger _accountGeneration;
@@ -512,7 +529,11 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 }
 
 - (NSString *)signInWithAccessToken:(NSString *)accessToken refreshToken:(NSString *)refreshToken expiresIn:(NSTimeInterval)expiresIn {
-	if (![self saveAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn]) return MenzenLocalizedString(@"signin.error.couldn_t_save_the_sign_in", @"Couldn't save the sign-in to the Keychain.");
+	if (![self saveAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn]) {
+		// Not kept for later: the user is told it didn't work.
+		_unsavedTokens = nil;
+		return MenzenLocalizedString(@"signin.error.couldn_t_save_the_sign_in", @"Couldn't save the sign-in to the Keychain.");
+	}
 
 	// Anything still under way for the account before is out of date.
 	_accountGeneration++;
@@ -536,6 +557,8 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 	_accountGeneration++;
 	_refreshGeneration++;
+	_refreshRetryDelay = 0;
+	_unsavedTokens = nil;
 	_signedIn = NO;
 	_username = nil;
 	_accountError = nil;
@@ -574,7 +597,34 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 		MenzenTokensExpiresAtKey: [NSDate dateWithTimeIntervalSinceNow:expiresIn],
 	};
 
-	return MenzenKeychainSaveTokens(tokens) == errSecSuccess;
+	if (MenzenKeychainSaveTokens(tokens) == errSecSuccess) {
+		_unsavedTokens = nil;
+		return YES;
+	}
+
+	_unsavedTokens = tokens;
+	[self saveTokensLater];
+
+	return NO;
+}
+
+- (void)saveTokensLater {
+	NSUInteger generation = _accountGeneration;
+	__weak typeof(self) weakSelf = self;
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenKeychainLockedRetry * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+		typeof(self) strongSelf = weakSelf;
+		if (!strongSelf || generation != strongSelf->_accountGeneration || !strongSelf->_unsavedTokens) return;
+
+		if (MenzenKeychainSaveTokens(strongSelf->_unsavedTokens) == errSecSuccess) {
+			strongSelf->_unsavedTokens = nil;
+		} else {
+			[strongSelf saveTokensLater];
+		}
+	});
+}
+
+- (NSDictionary *)currentTokens {
+	return _unsavedTokens ?: MenzenKeychainLoadTokens(NULL);
 }
 
 - (void)loadTokens {
@@ -618,9 +668,16 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 		if (!strongSelf || generation != strongSelf->_accountGeneration) return;
 
 		if (!result.Successful()) {
+			BOOL refused = MenzenRefreshRefused(result);
+
+			if (!refused) {
+				strongSelf->_refreshRetryDelay = MIN(MenzenRefreshRetryMax, MAX(MenzenRefreshRetryFirst, strongSelf->_refreshRetryDelay * 2));
+				[strongSelf scheduleRefreshAfter:strongSelf->_refreshRetryDelay];
+			}
+
 			if (fallbackAccessToken.length && [expiresAt isKindOfClass:NSDate.class] && expiresAt.timeIntervalSinceNow > 0) {
 				[strongSelf connectWithAccessToken:fallbackAccessToken];
-			} else {
+			} else if (refused) {
 				strongSelf->_accountError = MenzenLocalizedString(@"signin.error.discord_ended_the_sign_in_sign", @"Discord ended the sign-in. Sign in again.");
 				[strongSelf accountStatusChanged];
 			}
@@ -628,6 +685,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 			return;
 		}
 
+		strongSelf->_refreshRetryDelay = 0;
 		[strongSelf saveAccessToken:@(accessToken.c_str()) refreshToken:@(newRefreshToken.c_str()) expiresIn:expiresIn];
 		[strongSelf connectWithAccessToken:@(accessToken.c_str())];
 		[strongSelf scheduleRefreshAt:[NSDate dateWithTimeIntervalSinceNow:expiresIn]];
@@ -637,14 +695,17 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 - (void)scheduleRefreshAt:(NSDate *)expiresAt {
 	if (![expiresAt isKindOfClass:NSDate.class]) return;
 
-	NSTimeInterval delay = MAX(60, expiresAt.timeIntervalSinceNow - MenzenRefreshMargin);
+	[self scheduleRefreshAfter:MAX(60, expiresAt.timeIntervalSinceNow - MenzenRefreshMargin)];
+}
+
+- (void)scheduleRefreshAfter:(NSTimeInterval)delay {
 	NSUInteger generation = ++_refreshGeneration;
 	__weak typeof(self) weakSelf = self;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		typeof(self) strongSelf = weakSelf;
 		if (!strongSelf || generation != strongSelf->_refreshGeneration) return;
 
-		NSDictionary *tokens = MenzenKeychainLoadTokens(NULL);
+		NSDictionary *tokens = [strongSelf currentTokens];
 		NSString *refreshToken = tokens[MenzenTokensRefreshTokenKey];
 		if (refreshToken.length) [strongSelf refreshWithToken:refreshToken fallbackAccessToken:tokens[MenzenTokensAccessTokenKey] expiresAt:tokens[MenzenTokensExpiresAtKey]];
 	});
@@ -694,7 +755,7 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 }
 
 - (void)accessTokenRejected {
-	NSString *refreshToken = MenzenKeychainLoadTokens(NULL)[MenzenTokensRefreshTokenKey];
+	NSString *refreshToken = [self currentTokens][MenzenTokensRefreshTokenKey];
 
 	if (!_rejectedTokenRefreshed && refreshToken.length) {
 		_rejectedTokenRefreshed = YES;

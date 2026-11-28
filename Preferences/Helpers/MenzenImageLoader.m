@@ -1,3 +1,4 @@
+#import <ImageIO/ImageIO.h>
 #import <objc/runtime.h>
 
 #import "../../Shared/MenzenCustomActivity.h"
@@ -35,6 +36,47 @@ static void MenzenLoadAssetURL(NSString *key, void (^completion)(NSString *urlSt
 	}] resume];
 }
 
+// Links in the preview can come from Connected Apps, so the download and the
+// decoded picture are kept small enough not to strain Settings.
+static NSUInteger const MenzenImageMaxBytes = 8 * 1024 * 1024;
+static CGFloat const MenzenImageMaxPixels = 1024;
+static NSTimeInterval const MenzenImageTimeout = 15;
+
+static NSURLSession *MenzenImageSession(void) {
+	static NSURLSession *session;
+	static dispatch_once_t once;
+	dispatch_once(&once, ^{
+		NSURLSessionConfiguration *configuration = NSURLSessionConfiguration.ephemeralSessionConfiguration;
+		configuration.timeoutIntervalForRequest = MenzenImageTimeout;
+		configuration.timeoutIntervalForResource = MenzenImageTimeout;
+		session = [NSURLSession sessionWithConfiguration:configuration];
+	});
+
+	return session;
+}
+
+static UIImage *MenzenDecodeImage(NSData *data) {
+	if (!data.length || data.length > MenzenImageMaxBytes) return nil;
+
+	CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
+	if (!source) return nil;
+
+	NSDictionary *options = @{
+		(__bridge id)kCGImageSourceCreateThumbnailFromImageAlways: @YES,
+		(__bridge id)kCGImageSourceCreateThumbnailWithTransform: @YES,
+		(__bridge id)kCGImageSourceThumbnailMaxPixelSize: @(MenzenImageMaxPixels),
+	};
+
+	CGImageRef thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, (__bridge CFDictionaryRef)options);
+	CFRelease(source);
+	if (!thumbnail) return nil;
+
+	UIImage *image = [UIImage imageWithCGImage:thumbnail];
+	CGImageRelease(thumbnail);
+
+	return image;
+}
+
 void MenzenLoadImage(NSString *urlString, void (^completion)(UIImage *image)) {
 	if (urlString && ![urlString containsString:@":"]) {
 		MenzenLoadAssetURL(urlString, ^(NSString *assetURL) {
@@ -65,8 +107,8 @@ void MenzenLoadImage(NSString *urlString, void (^completion)(UIImage *image)) {
 		return;
 	}
 
-	[[NSURLSession.sharedSession dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-		UIImage *image = data ? [UIImage imageWithData:data] : nil;
+	[[MenzenImageSession() dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+		UIImage *image = MenzenDecodeImage(data);
 		if (image) [cache setObject:image forKey:urlString];
 		dispatch_async(dispatch_get_main_queue(), ^{
 			completion(image);

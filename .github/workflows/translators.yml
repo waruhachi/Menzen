@@ -25,10 +25,10 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v7
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Update the table
-              uses: andrii-bodnar/action-crowdin-contributors@v3
+              uses: andrii-bodnar/action-crowdin-contributors@ef1aebb96d8a0e60faf8f85376f52f1898b66c83 # v3
               with:
                   contributors_per_line: 7
                   max_contributors: 49

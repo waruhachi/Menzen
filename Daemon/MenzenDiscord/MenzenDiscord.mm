@@ -41,6 +41,8 @@ static NSTimeInterval const MenzenProfileMinAge = 10;
 static NSTimeInterval const MenzenFastCallbackInterval = 0.05;
 static NSTimeInterval const MenzenBusyCallbackTime = 10;
 static NSTimeInterval const MenzenIdleCallbackInterval = 1;
+// Disconnected with nothing to show: nothing comes unasked then.
+static NSTimeInterval const MenzenQuietCallbackInterval = 60;
 // The status from before Menzen changed it, and what Menzen set, kept so it
 // can be put back after a restart.
 static CFStringRef const MenzenStatusBeforeKey = CFSTR("statusBefore");
@@ -370,7 +372,9 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)setCallbacksFast:(BOOL)fast {
 	_callbacksFast = fast;
-	NSTimeInterval interval = fast ? MenzenFastCallbackInterval : MenzenIdleCallbackInterval;
+	BOOL quiet = !_connectionWanted && _client->GetStatus() == discordpp::Client::Status::Disconnected;
+	NSTimeInterval interval = fast ? MenzenFastCallbackInterval : quiet ? MenzenQuietCallbackInterval
+																		: MenzenIdleCallbackInterval;
 	dispatch_source_set_timer(_callbackTimer, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(interval * NSEC_PER_SEC)), (uint64_t)(interval * NSEC_PER_SEC), (uint64_t)(interval * NSEC_PER_SEC / 2));
 }
 

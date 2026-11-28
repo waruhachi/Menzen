@@ -468,7 +468,12 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 	_client->GetToken(_applicationId, MenzenStdString(code), MenzenStdString(verifier), MenzenStdString(self.redirectURI), [weakSelf, generation, completion](discordpp::ClientResult result, std::string accessToken, std::string refreshToken, discordpp::AuthorizationTokenType tokenType, int32_t expiresIn, std::string scopes) {
 		typeof(self) strongSelf = weakSelf;
-		if (!strongSelf || generation != strongSelf->_accountGeneration) return;
+
+		// Signed out, or another sign-in took over, in the meantime.
+		if (!strongSelf || generation != strongSelf->_accountGeneration) {
+			completion(nil);
+			return;
+		}
 
 		if (!result.Successful()) {
 			completion(MenzenLocalizedString(@"signin.error.discord_didn_t_accept_the_sign", @"Discord didn't accept the sign-in. Try again."));
@@ -481,10 +486,16 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 - (void)beginDeviceSignInWithCodeHandler:(void (^)(NSURL *, NSString *, NSString *))codeHandler completion:(void (^)(BOOL, NSString *))completion {
 	if (!_deviceSignIn) _deviceSignIn = [[MenzenDeviceSignIn alloc] initWithApplicationId:_applicationId scopes:MenzenScopes];
+	NSUInteger generation = _accountGeneration;
 	__weak typeof(self) weakSelf = self;
 	[_deviceSignIn startWithCodeHandler:codeHandler completion:^(NSString *accessToken, NSString *refreshToken, NSTimeInterval expiresIn, NSString *error) {
 		typeof(self) strongSelf = weakSelf;
-		if (!strongSelf) return;
+
+		// Signed out, or another sign-in took over, in the meantime.
+		if (!strongSelf || generation != strongSelf->_accountGeneration) {
+			completion(NO, nil);
+			return;
+		}
 
 		if (!accessToken) {
 			completion(NO, error);
@@ -503,6 +514,8 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 - (NSString *)signInWithAccessToken:(NSString *)accessToken refreshToken:(NSString *)refreshToken expiresIn:(NSTimeInterval)expiresIn {
 	if (![self saveAccessToken:accessToken refreshToken:refreshToken expiresIn:expiresIn]) return MenzenLocalizedString(@"signin.error.couldn_t_save_the_sign_in", @"Couldn't save the sign-in to the Keychain.");
 
+	// Anything still under way for the account before is out of date.
+	_accountGeneration++;
 	_signedIn = YES;
 	_accountError = nil;
 	[self connectWithAccessToken:accessToken];
@@ -515,6 +528,11 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 - (void)signOut {
 	NSDictionary *tokens = MenzenKeychainLoadTokens(NULL);
 	MenzenKeychainDeleteTokens();
+
+	[_deviceSignIn cancel];
+	_pendingVerifier = nil;
+	_pendingState = nil;
+	_pendingExpiry = nil;
 
 	_accountGeneration++;
 	_refreshGeneration++;

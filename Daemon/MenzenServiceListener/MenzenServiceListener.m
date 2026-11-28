@@ -141,6 +141,7 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 			[self resetDeviceSignInWait];
 			reply(signedIn, error);
 		} else {
+			[self resetDeviceSignInWait];
 			self->_deviceSignInWaiter = reply;
 		}
 	});
@@ -155,6 +156,7 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 
 - (void)deviceSignInFinished:(BOOL)signedIn error:(NSString *)error {
 	void (^waiter)(BOOL, NSString *) = _deviceSignInWaiter;
+	_deviceSignInWaiter = nil;
 	[self resetDeviceSignInWait];
 
 	if (waiter) {
@@ -166,8 +168,13 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 	}
 }
 
+// Every reply is called once: a waiter that's replaced or cancelled hears that
+// the sign-in didn't happen.
 - (void)resetDeviceSignInWait {
+	void (^waiter)(BOOL, NSString *) = _deviceSignInWaiter;
 	_deviceSignInWaiter = nil;
+	if (waiter) waiter(NO, nil);
+
 	_deviceSignInFinished = NO;
 	_deviceSignInSignedIn = NO;
 	_deviceSignInError = nil;
@@ -229,6 +236,7 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 
 - (void)signOutWithReply:(void (^)(void))reply {
 	dispatch_async(dispatch_get_main_queue(), ^{
+		[self resetDeviceSignInWait];
 		[self->_discord signOut];
 		reply();
 	});

@@ -92,6 +92,8 @@ static MenzenTrack *MenzenTrackFromInfo(NSDictionary *info, NSString *bundleIden
 	MRMediaRemoteGetNowPlayingClientFn _getClient;
 	MRNowPlayingClientGetStringFn _clientGetBundleIdentifier;
 	MRNowPlayingClientGetStringFn _clientGetParentAppBundleIdentifier;
+	// Only once every function MediaRemote has to have was found.
+	BOOL _started;
 }
 
 - (instancetype)initWithHandler:(void (^)(MenzenTrack *))handler {
@@ -132,6 +134,7 @@ static void *MenzenSymbol(void *handle, const char *name) {
 		}];
 	}
 
+	_started = YES;
 	registerForNotifications(dispatch_get_main_queue());
 	[self scheduleUpdate];
 
@@ -160,6 +163,8 @@ static void *MenzenSymbol(void *handle, const char *name) {
 }
 
 - (void)update {
+	if (!_started) return;
+
 	dispatch_group_t group = dispatch_group_create();
 	__block NSDictionary *info;
 	__block BOOL playing = NO;

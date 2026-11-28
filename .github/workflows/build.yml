@@ -25,7 +25,7 @@ jobs:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
             - name: Set up Theos
-              uses: waruhachi/theos-action@4bab129cc00249d9cfea72726e967526a28a05fb # v2.6.5
+              uses: waruhachi/theos-action@38543e131530aa418b97aed07013bb8259312fad # v2.6.6
               with:
                   theos-src: "waruhachi/theos"
                   theos-branch: "main"

@@ -1,9 +1,9 @@
 name: Release Tweak
 
+# Building only reads; publishing and attesting get write access in the
+# release job alone.
 permissions:
-    contents: write
-    id-token: write
-    attestations: write
+    contents: read
 
 on:
     release:
@@ -47,6 +47,10 @@ jobs:
     release:
         needs: build
         runs-on: macos-latest
+        permissions:
+            contents: write
+            id-token: write
+            attestations: write
         steps:
             - uses: actions/checkout@v7
 

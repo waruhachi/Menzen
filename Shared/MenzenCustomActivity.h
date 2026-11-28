@@ -54,13 +54,15 @@ static inline NSString *MenzenPresetString(NSDictionary *preset, NSString *key) 
 	return text.length ? text : nil;
 }
 
-// A link that can go in the activity: https, and nothing in it that looks
-// like a credential, since Discord shows the activity to everyone.
+// A link that can go in the activity: https, with no user name, password,
+// fragment or query field named like a credential. Discord shows the activity
+// to everyone; this catches the usual places a link carries a secret, not
+// every one.
 static inline BOOL MenzenCustomURLIsAllowed(NSString *string) {
 	if (!string.length) return NO;
 
 	NSURLComponents *components = [NSURLComponents componentsWithString:string];
-	if (![components.scheme.lowercaseString isEqualToString:@"https"] || !components.host.length || components.user || components.password) return NO;
+	if (![components.scheme.lowercaseString isEqualToString:@"https"] || !components.host.length || components.user || components.password || components.fragment) return NO;
 
 	for (NSURLQueryItem *item in components.queryItems) {
 		NSString *name = item.name.lowercaseString;

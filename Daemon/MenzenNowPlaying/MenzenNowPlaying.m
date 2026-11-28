@@ -31,7 +31,8 @@ static NSString *MenzenIdentifier(id value) {
 }
 
 static double MenzenDouble(id value) {
-	return [value isKindOfClass:NSNumber.class] ? [value doubleValue] : 0;
+	double number = [value isKindOfClass:NSNumber.class] ? [value doubleValue] : 0;
+	return isfinite(number) ? number : 0;
 }
 
 @implementation MenzenTrack

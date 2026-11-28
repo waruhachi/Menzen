@@ -10,6 +10,8 @@
 
 // More at once than any device runs; the rest are turned away.
 static NSUInteger const MenzenConnectedConnectionLimit = 64;
+// So one process can't take all of them.
+static NSUInteger const MenzenConnectedProcessConnectionLimit = 4;
 static NSUInteger const MenzenConnectedTextLimit = 128;
 static NSUInteger const MenzenConnectedURLLimit = 512;
 // Requests SpringBoard hasn't shown by then never will be (it restarted).
@@ -34,10 +36,31 @@ static NSString *MenzenConnectedImage(id url) {
 	return MenzenCustomURLIsAllowed(url) ? url : nil;
 }
 
+// Between 2000 and 2100: anything else isn't a time an activity started or
+// ends.
 static NSDate *MenzenConnectedDate(id seconds) {
-	if (![seconds isKindOfClass:NSNumber.class] || [seconds doubleValue] <= 0) return nil;
+	if (![seconds isKindOfClass:NSNumber.class]) return nil;
 
-	return [NSDate dateWithTimeIntervalSince1970:[seconds doubleValue]];
+	double value = [seconds doubleValue];
+	if (!isfinite(value) || value < 946684800 || value > 4102444800) return nil;
+
+	return [NSDate dateWithTimeIntervalSince1970:value];
+}
+
+// Only what MenzenConnectedActivity reads is kept of what a client sends.
+static NSDictionary *MenzenConnectedFields(id sent) {
+	if (![sent isKindOfClass:NSDictionary.class]) return nil;
+
+	NSArray *texts = @[MenzenActivityKindKey, MenzenActivityNameKey, MenzenActivityDetailsKey, MenzenActivityStateKey, MenzenActivityLargeTextKey, MenzenActivitySmallTextKey, MenzenActivityStatusDisplayKey];
+	NSArray *links = @[MenzenActivityImageURLKey, MenzenActivitySmallImageURLKey];
+	NSArray *dates = @[MenzenActivityStartKey, MenzenActivityEndKey];
+	NSMutableDictionary *fields = [NSMutableDictionary dictionary];
+
+	for (NSString *key in texts) fields[key] = MenzenConnectedText(sent[key]);
+	for (NSString *key in links) fields[key] = MenzenConnectedImage(sent[key]);
+	for (NSString *key in dates) fields[key] = [sent[key] isKindOfClass:NSNumber.class] ? sent[key] : nil;
+
+	return fields;
 }
 
 static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *appName) {
@@ -136,7 +159,13 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 
 	__block BOOL full;
 	dispatch_sync(dispatch_get_main_queue(), ^{
-		full = self->_sessions.count >= MenzenConnectedConnectionLimit;
+		NSUInteger fromProcess = 0;
+
+		for (MenzenConnectedSession *session in self->_sessions) {
+			if ([session.process isEqualToString:process]) fromProcess++;
+		}
+
+		full = self->_sessions.count >= MenzenConnectedConnectionLimit || fromProcess >= MenzenConnectedProcessConnectionLimit;
 	});
 
 	if (full) return NO;
@@ -349,7 +378,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 - (void)session:(MenzenConnectedSession *)session setActivity:(NSDictionary *)activity {
 	if (!session.identifier) return;
 
-	session.sentActivity = [activity isKindOfClass:NSDictionary.class] ? activity : nil;
+	session.sentActivity = MenzenConnectedFields(activity);
 	session.sent = ++_sends;
 	[self showLatest];
 }

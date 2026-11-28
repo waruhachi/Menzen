@@ -80,8 +80,13 @@ static BOOL MenzenSameDate(NSDate *a, NSDate *b) {
 	return fabs([a timeIntervalSinceDate:b]) < 2;
 }
 
+// 0 for a time that isn't a real one (NaN, before 1970, after 2100), which
+// can't be converted.
 static uint64_t MenzenMilliseconds(NSDate *date) {
-	return (uint64_t)(date.timeIntervalSince1970 * 1000);
+	NSTimeInterval seconds = date.timeIntervalSince1970;
+	if (!isfinite(seconds) || seconds <= 0 || seconds > 4102444800) return 0;
+
+	return (uint64_t)(seconds * 1000);
 }
 
 // Discord turning the refresh token down, as opposed to not being reached.
@@ -114,9 +119,40 @@ static void MenzenSetDaemonString(CFStringRef key, NSString *value) {
 	CFPreferencesAppSynchronize(MenzenDaemonDomain);
 }
 
+static BOOL MenzenArrayOf(id value, Class elementClass) {
+	if (![value isKindOfClass:NSArray.class]) return NO;
+
+	for (id element in value) {
+		if (![element isKindOfClass:elementClass]) return NO;
+	}
+
+	return YES;
+}
+
+// Other processes running as mobile can write the daemon's preferences too,
+// so the saved profile is only used if every field is what menzend saves.
 static NSDictionary *MenzenDaemonProfile(void) {
 	id value = CFBridgingRelease(CFPreferencesCopyAppValue(MenzenProfileKey, MenzenDaemonDomain));
-	return [value isKindOfClass:NSDictionary.class] ? value : nil;
+	if (![value isKindOfClass:NSDictionary.class]) return nil;
+
+	NSString *userId = value[MenzenProfileIdKey];
+	if (![userId isKindOfClass:NSString.class] || !userId.length || [userId rangeOfCharacterFromSet:NSCharacterSet.decimalDigitCharacterSet.invertedSet].location != NSNotFound) return nil;
+
+	NSSet *strings = [NSSet setWithObjects:MenzenProfileIdKey, MenzenProfileUsernameKey, MenzenProfileGlobalNameKey, MenzenProfileAvatarURLKey, MenzenProfileBannerURLKey, MenzenProfileGuildTagKey, MenzenProfileGuildTagBadgeURLKey, MenzenProfileAvatarDecorationURLKey, MenzenProfileNameplateURLKey, MenzenProfileStatusKey, nil];
+	NSSet *numbers = [NSSet setWithObjects:MenzenProfileAccentColorKey, MenzenProfilePremiumTypeKey, MenzenProfileLimitedKey, nil];
+	__block BOOL valid = YES;
+
+	[value enumerateKeysAndObjectsUsingBlock:^(id key, id field, BOOL *stop) {
+		if ([strings containsObject:key]) valid = [field isKindOfClass:NSString.class];
+		else if ([numbers containsObject:key]) valid = [field isKindOfClass:NSNumber.class];
+		else if ([key isEqual:MenzenProfileBadgesKey]) valid = MenzenArrayOf(field, NSString.class);
+		else if ([key isEqual:MenzenProfileNameColorsKey]) valid = MenzenArrayOf(field, NSNumber.class);
+		else valid = NO;
+
+		if (!valid) *stop = YES;
+	}];
+
+	return valid ? value : nil;
 }
 
 static void MenzenSetDaemonProfile(NSDictionary *profile) {
@@ -306,7 +342,8 @@ static NSDictionary *MenzenActivityInfo(MenzenActivity *activity) {
 
 	_client->SetUserUpdatedCallback([weakSelf](uint64_t userId) {
 		typeof(self) strongSelf = weakSelf;
-		if (strongSelf && strongSelf->_profile && userId == strtoull([strongSelf->_profile[MenzenProfileIdKey] UTF8String], NULL, 10)) [strongSelf updateProfileFromClient];
+		NSString *profileId = strongSelf ? strongSelf->_profile[MenzenProfileIdKey] : nil;
+		if ([profileId isKindOfClass:NSString.class] && userId == strtoull(profileId.UTF8String, NULL, 10)) [strongSelf updateProfileFromClient];
 	});
 
 	// The SDK only delivers callbacks from RunCallbacks, so everything above
@@ -1147,10 +1184,13 @@ static NSString *MenzenAssetPath(id value) {
 		richPresence.AddButton(activityButton);
 	}
 
-	if (activity.startDate) {
+	uint64_t start = MenzenMilliseconds(activity.startDate);
+
+	if (start) {
 		discordpp::ActivityTimestamps timestamps;
-		timestamps.SetStart(MenzenMilliseconds(activity.startDate));
-		if (activity.endDate) timestamps.SetEnd(MenzenMilliseconds(activity.endDate));
+		timestamps.SetStart(start);
+		uint64_t end = MenzenMilliseconds(activity.endDate);
+		if (end > start) timestamps.SetEnd(end);
 		richPresence.SetTimestamps(timestamps);
 	}
 

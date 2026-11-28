@@ -42,8 +42,8 @@ static int MenzenSignOutForRemoval(void) {
 		setenv("HOME", mobile->pw_dir, 1);
 	}
 
-	BOOL signedOut = MenzenSignOutStoredAccount(MenzenApplicationId, MenzenSignOutTimeout);
-	return signedOut ? 0 : 1;
+	// prerm tells the user what each result means.
+	return (int)MenzenSignOutStoredAccount(MenzenApplicationId, MenzenSignOutTimeout);
 }
 
 int main(int argc, char *argv[]) {

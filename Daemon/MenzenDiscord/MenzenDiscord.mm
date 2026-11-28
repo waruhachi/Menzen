@@ -1206,35 +1206,36 @@ static NSString *MenzenAssetPath(id value) {
 
 @end
 
-BOOL MenzenSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout) {
+MenzenSignOutResult MenzenSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout) {
 	OSStatus status;
 	NSDictionary *tokens = MenzenKeychainLoadTokens(&status);
-	if (!tokens) return status == errSecItemNotFound;
+	if (!tokens) return status == errSecItemNotFound ? MenzenSignOutDone : MenzenSignOutNotDeleted;
 
 	status = MenzenKeychainDeleteTokens();
-	if (status != errSecSuccess && status != errSecItemNotFound) return NO;
+	if (status != errSecSuccess && status != errSecItemNotFound) return MenzenSignOutNotDeleted;
 
 	MenzenSetDaemonProfile(nil);
 
 	NSString *token = tokens[MenzenTokensRefreshTokenKey] ?: tokens[MenzenTokensAccessTokenKey];
-	if (![token isKindOfClass:NSString.class] || !token.length) return YES;
+	if (![token isKindOfClass:NSString.class] || !token.length) return MenzenSignOutDone;
 
 	// The tokens are gone either way; if Discord can't be reached, the
 	// grant stays under Authorized Apps until the user removes it.
-	bool done = false;
+	bool answered = false, revoked = false;
 	auto client = std::make_shared<discordpp::Client>();
 	client->SetApplicationId(applicationId);
 
-	client->RevokeToken(applicationId, MenzenStdString(token), [&done](discordpp::ClientResult result) {
-		done = true;
+	client->RevokeToken(applicationId, MenzenStdString(token), [&answered, &revoked](discordpp::ClientResult result) {
+		answered = true;
+		revoked = result.Successful();
 	});
 
 	NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow:timeout];
 
-	while (!done && deadline.timeIntervalSinceNow > 0) {
+	while (!answered && deadline.timeIntervalSinceNow > 0) {
 		discordpp::RunCallbacks();
 		[NSRunLoop.currentRunLoop runUntilDate:[NSDate dateWithTimeIntervalSinceNow:MenzenFastCallbackInterval]];
 	}
 
-	return YES;
+	return revoked ? MenzenSignOutDone : MenzenSignOutNotRevoked;
 }

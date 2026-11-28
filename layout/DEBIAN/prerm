@@ -1,16 +1,38 @@
 #!/bin/sh
+# Runs before Menzen is removed or upgraded: stops menzend, and on removal
+# signs out, as the button in Settings does. Upgrades keep the sign-in.
+
+say() {
+	echo "Menzen: $*"
+}
+
 case "$0" in
 	*/var/lib/dpkg/info/*) JBROOT="${0%/var/lib/dpkg/info/*}" ;;
 	*) JBROOT="${0%/Library/dpkg/info/*}" ;;
 esac
-PLIST="$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist"
-[ -f "$PLIST" ] && launchctl unload "$PLIST" 2>/dev/null
 
-# Removing Menzen signs out, as the button in Settings does. Upgrades keep
-# the sign-in. The daemon is stopped first so it can't refresh the tokens
-# while they're deleted. Its output is dropped: other tweaks injected into it
-# print there, and package managers show that as an error.
-if [ "$1" = remove ]; then
-	"$JBROOT/usr/libexec/menzend" --sign-out >/dev/null 2>&1
+PLIST="$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist"
+
+# Stopped first, so it can't refresh the tokens while they're deleted.
+if [ -f "$PLIST" ]; then
+	say "Stopping menzend..."
+	launchctl unload "$PLIST" 2>/dev/null
 fi
+
+if [ "$1" = remove ]; then
+	say "Signing out of Discord..."
+
+	# Its output is dropped: other tweaks injected into it print there, and
+	# package managers show that as an error.
+	"$JBROOT/usr/libexec/menzend" --sign-out >/dev/null 2>&1
+
+	case $? in
+		0) say "Signed out." ;;
+		2) say "Signed out on this device, but Discord couldn't be reached. Remove Menzen under Authorized Apps in Discord's settings to end the sign-in there too." ;;
+		*) say "Couldn't delete the sign-in from the Keychain. Remove Menzen under Authorized Apps in Discord's settings." ;;
+	esac
+fi
+
+# Removal goes ahead either way: a failed sign-out shouldn't leave Menzen
+# stuck half removed.
 exit 0

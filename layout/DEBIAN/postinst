@@ -1,22 +1,50 @@
 #!/bin/sh
+# Runs after Menzen is installed or upgraded: writes menzend's launch daemon
+# and starts it.
+
+say() {
+	echo "Menzen: $*"
+}
+
+fail() {
+	echo "Menzen: $*" >&2
+	exit 1
+}
+
 # dpkg runs this from its database in the jailbreak's root
 # (<jbroot>/Library/dpkg/info on Procursus, <jbroot>/var/lib/dpkg/info on older
 # setups), so the root is what comes before that: empty on rootful, /var/jb on
-# rootless, a random path on roothide. launchctl is under it too, so rely on PATH.
+# rootless, a random path on roothide. launchctl is under it too, so rely on
+# PATH.
 case "$0" in
 	*/var/lib/dpkg/info/*) JBROOT="${0%/var/lib/dpkg/info/*}" ;;
-	*) JBROOT="${0%/Library/dpkg/info/*}" ;;
+	*/Library/dpkg/info/*) JBROOT="${0%/Library/dpkg/info/*}" ;;
+	*) fail "Couldn't tell where the jailbreak is installed from $0." ;;
 esac
-PLIST="$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist"
 
-# Test builds before 1.0.0-rc.1 kept logs here of what was played and which
-# apps were open. Menzen no longer logs anything; don't leave them behind.
-rm -rf "$JBROOT/var/mobile/Library/Logs/Menzen"
+DAEMON="$JBROOT/usr/libexec/menzend"
+PLIST_DIR="$JBROOT/Library/LaunchDaemons"
+PLIST="$PLIST_DIR/moe.waru.menzend.plist"
+LOGS="$JBROOT/var/mobile/Library/Logs/Menzen"
+
+[ -x "$DAEMON" ] || fail "menzend is missing from $DAEMON."
+
+# Test builds before 1.0.0-rc.1 kept logs of what was played and which apps
+# were open. Menzen no longer logs anything; don't leave them behind.
+if [ -d "$LOGS" ]; then
+	say "Removing logs from test builds..."
+	rm -rf "$LOGS"
+fi
 
 # Written here rather than shipped, since only now is the daemon's path known
-# (and release builds turn shipped plists into binary ones). postrm removes it.
-mkdir -p "$JBROOT/Library/LaunchDaemons"
-cat > "$PLIST" <<PLIST
+# (and release builds turn shipped plists into binary ones). Written next to
+# the real one first, so a failed write never leaves half a plist. postrm
+# removes it.
+say "Writing the launch daemon..."
+mkdir -p "$PLIST_DIR" || fail "Couldn't create $PLIST_DIR."
+
+TEMP="$PLIST.new"
+cat > "$TEMP" <<PLIST || fail "Couldn't write $TEMP."
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -25,7 +53,7 @@ cat > "$PLIST" <<PLIST
 	<string>moe.waru.menzend</string>
 	<key>ProgramArguments</key>
 	<array>
-		<string>$JBROOT/usr/libexec/menzend</string>
+		<string>$DAEMON</string>
 	</array>
 	<key>MachServices</key>
 	<dict>
@@ -45,9 +73,16 @@ cat > "$PLIST" <<PLIST
 </dict>
 </plist>
 PLIST
-chown root:wheel "$PLIST"
-chmod 644 "$PLIST"
 
+if ! chown root:wheel "$TEMP" || ! chmod 644 "$TEMP" || ! mv -f "$TEMP" "$PLIST"; then
+	rm -f "$TEMP"
+	fail "Couldn't install $PLIST."
+fi
+
+say "Starting menzend..."
 launchctl unload "$PLIST" 2>/dev/null
-launchctl load "$PLIST"
+launchctl load "$PLIST" || fail "launchctl couldn't load $PLIST."
+launchctl list | grep -q "moe\.waru\.menzend$" || fail "menzend didn't start."
+
+say "Done."
 exit 0

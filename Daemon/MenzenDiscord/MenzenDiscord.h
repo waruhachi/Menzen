@@ -80,7 +80,14 @@ typedef NS_ENUM(NSInteger, MenzenStatusDisplay) {
 - (void)refreshProfileWithCompletion:(void (^)(void))completion;
 @end
 
+typedef NS_ENUM(NSInteger, MenzenSignOutResult) {
+	MenzenSignOutDone = 0,
+	MenzenSignOutNotDeleted = 1,
+	// The tokens are gone, but Discord didn't confirm it ended the grant.
+	MenzenSignOutNotRevoked = 2,
+};
+
 // What Sign Out does, without a running daemon: deletes the stored tokens and
 // revokes them, for when the package is removed. Waits at most timeout for
-// Discord. NO if the tokens couldn't be deleted.
-FOUNDATION_EXPORT BOOL MenzenSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout);
+// Discord.
+FOUNDATION_EXPORT MenzenSignOutResult MenzenSignOutStoredAccount(uint64_t applicationId, NSTimeInterval timeout);

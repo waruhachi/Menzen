@@ -1,10 +1,25 @@
 #!/bin/sh
+# Runs after Menzen is removed: deletes the launch daemon postinst wrote.
+# prerm already stopped it.
+
+say() {
+	echo "Menzen: $*"
+}
+
 case "$0" in
 	*/var/lib/dpkg/info/*) JBROOT="${0%/var/lib/dpkg/info/*}" ;;
 	*) JBROOT="${0%/Library/dpkg/info/*}" ;;
 esac
-# postinst wrote it; prerm already unloaded it.
+
+PLIST="$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist"
+
 case "$1" in
-	remove|purge) rm -f "$JBROOT/Library/LaunchDaemons/moe.waru.menzend.plist" ;;
+	remove | purge)
+		if [ -f "$PLIST" ]; then
+			say "Removing the launch daemon..."
+			rm -f "$PLIST"
+		fi
+		;;
 esac
+
 exit 0

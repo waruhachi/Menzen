@@ -4,6 +4,7 @@
 #import "../../Shared/MenzenService.h"
 #import "../MenzenCodeSigning/MenzenCodeSigning.h"
 #import "../MenzenDiscord/MenzenDiscord.h"
+#import "../MenzenDiscord/MenzenKeychain.h"
 #import "../MenzenPresence/MenzenPresence.h"
 #import "MenzenConnectedListener.h"
 
@@ -13,6 +14,9 @@ static NSUInteger const MenzenConnectedTextLimit = 128;
 static NSUInteger const MenzenConnectedURLLimit = 512;
 // Requests SpringBoard hasn't shown by then never will be (it restarted).
 static NSTimeInterval const MenzenConnectedRequestAge = 60;
+// The apps the user allowed, each with the signing identifier of the process
+// that was allowed, so another process can't claim to be it.
+static NSString *const MenzenConnectedApprovalsAccount = @"connectedApprovals";
 
 static NSString *MenzenConnectedText(id text) {
 	if (![text isKindOfClass:NSString.class]) return nil;
@@ -108,6 +112,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	NSMutableArray<MenzenConnectedSession *> *_sessions;
 	uint64_t _sends;
 	MenzenActivity *_shown;
+	NSDictionary<NSString *, NSString *> *_approvals;
 }
 
 - (instancetype)initWithPresence:(MenzenPresence *)presence {
@@ -126,6 +131,9 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 }
 
 - (BOOL)listener:(NSXPCListener *)listener shouldAcceptNewConnection:(NSXPCConnection *)connection {
+	NSString *process = MenzenSigningIdentifier(connection.auditToken);
+	if (!process) return NO;
+
 	__block BOOL full;
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		full = self->_sessions.count >= MenzenConnectedConnectionLimit;
@@ -136,7 +144,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	MenzenConnectedSession *session = [MenzenConnectedSession new];
 	session.listener = self;
 	session.connection = connection;
-	session.process = MenzenSigningIdentifier(connection.auditToken);
+	session.process = process;
 
 	connection.exportedInterface = MenzenConnectedServiceInterface();
 	connection.exportedObject = session;
@@ -160,10 +168,91 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	return YES;
 }
 
-- (MenzenClientState)stateForIdentifier:(NSString *)identifier {
+// Before the first unlock the Keychain can't be read yet: nothing is allowed
+// until it can.
+- (NSDictionary<NSString *, NSString *> *)approvals {
+	if (_approvals) return _approvals;
+
+	OSStatus status;
+	id saved = MenzenKeychainLoadItem(MenzenConnectedApprovalsAccount, &status);
+
+	if (status == errSecItemNotFound) {
+		_approvals = [self approvalsFromSettings];
+		if (_approvals.count) MenzenKeychainSaveItem(MenzenConnectedApprovalsAccount, _approvals);
+
+		return _approvals;
+	}
+
+	if (status != errSecSuccess) return @{};
+
+	NSMutableDictionary *approvals = [NSMutableDictionary dictionary];
+
+	if ([saved isKindOfClass:NSDictionary.class]) {
+		[saved enumerateKeysAndObjectsUsingBlock:^(id identifier, id process, BOOL *stop) {
+			if (MenzenConnectedIdentifierIsValid(identifier) && [process isKindOfClass:NSString.class] && [process length]) approvals[identifier] = process;
+		}];
+	}
+
+	_approvals = approvals;
+
+	return _approvals;
+}
+
+// Versions before the Keychain kept them in the settings.
+- (NSDictionary<NSString *, NSString *> *)approvalsFromSettings {
+	NSDictionary<NSString *, NSDictionary *> *apps = MenzenConnectedApps();
+	NSMutableDictionary *approvals = [NSMutableDictionary dictionary];
+
+	for (NSString *identifier in MenzenConnectedAllowed()) {
+		id process = apps[identifier][MenzenConnectedAppProcessKey];
+		if ([process isKindOfClass:NSString.class] && [process length]) approvals[identifier] = process;
+	}
+
+	return approvals;
+}
+
+- (BOOL)saveApprovals:(NSDictionary<NSString *, NSString *> *)approvals {
+	OSStatus status = approvals.count ? MenzenKeychainSaveItem(MenzenConnectedApprovalsAccount, approvals) : MenzenKeychainDeleteItem(MenzenConnectedApprovalsAccount);
+	if (status != errSecSuccess) return NO;
+
+	_approvals = [approvals copy];
+	MenzenWriteSetting(MenzenSettingConnectedAllowed, [approvals.allKeys sortedArrayUsingSelector:@selector(compare:)]);
+	MenzenPostDarwinNotification(CFSTR(MenzenConnectedAppsChangedNotification));
+
+	return YES;
+}
+
+- (void)setApp:(NSString *)identifier allowed:(BOOL)allowed {
+	NSMutableDictionary *approvals = [self.approvals mutableCopy];
+
+	if (allowed) {
+		// The process connected now, else the one it was last time.
+		NSString *process;
+
+		for (MenzenConnectedSession *session in _sessions) {
+			if ([session.identifier isEqualToString:identifier] && session.process) process = session.process;
+		}
+
+		id remembered = MenzenConnectedApps()[identifier][MenzenConnectedAppProcessKey];
+		if (!process && [remembered isKindOfClass:NSString.class] && [remembered length]) process = remembered;
+		if (!process) return;
+
+		approvals[identifier] = process;
+	} else {
+		[approvals removeObjectForKey:identifier];
+	}
+
+	if ([approvals isEqualToDictionary:self.approvals] || ![self saveApprovals:approvals]) return;
+
+	[self settingsChanged];
+}
+
+- (MenzenClientState)stateForSession:(MenzenConnectedSession *)session {
 	if (!MenzenSettingBool(MenzenSettingEnabled, YES) || !MenzenSettingBool(MenzenSettingConnected, NO)) return MenzenClientStateOff;
 
-	return [MenzenConnectedAllowed() containsObject:identifier] ? MenzenClientStateAllowed : MenzenClientStateNotAllowed;
+	NSString *process = self.approvals[session.identifier];
+
+	return process && [process isEqualToString:session.process] ? MenzenClientStateAllowed : MenzenClientStateNotAllowed;
 }
 
 - (void)session:(MenzenConnectedSession *)session registerWithIdentifier:(NSString *)identifier name:(NSString *)name {
@@ -171,6 +260,9 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 	if (!MenzenConnectedIdentifierIsValid(identifier) || !name) return;
 	// One app per connection, for as long as it lasts.
 	if (session.identifier && ![session.identifier isEqualToString:identifier]) return;
+	// Allowed for another process: this one can't take its place.
+	NSString *approved = self.approvals[identifier];
+	if (approved && ![approved isEqualToString:session.process]) return;
 	if (![self rememberApp:identifier name:name process:session.process]) return;
 
 	session.identifier = identifier;
@@ -225,8 +317,13 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 }
 
 - (void)removeApp:(NSString *)identifier {
-	// The pane has just taken it off the allowed list.
-	MenzenSettingsSynchronize();
+	NSMutableDictionary *approvals = [self.approvals mutableCopy];
+
+	if (approvals[identifier]) {
+		[approvals removeObjectForKey:identifier];
+		if (![self saveApprovals:approvals]) return;
+	}
+
 	NSMutableDictionary *apps = [MenzenConnectedApps() mutableCopy];
 
 	if (apps[identifier]) {
@@ -263,7 +360,7 @@ static MenzenActivity *MenzenConnectedActivity(NSDictionary *info, NSString *app
 }
 
 - (void)updateSession:(MenzenConnectedSession *)session {
-	MenzenClientState state = [self stateForIdentifier:session.identifier];
+	MenzenClientState state = [self stateForSession:session];
 	if (session.state == state) return;
 
 	session.state = state;

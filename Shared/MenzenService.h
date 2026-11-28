@@ -72,6 +72,7 @@ static uint64_t const MenzenApplicationId = 1564329461036617748ULL;
 - (void)checkAppWithBundleIdentifier:(NSString *)bundleIdentifier;
 - (void)gamesWithReply:(void (^)(NSArray<NSDictionary<NSString *, id> *> *games))reply;
 - (void)appIconsWithReply:(void (^)(NSDictionary<NSString *, NSString *> *icons))reply;
+- (void)setConnectedApp:(NSString *)identifier allowed:(BOOL)allowed reply:(void (^)(void))reply;
 - (void)removeConnectedApp:(NSString *)identifier reply:(void (^)(void))reply;
 @end
 

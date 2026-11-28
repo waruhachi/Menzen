@@ -79,6 +79,10 @@ int main(int argc, char *argv[]) {
 		MenzenConnectedListener *connected = [[MenzenConnectedListener alloc] initWithPresence:presence];
 		[connected start];
 
+		service.setConnectedAppHandler = ^(NSString *identifier, BOOL allowed) {
+			[connected setApp:identifier allowed:allowed];
+		};
+
 		service.removeConnectedAppHandler = ^(NSString *identifier) {
 			[connected removeApp:identifier];
 		};

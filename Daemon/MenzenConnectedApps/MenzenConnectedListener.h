@@ -6,6 +6,7 @@
 - (instancetype)initWithPresence:(MenzenPresence *)presence;
 - (void)start;
 - (void)settingsChanged;
+- (void)setApp:(NSString *)identifier allowed:(BOOL)allowed;
 // Its open connections stop counting as it, so it comes back once it connects
 // again.
 - (void)removeApp:(NSString *)identifier;

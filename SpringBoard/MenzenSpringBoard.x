@@ -195,4 +195,6 @@ static void MenzenSettingsChanged(CFNotificationCenterRef center, void *observer
 	CFNotificationCenterRef center = CFNotificationCenterGetDarwinNotifyCenter();
 	CFNotificationCenterAddObserver(center, NULL, MenzenRequestsChanged, CFSTR(MenzenConnectedRequestNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	CFNotificationCenterAddObserver(center, NULL, MenzenSettingsChanged, CFSTR(MenzenSettingsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+	// menzend changes the allowed list.
+	CFNotificationCenterAddObserver(center, NULL, MenzenSettingsChanged, CFSTR(MenzenConnectedAppsChangedNotification), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 }

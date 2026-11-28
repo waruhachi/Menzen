@@ -213,6 +213,13 @@ static NSString *MenzenSettingsApp(NSXPCConnection *connection) {
 	});
 }
 
+- (void)setConnectedApp:(NSString *)identifier allowed:(BOOL)allowed reply:(void (^)(void))reply {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if (MenzenConnectedIdentifierIsValid(identifier) && self.setConnectedAppHandler) self.setConnectedAppHandler(identifier, allowed);
+		reply();
+	});
+}
+
 - (void)removeConnectedApp:(NSString *)identifier reply:(void (^)(void))reply {
 	dispatch_async(dispatch_get_main_queue(), ^{
 		if (MenzenConnectedIdentifierIsValid(identifier) && self.removeConnectedAppHandler) self.removeConnectedAppHandler(identifier);

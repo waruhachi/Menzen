@@ -9,7 +9,8 @@
 #define MenzenSettingConnected @"connected"
 // Written by menzend only.
 #define MenzenSettingConnectedApps @"connectedApps"
-// Written by the pane only.
+// Written by menzend only: a copy, for showing, of the apps it allows. What
+// it goes by is kept in its Keychain, where other processes can't change it.
 #define MenzenSettingConnectedAllowed @"connectedAllowed"
 // Written by menzend only, which posts MenzenConnectedRequestNotification
 // after.
@@ -82,12 +83,4 @@ static inline NSArray<NSString *> *MenzenConnectedAllowed(void) {
 	return [allowed filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id identifier, NSDictionary *bindings) {
 		return MenzenConnectedIdentifierIsValid(identifier);
 	}]];
-}
-
-static inline void MenzenConnectedSetAllowed(NSString *identifier, BOOL allowed) {
-	NSMutableArray<NSString *> *identifiers = [MenzenConnectedAllowed() mutableCopy];
-	[identifiers removeObject:identifier];
-	if (allowed) [identifiers addObject:identifier];
-	MenzenWriteSetting(MenzenSettingConnectedAllowed, identifiers);
-	MenzenPostDarwinNotification(CFSTR(MenzenSettingsChangedNotification));
 }

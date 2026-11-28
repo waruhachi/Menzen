@@ -125,8 +125,17 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 	return @([MenzenConnectedAllowed() containsObject:self.appIdentifier]);
 }
 
+// menzend keeps the allowed list; the setting is its copy, for showing.
 - (void)setAllowed:(NSNumber *)allowed specifier:(PSSpecifier *)specifier {
-	MenzenConnectedSetAllowed(self.appIdentifier, allowed.boolValue);
+	__weak typeof(self) weakSelf = self;
+	void (^reload)(void) = ^{
+		MenzenSettingsSynchronize();
+		[weakSelf reloadSpecifiers];
+	};
+
+	[MenzenServiceProxy(reload) setConnectedApp:self.appIdentifier allowed:allowed.boolValue reply:^{
+		dispatch_async(dispatch_get_main_queue(), reload);
+	}];
 }
 
 - (void)confirmRemove:(PSSpecifier *)specifier {
@@ -141,11 +150,8 @@ static void MenzenConnectedAppsChanged(CFNotificationCenterRef center, void *obs
 	[self presentViewController:alert animated:YES completion:nil];
 }
 
-// The allowed list is the pane's to write, the list of apps menzend's.
 - (void)remove {
-	NSString *identifier = self.appIdentifier;
-	MenzenConnectedSetAllowed(identifier, NO);
-	[MenzenServiceProxy(nil) removeConnectedApp:identifier reply:^{}];
+	[MenzenServiceProxy(nil) removeConnectedApp:self.appIdentifier reply:^{}];
 	[self.navigationController popViewControllerAnimated:YES];
 }
 

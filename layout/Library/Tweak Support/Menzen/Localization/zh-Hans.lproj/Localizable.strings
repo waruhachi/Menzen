@@ -6,15 +6,10 @@
 "activity.listening_to_x" = "正在收听 %@";
 /* Activity preview, shown when nothing is playing. */
 "activity.nothing_is_showing_right_now_open" = "当前没有显示任何活动状态。启动游戏或在受支持的应用中播放媒体后，活动状态将显示在这里和你的个人资料中。";
-/* Activity preview. %@ is a game name. */
-"activity.playing_x" = "正在游玩 %@";
 /* Activity preview. %@ is an app name. */
 "activity.watching_x" = "正在观看 %@";
-
 /* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
 "appearance.links" = "链接";
-/* Member List settings, footer. "Activity page" is the Settings page titled "Activity". */
-"appearance.member_lists_can_only_show_the" = "成员列表只能显示标题、第一行或第二行的内容。如果某个选项显示为灰色，请先在“活动状态”页面中将其设置为上述任意一行的内容。";
 /* Activity settings: section header for the big and small pictures. */
 "appearance.pictures" = "图片";
 /* Activity settings: row for the text shown when hovering the small picture on Discord. */
@@ -143,8 +138,6 @@
 
 /* Starts a line naming which picture has a problem, before a colon and the problem. */
 "image.big_picture" = "大图";
-/* Problem with a picture link: Discord can't show this file type. */
-"image.discord_only_shows_png_jpeg_gif" = "Discord 仅支持显示 PNG、JPEG、GIF 和 WebP 格式的图片。";
 /* Problem with a picture link. %@ is the system's error message. */
 "image.it_couldn_t_be_loaded_x" = "加载失败：%@";
 /* Starts a line naming which picture has a problem, before a colon and the problem. */

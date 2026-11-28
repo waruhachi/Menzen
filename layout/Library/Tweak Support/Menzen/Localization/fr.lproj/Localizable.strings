@@ -1,0 +1,12 @@
+/* Menzen, English. Keys are grouped by where the text appears. The comment
+   above each string tells translators where it shows and what any %@ or %ld
+   stands for. Keep Menzen, Discord, Nitro, HypeSquad and GitHub as they are. */
+
+/* Activity preview at the top of Settings, above the person's Discord card. %@ is an app or game name. */
+"activity.listening_to_x" = "Écoute %@";
+/* Activity preview, shown when nothing is playing. */
+"activity.nothing_is_showing_right_now_open" = "Rien n'apparait pour l'instant. Mets de la musique ou joues à un jeu dans les applis supportées. Ça apparaîtra ici et sur ton profil Discord.";
+/* Activity preview. %@ is an app name. */
+"activity.watching_x" = "Regarde %@";
+/* Activity settings: row for whether the activity's text and pictures link to the song, artist or app. */
+"appearance.links" = "Lien vers l'app / la musique";

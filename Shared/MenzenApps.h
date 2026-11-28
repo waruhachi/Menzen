@@ -24,12 +24,14 @@
 - (BOOL)applicationIsInstalled:(NSString *)bundleIdentifier;
 @end
 
+// Menzen's tweaks for SpringBoard and Settings aren't providers.
 static inline NSArray<NSDictionary *> *MenzenProviderFilters(void) {
 	NSString *directory = jbroot(@"/Library/MobileSubstrate/DynamicLibraries");
+	NSSet *others = [NSSet setWithObjects:@"MenzenSpringBoard.plist", @"MenzenSettingsApp.plist", nil];
 	NSMutableArray *filters = [NSMutableArray array];
 
 	for (NSString *name in [NSFileManager.defaultManager contentsOfDirectoryAtPath:directory error:nil]) {
-		if (![name hasPrefix:@"Menzen"] || ![name.pathExtension isEqualToString:@"plist"]) continue;
+		if (![name hasPrefix:@"Menzen"] || ![name.pathExtension isEqualToString:@"plist"] || [others containsObject:name]) continue;
 
 		NSDictionary *filter = [NSDictionary dictionaryWithContentsOfFile:[directory stringByAppendingPathComponent:name]];
 		if ([filter isKindOfClass:NSDictionary.class]) [filters addObject:filter];

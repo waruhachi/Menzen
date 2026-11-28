@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
 		}];
 
 		MenzenForegroundApps *foregroundApps = [[MenzenForegroundApps alloc] initWithHandler:^(NSArray<NSString *> *visible) {
+			appChecker.visibleApps = visible;
 			[presence handleVisibleApps:visible];
 		}];
 

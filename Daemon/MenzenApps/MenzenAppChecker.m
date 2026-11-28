@@ -197,7 +197,9 @@ static void MenzenApplicationsChanged(CFNotificationCenterRef center, void *obse
 	_generation++;
 	NSDictionary *status = MenzenAppSupportStatus(bundleIdentifier);
 	BOOL opened = status && ![status[MenzenSupportBackgroundKey] boolValue];
-	if (pid > 0 && !opened && ![bundleIdentifier isEqual:_opened] && [MenzenSystemService() pidForApplication:bundleIdentifier] == pid) kill(pid, SIGKILL);
+	// The user may have opened it since, before it noticed.
+	BOOL onScreen = [self.visibleApps containsObject:bundleIdentifier];
+	if (pid > 0 && !opened && !onScreen && ![bundleIdentifier isEqual:_opened] && [MenzenSystemService() pidForApplication:bundleIdentifier] == pid) kill(pid, SIGKILL);
 
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(MenzenNextDelay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		[self checkNext];

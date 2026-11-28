@@ -1,0 +1,16 @@
+# Opens a pull request when an action the workflows pin to a commit hash has
+# a new release, with the hash and the version comment updated together.
+version: 2
+
+updates:
+    - package-ecosystem: github-actions
+      directory: /
+      schedule:
+          interval: weekly
+      # One pull request a week for all of them, rather than one per action.
+      groups:
+          actions:
+              patterns:
+                  - "*"
+      commit-message:
+          prefix: ci

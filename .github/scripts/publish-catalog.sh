@@ -14,7 +14,7 @@ scripts=$(cd "$(dirname "$0")" && pwd)
 branch=catalog
 
 git config user.name "github-actions[bot]"
-git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
 for attempt in 1 2 3 4 5; do
 	git worktree remove --force catalog 2>/dev/null || true
